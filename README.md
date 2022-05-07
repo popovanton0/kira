@@ -1,5 +1,6 @@
 # Kira
-TODO
+Automatically generates UI demos which allow users to call any function (including composable ones) 
+with any parameters. Useful for building demo screens in playground apps of various design systems.
 
 ## Getting Started
 
