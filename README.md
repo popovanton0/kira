@@ -2,6 +2,9 @@
 Automatically generates UI demos which allow users to call any function (including composable ones) 
 with any parameters. Useful for building demo screens in playground apps of various design systems.
 
+## Development Status
+In active development, no usable version is released
+
 ## Getting Started
 
 [![Release](https://jitpack.io/v/popovanton0/kira.svg)](https://jitpack.io/#popovanton0/kira)
