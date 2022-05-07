@@ -1,13 +1,21 @@
 package com.popovanton0.kira.prototype1
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.popovanton0.kira.TextCard
 import com.popovanton0.kira.prototype1.valueproviders.*
 
@@ -118,16 +126,37 @@ public interface ValuesProvider<T> {
     public object String : ValuesProvider<kotlin.String>*/
 }
 
+public class KiraViewModel<ReturnType>(
+    internal val params: ComposableFunctionParameters<ReturnType>
+) : ViewModel()
+
 @Composable
 public fun <ReturnType> KiraScreen(
-    params: ComposableFunctionParameters<ReturnType>, header: @Composable () -> Unit = {
-        Box(modifier = Modifier.padding(40.dp), contentAlignment = Alignment.Center) {
+    params: ComposableFunctionParameters<ReturnType>,
+    header: @Composable (params: ComposableFunctionParameters<ReturnType>) -> Unit = { params ->
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .border(
+                    width = 1.4.dp,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(40.dp),
+            contentAlignment = Alignment.Center
+        ) {
             params.ComposableInvoke()
         }
     }
 ) {
+    val vm = viewModel<KiraViewModel<ReturnType>>(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            KiraViewModel(params) as T
+    })
+    val params = vm.params
     LazyColumn {
-        item { header() }
+        item { header(params) }
         items(params.valueProviders) { it.Ui() }
     }
 }
