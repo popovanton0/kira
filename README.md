@@ -28,7 +28,7 @@ dependencies {
 
 ## Usage
 
-Examples are in the [source code](https://github.com/popovanton0/kira/blob/main/app/src/main/java/com/popovanton0/kira/demo/MainActivity.kt).
+Examples are in the [source code](https://github.com/popovanton0/kira/blob/master/app/src/main/java/com/popovanton0/kira/demo/MainActivity.kt).
 
 ### Basic
 

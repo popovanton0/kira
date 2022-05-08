@@ -28,7 +28,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        freeCompilerArgs += '-Xexplicit-api=strict'
+        freeCompilerArgs += ['-Xexplicit-api=strict', '-opt-in=kotlin.RequiresOptIn']
     }
     buildFeatures {
         compose true
