@@ -33,24 +33,27 @@ public open class CompositeValuesProviderScope {
 
 public data class Injector<T> internal constructor(val injector: @Composable () -> T)
 
-public fun <T : Any, Scope : CompositeValuesProviderScope>
-        compositeValuesProvider(
+public fun <T : Any, Scope : CompositeValuesProviderScope> root(
     scope: Scope,
-    paramName: String,
-    label: String,
     block: Scope.() -> Injector<T>,
 ): CompositeValuesProvider<T, Scope> =
-    CompositeValuesProvider(scope, paramName, label, block)
+    CompositeValuesProvider(scope, "", "", block)
 
-public fun <T : Any, Scope : CompositeValuesProviderScope>
-        nullableCompositeValuesProvider(
-    scope: Scope,
+public fun <T : Any> CompositeValuesProviderScope.compositeValuesProvider(
+    paramName: String,
+    label: String,
+    block: CompositeValuesProviderScope.() -> Injector<T>,
+): CompositeValuesProvider<T, CompositeValuesProviderScope> =
+    CompositeValuesProvider(CompositeValuesProviderScope(), paramName, label, block).also(::addValuesProvider)
+
+public fun <T : Any> CompositeValuesProviderScope.nullableCompositeValuesProvider(
     paramName: String,
     label: String,
     isNullByDefault: Boolean,
-    block: Scope.() -> Injector<T>,
-): NullableCompositeValuesProvider<T, Scope> =
-    NullableCompositeValuesProvider(scope, paramName, label, isNullByDefault, block)
+    block: CompositeValuesProviderScope.() -> Injector<T>,
+): NullableCompositeValuesProvider<T, CompositeValuesProviderScope> =
+    NullableCompositeValuesProvider(CompositeValuesProviderScope(), paramName, label, isNullByDefault, block)
+        .also(::addValuesProvider)
 
 public fun <T : Any, Scope : CompositeValuesProviderScope>
         CompositeValuesProviderScope.compositeValuesProvider(

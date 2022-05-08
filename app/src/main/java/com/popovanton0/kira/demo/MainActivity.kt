@@ -19,8 +19,8 @@ import com.popovanton0.kira.prototype1.valueproviders.*
 public class CarScope : CompositeValuesProviderScope() {
     public var model: StringValuesProvider by lateinitVal()
     public var lame: BooleanValuesProvider by lateinitVal()
-    public var cookerQuality: EnumValuesProvider<Food> by lateinitVal()
-    public var engine: CompositeValuesProvider<Engine, EngineScope> by lateinitVal()
+    public var cookerQuality: EnumValuesProvider<Food?> by lateinitVal()
+    public var engine: NullableCompositeValuesProvider<Engine, EngineScope> by lateinitVal()
 }
 
 public class EngineScope : CompositeValuesProviderScope() {
@@ -28,18 +28,59 @@ public class EngineScope : CompositeValuesProviderScope() {
     public var diesel: BooleanValuesProvider by lateinitVal()
 }
 
-val car = compositeValuesProvider(
-    scope = CarScope(),
-    paramName = "car",
-    label = "Car"
+public class TextCardScope : CompositeValuesProviderScope() {
+    public var text: StringValuesProvider by lateinitVal()
+    public var isRed: BooleanValuesProvider by lateinitVal()
+    public var skill: EnumValuesProvider<Skill?> by lateinitVal()
+    public var food: EnumValuesProvider<Food> by lateinitVal()
+    public var car: CompositeValuesProvider<Car, CarScope> by lateinitVal()
+    public var carN: NullableCompositeValuesProvider<Car, CarScope> by lateinitVal()
+    //public var cornerRadius: Dp by lateinitVal()
+}
+
+val root = root(
+    scope = TextCardScope(),
 ) {
+    text = stringValuesProvider(paramName = "text", defaultValue = "Lorem")
+    isRed = booleanValuesProvider(paramName = "isRed", defaultValue = false)
+    skill = nullableEnum(paramName = "skill", defaultValue = null)
+    food = enum(paramName = "food", defaultValue = Food.GOOD)
+    car = compositeValuesProvider(
+        scope = CarScope(),
+        paramName = "car",
+        label = "Car"
+    ) {
+        carBody()
+    }
+    carN = nullableCompositeValuesProvider(
+        scope = CarScope(),
+        paramName = "car",
+        label = "Car",
+        isNullByDefault = true,
+    ) {
+        carBody()
+    }
+    injector {
+        TextCard(
+            text = text.currentValue(),
+            isRed = isRed.currentValue(),
+            skill = skill.currentValue(),
+            food = food.currentValue(),
+            car = car.currentValue(),
+            carN = carN.currentValue(),
+        )
+    }
+}
+
+private fun CarScope.carBody(): Injector<Car> {
     model = stringValuesProvider(paramName = "model", defaultValue = "Tesla")
     lame = booleanValuesProvider(paramName = "lame", defaultValue = false)
-    cookerQuality = enum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
-    engine = compositeValuesProvider(
+    cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
+    engine = nullableCompositeValuesProvider(
         scope = EngineScope(),
         paramName = "engine",
-        label = "Engine"
+        label = "Engine",
+        isNullByDefault = true
     ) {
         model = stringValuesProvider(paramName = "model", defaultValue = "Merlin")
         diesel = booleanValuesProvider(paramName = "diesel", defaultValue = false)
@@ -50,12 +91,12 @@ val car = compositeValuesProvider(
             )
         }
     }
-    injector {
+    return injector {
         Car(
             model = model.currentValue(),
             lame = lame.currentValue(),
             cookerQuality = cookerQuality.currentValue(),
-            engine = engine.currentValue(),
+            engine = engine.currentValue() ?: Engine("null"),
         )
     }
 }
@@ -69,10 +110,10 @@ class MainActivity : ComponentActivity() {
                     //Content()
 
                     val textCard = object : FunctionParameters<Unit> {
-                        override val valueProviders: List<ValuesProvider<*>> = listOf(car)
+                        override val valueProviders: List<ValuesProvider<*>> = listOf(root)
 
                         @Composable
-                        override fun invoke() = TextCard(car = car.currentValue())
+                        override fun invoke() = root.currentValue()
                     }
                     KiraScreen(textCard)
                 }
