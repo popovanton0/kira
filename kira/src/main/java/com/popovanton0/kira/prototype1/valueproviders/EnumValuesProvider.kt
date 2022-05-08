@@ -8,9 +8,16 @@ import com.popovanton0.kira.prototype1.ParameterDetails
 import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
 import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.Dropdown
+import kotlin.reflect.KClass
 
 public inline fun <reified T : Enum<T>> ParameterDetails.enum(defaultValue: T): ValuesProvider<T> =
     NullableEnumValuesProvider(defaultValue, this, T::class.java.enumConstants!!)
+
+public fun ParameterDetails.enum(
+    defaultValue: Enum<*>,
+    kClass: KClass<Enum<*>>,
+): ValuesProvider<Enum<*>> =
+    NullableEnumValuesProvider(defaultValue, this, kClass.java.enumConstants!!)
 
 public inline fun <reified T : Enum<*>?> ParameterDetails.nullableEnum(
     defaultValue: T?
@@ -18,6 +25,18 @@ public inline fun <reified T : Enum<*>?> ParameterDetails.nullableEnum(
     defaultValue = defaultValue,
     parameterDetails = this,
     enumConstants = T::class.java.enumConstants!!
+        .toMutableList()
+        .apply { add(0, null) }
+        .toTypedArray()
+)
+
+public fun ParameterDetails.nullableEnum(
+    defaultValue: Enum<*>?,
+    kClass: KClass<Enum<*>>,
+): ValuesProvider<Enum<*>?> = NullableEnumValuesProvider(
+    defaultValue = defaultValue,
+    parameterDetails = this,
+    enumConstants = kClass.java.enumConstants!!
         .toMutableList()
         .apply { add(0, null) }
         .toTypedArray()

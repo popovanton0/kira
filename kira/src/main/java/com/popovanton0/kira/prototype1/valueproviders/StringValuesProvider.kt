@@ -10,11 +10,17 @@ import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.NullableTextField
 import com.popovanton0.kira.ui.TextField
 
-public fun ParameterDetails.string(defaultValue: String): ValuesProvider<String> =
-    StringValuesProvider(defaultValue, this)
+public fun CompositeValueProviderBuilder3Scope.string3(
+    parameterDetails: ParameterDetails,
+    defaultValue: String
+): ValuesProvider<String> =
+    StringValuesProvider(defaultValue, parameterDetails)
 
-public fun ParameterDetails.nullableString(defaultValue: String?): ValuesProvider<String?> =
-    NullableStringValuesProvider(defaultValue, this)
+public fun string(parameterDetails: ParameterDetails, defaultValue: String): ValuesProvider<String> =
+    StringValuesProvider(defaultValue, parameterDetails)
+
+public fun nullableString(parameterDetails: ParameterDetails, defaultValue: String?): ValuesProvider<String?> =
+    NullableStringValuesProvider(defaultValue, parameterDetails)
 
 private class StringValuesProvider(
     defaultValue: String,

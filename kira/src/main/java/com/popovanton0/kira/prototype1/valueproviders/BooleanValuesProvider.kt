@@ -10,11 +10,11 @@ import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.BooleanSwitch
 import com.popovanton0.kira.ui.NullableBooleanSwitch
 
-public fun ParameterDetails.boolean(defaultValue: Boolean): ValuesProvider<Boolean> =
-    BooleanValuesProvider(defaultValue, this)
+public fun boolean(parameterDetails: ParameterDetails, defaultValue: Boolean): ValuesProvider<Boolean> =
+    BooleanValuesProvider(defaultValue, parameterDetails)
 
-public fun ParameterDetails.nullableBoolean(defaultValue: Boolean): ValuesProvider<Boolean?> =
-    NullableBooleanValuesProvider(defaultValue, this)
+public fun nullableBoolean(parameterDetails: ParameterDetails, defaultValue: Boolean?): ValuesProvider<Boolean?> =
+    NullableBooleanValuesProvider(defaultValue, parameterDetails)
 
 private class BooleanValuesProvider(
     defaultValue: Boolean,

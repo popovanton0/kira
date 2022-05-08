@@ -27,7 +27,8 @@ public fun TextCard(
     food: Food = Food.BAD,
     car: Car = Car(),
     carN: Car? = null,
-    cornerRadius: Dp = 12.dp
+    cornerRadius: Dp = 12.dp,
+    autoCar: Car = Car()
 ) {
     val shape = RoundedCornerShape(cornerRadius)
     Card(elevation = 8.dp, shape = shape) {
@@ -60,6 +61,7 @@ public fun TextCard(
             )
             Text(text = "car: $car")
             Text(text = "carN: $carN")
+            Text(text = "autoCar: $autoCar")
         }
     }
 }

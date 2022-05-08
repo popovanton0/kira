@@ -38,38 +38,70 @@ public typealias ValuesProviderProvider<T> = ParameterDetails.() -> ValuesProvid
 
 public enum class Skill { LOW, OK, SICK }
 public enum class Food { BAD, GOOD, EXCELLENT }
+public data class Engine(
+    val model: String = "Merlin",
+    val diesel: Boolean = false,
+)
+
 public data class Car(
     val model: String = "Tesla",
     val lame: Boolean = false,
     val cookerQuality: Food? = null,
+    val engine: Engine = Engine(),
 )
 
+public class TextCardValueProviders {
+    var text: ValuesProvider<String> = string(defaultValue = "123")
+    var isRed: ValuesProvider<Boolean> = boolean(defaultValue = false)
+    var textN: ValuesProvider<String?> = nullableString(defaultValue = null)
+}
+
 public class TextCardParams(
-    text: ValuesProviderProvider<String> = { string("123") },
-    isRed: ValuesProviderProvider<Boolean> = { boolean(defaultValue = false) },
-    textN: ValuesProviderProvider<String?> = { nullableString(defaultValue = null) },
-    isRedN: ValuesProviderProvider<Boolean?> = { nullableBoolean(defaultValue = false) },
+    text: ValuesProviderProvider<String> = { string(this, defaultValue = "123") },
+    isRed: ValuesProviderProvider<Boolean> = { boolean(this, defaultValue = false) },
+    textN: ValuesProviderProvider<String?> = { nullableString(this, defaultValue = null) },
+    isRedN: ValuesProviderProvider<Boolean?> = { nullableBoolean(this, defaultValue = false) },
     skill: ValuesProviderProvider<Skill?> = { nullableEnum(defaultValue = null) },
     food: ValuesProviderProvider<Food> = { enum(Food.BAD) },
     car: ValuesProviderProvider<Car> = {
-        val model = ParameterDetails("model").string("Tesla")
-        val lame = ParameterDetails("lame").boolean(false)
-        val food = ParameterDetails("cookerQuality").nullableEnum<Food?>(null)
 
-        composite(
-            label = "Car",
-            model, lame, food,
-        ) {
-            Car(
-                model = model.currentValue(),
-                lame = lame.currentValue(),
-                cookerQuality = food.currentValue(),
-            )
+
+        val engine = run {
+            val model = string(ParameterDetails("model"), "Merlin")
+            val diesel = boolean(ParameterDetails("diesel"), false)
+
+            ParameterDetails("engine").composite(
+                label = "Engine",
+                model, diesel
+            ) {
+                Engine(
+                    model = model.currentValue(),
+                    diesel = diesel.currentValue(),
+                )
+            }
         }
+        CompositeValueProviderBuilder3(
+            paramName = "asd",
+            label = "Car",
+        ) {
+            // model, lame, food, engine
+            val model = string(ParameterDetails("model"), "Tesla")
+            val lame = boolean(ParameterDetails("lame"), false)
+            val food = ParameterDetails("cookerQuality").nullableEnum<Food?>(null)
+            Injector {
+                Car(
+                    model = model.currentValue(),
+                    lame = lame,
+                    cookerQuality = food.currentValue(),
+                    engine = engine.currentValue()
+                )
+            }
+        }
+        TODO()
     },
     carN: ValuesProviderProvider<Car?> = {
-        val model = ParameterDetails("model").string("Tesla")
-        val lame = ParameterDetails("lame").boolean(false)
+        val model = string(ParameterDetails("model"), "Tesla")
+        val lame = boolean(ParameterDetails("lame"), false)
         val food = ParameterDetails("cookerQuality").nullableEnum<Food?>(null)
 
         nullableComposite(
@@ -84,7 +116,7 @@ public class TextCardParams(
         }
     },
     //public val functionCaller: (text: String, isRed: Boolean, textN: String?, isRedN: Boolean?) -> Any = { _, _, _, _ -> },
-    public val composableFunctionCaller: @Composable (String, Boolean, String?, Boolean?, Skill?, Food, Car, Car?) -> Unit = { text, isRed, textN, isRedN, skill, food, car, carN ->
+    public val composableFunctionCaller: @Composable (String, Boolean, String?, Boolean?, Skill?, Food, Car, Car?) -> Unit = { text, isRed, textN, isRedN, skill, food, car, carN, ->
         TextCard(
             text = text,
             isRed = isRed,
@@ -149,6 +181,10 @@ public interface ValuesProvider<T> {
 
     TODO String
     */
+}
+
+public interface ValueProviderBuilder<T> {
+    public fun build(): ValuesProvider<T>
 }
 
 public class KiraViewModel<ReturnType>(
