@@ -2,17 +2,19 @@
 
 package com.popovanton0.kira.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 public fun BooleanSwitch(
@@ -21,7 +23,7 @@ public fun BooleanSwitch(
     onCheckedChange: (Boolean) -> Unit,
     label: String,
 ): Unit = ListItem(
-    modifier = modifier,
+    modifier = modifier.clickable { onCheckedChange(!checked) },
     text = { Text(text = label) },
     trailing = {
         Switch(
@@ -51,16 +53,29 @@ public fun NullableBooleanSwitch(
 )
 
 @Composable
-private fun RadioButton(
+public fun RadioButton(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-) = Column(
+): Unit = Column(
     verticalArrangement = Arrangement.spacedBy(4.dp),
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
     RadioButton(selected = selected, onClick = onClick)
     Text(text = label)
+}
+
+@Composable
+public fun Checkbox(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+): Unit = Column(
+    verticalArrangement = Arrangement.spacedBy(0.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
+    Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+    Text(text = label, fontSize = 12.sp)
 }
 
 @Composable
@@ -100,18 +115,11 @@ public fun NullableTextField(
             )
         },
         trailing = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Checkbox(
-                    checked = value == null,
-                    onCheckedChange = {
-                        onValueChange(if (value == null) latestNonNullValue else null)
-                    }
-                )
-                Text(text = "Null")
-            }
+            Checkbox(
+                label = "null",
+                checked = value == null,
+                onCheckedChange = { onValueChange(if (value == null) latestNonNullValue else null) }
+            )
         }
     )
 }
@@ -140,5 +148,24 @@ public fun Dropdown(
                 }
             }
         }
+    )
+}
+
+@Composable
+public fun VerticalDivider(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.12f),
+    thickness: Dp = 1.dp,
+) {
+    val targetThickness = if (thickness == Dp.Hairline) {
+        (1f / LocalDensity.current.density).dp
+    } else {
+        thickness
+    }
+    Box(
+        modifier
+            .fillMaxHeight()
+            .width(targetThickness)
+            .background(color = color)
     )
 }

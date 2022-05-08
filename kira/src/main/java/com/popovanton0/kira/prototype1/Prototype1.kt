@@ -1,7 +1,9 @@
 package com.popovanton0.kira.prototype1
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,9 +11,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -21,14 +25,9 @@ import com.popovanton0.kira.prototype1.valueproviders.*
 
 public interface FunctionParameters<ReturnType> {
     public val valueProviders: List<ValuesProvider<*>>
-    public fun invoke(): ReturnType
-}
-
-public interface ComposableFunctionParameters<ReturnType> {
-    public val valueProviders: List<ValuesProvider<*>>
 
     @Composable
-    public fun ComposableInvoke(): ReturnType
+    public fun invoke(): ReturnType
 }
 
 public data class ParameterDetails(
@@ -39,6 +38,11 @@ public typealias ValuesProviderProvider<T> = ParameterDetails.() -> ValuesProvid
 
 public enum class Skill { LOW, OK, SICK }
 public enum class Food { BAD, GOOD, EXCELLENT }
+public data class Car(
+    val model: String = "Tesla",
+    val lame: Boolean = false,
+    val cookerQuality: Food? = null,
+)
 
 public class TextCardParams(
     text: ValuesProviderProvider<String> = { string("123") },
@@ -47,116 +51,162 @@ public class TextCardParams(
     isRedN: ValuesProviderProvider<Boolean?> = { nullableBoolean(defaultValue = false) },
     skill: ValuesProviderProvider<Skill?> = { nullableEnum(defaultValue = null) },
     food: ValuesProviderProvider<Food> = { enum(Food.BAD) },
+    car: ValuesProviderProvider<Car> = {
+        val model = ParameterDetails("model").string("Tesla")
+        val lame = ParameterDetails("lame").boolean(false)
+        val food = ParameterDetails("cookerQuality").nullableEnum<Food?>(null)
+
+        composite(
+            label = "Car",
+            model, lame, food,
+        ) {
+            Car(
+                model = model.currentValue(),
+                lame = lame.currentValue(),
+                cookerQuality = food.currentValue(),
+            )
+        }
+    },
+    carN: ValuesProviderProvider<Car?> = {
+        val model = ParameterDetails("model").string("Tesla")
+        val lame = ParameterDetails("lame").boolean(false)
+        val food = ParameterDetails("cookerQuality").nullableEnum<Food?>(null)
+
+        nullableComposite(
+            label = "Car",
+            model, lame, food,
+        ) {
+            Car(
+                model = model.currentValue(),
+                lame = lame.currentValue(),
+                cookerQuality = food.currentValue(),
+            )
+        }
+    },
     //public val functionCaller: (text: String, isRed: Boolean, textN: String?, isRedN: Boolean?) -> Any = { _, _, _, _ -> },
-    public val composableFunctionCaller: @Composable (String, Boolean, String?, Boolean?, Skill?, Food) -> Unit = { text, isRed, textN, isRedN, skill, food ->
+    public val composableFunctionCaller: @Composable (String, Boolean, String?, Boolean?, Skill?, Food, Car, Car?) -> Unit = { text, isRed, textN, isRedN, skill, food, car, carN ->
         TextCard(
             text = text,
             isRed = isRed,
             skill = skill,
             food = food,
+            car = car,
+            carN = carN,
         )
     },
-) : ComposableFunctionParameters<Unit> {
+) : FunctionParameters<Unit> {
     public val _text: ValuesProvider<String> = text(ParameterDetails(name = "text"))
     public val _isRed: ValuesProvider<Boolean> = isRed(ParameterDetails(name = "isRed"))
     public val _textN: ValuesProvider<String?> = textN(ParameterDetails(name = "textN"))
     public val _isRedN: ValuesProvider<Boolean?> = isRedN(ParameterDetails(name = "isRedN"))
     public val _skill: ValuesProvider<Skill?> = skill(ParameterDetails(name = "skill"))
     public val _food: ValuesProvider<Food> = food(ParameterDetails(name = "food"))
+    public val _car: ValuesProvider<Car> = car(ParameterDetails(name = "car"))
+    public val _carN: ValuesProvider<Car?> = carN(ParameterDetails(name = "carN"))
 
     public override val valueProviders: List<ValuesProvider<*>> = listOf(
-        _text, _isRed, _textN, _isRedN, _skill, _food,
+        _car, _carN, _text, _isRed, _textN, _isRedN, _skill, _food,
     )
 
-    // either
-    //public fun invoke(): Any = functionCaller(
-    //    _text.currentValue,
-    //    _isRed.currentValue,
-    //    _textN.currentValue,
-    //    _isRedN.currentValue,
-    //)
-
-    // or
     @Composable
-    public override fun ComposableInvoke(): Unit = composableFunctionCaller(
-        _text.currentValue,
-        _isRed.currentValue,
-        _textN.currentValue,
-        _isRedN.currentValue,
-        _skill.currentValue,
-        _food.currentValue,
+    public override fun invoke(): Unit = composableFunctionCaller(
+        _text.currentValue(),
+        _isRed.currentValue(),
+        _textN.currentValue(),
+        _isRedN.currentValue(),
+        _skill.currentValue(),
+        _food.currentValue(),
+        _car.currentValue(),
+        _carN.currentValue(),
     )
 }
 
-/**
- * Todo rename
- */
-/*public class Enum<T>(
-    public val values: List<Value<T>>
-) : ValuesProvider<T> {
-    public sealed class Value<T> {
-        public data class Group<T>(
-            val displayName: String,
-            val values: List<Enum.Value<T>>,
-        ) : Enum.Value<T>()
+public interface PropertyBasedValuesProvider<T> : ValuesProvider<T> {
+    public var currentValue: T
 
-        public data class Value<T>(
-            val displayName: String,
-            val value: @Composable () -> T,
-        ) : Enum.Value<T>()
-    }
-}*/
+    @Composable
+    override fun currentValue(): T = currentValue
+}
 
 public interface ValuesProvider<T> {
-    public var currentValue: T
+
+    @Composable
+    public fun currentValue(): T
 
     @Composable
     public fun Ui()
 
-    /*public object Char : ValuesProvider<kotlin.Char>
+    /*
+    TODO Char
 
-    public object Byte : ValuesProvider<kotlin.Byte>
-    public object Short : ValuesProvider<kotlin.Short>
-    public object Int : ValuesProvider<kotlin.Int>
-    public object Long : ValuesProvider<kotlin.Long>
+    TODO Byte
+    TODO Short
+    TODO Int
+    TODO Long
 
-    public object Float : ValuesProvider<kotlin.Float>
-    public object Double : ValuesProvider<kotlin.Double>
+    TODO Float
+    TODO Double
 
-    public object String : ValuesProvider<kotlin.String>*/
+    TODO String
+    */
 }
 
 public class KiraViewModel<ReturnType>(
-    internal val params: ComposableFunctionParameters<ReturnType>
+    internal val params: FunctionParameters<ReturnType>
 ) : ViewModel()
 
 @Composable
+public fun DefaultHeader(function: @Composable () -> Unit): Unit = Box(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+        .border(
+            width = 2.dp,
+            color = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled),
+            shape = RoundedCornerShape(12.dp)
+        )
+        .padding(40.dp),
+    contentAlignment = Alignment.Center,
+) {
+    function()
+}
+
+@Composable
 public fun <ReturnType> KiraScreen(
-    params: ComposableFunctionParameters<ReturnType>,
-    header: @Composable (params: ComposableFunctionParameters<ReturnType>) -> Unit = { params ->
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .border(
-                    width = 1.4.dp,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(40.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            params.ComposableInvoke()
-        }
-    }
+    params: FunctionParameters<ReturnType>,
+    header: @Composable (function: @Composable () -> Unit) -> Unit = { DefaultHeader(it) }
 ) {
     val vm = viewModel<KiraViewModel<ReturnType>>(factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
             KiraViewModel(params) as T
     })
     val params = vm.params
-    LazyColumn {
-        item { header(params) }
-        items(params.valueProviders) { it.Ui() }
+    Box {
+        LazyColumn {
+            item { header { params.invoke() } }
+            items(params.valueProviders) { it.Ui() }
+        }
+        EarlyPreview()
+    }
+}
+
+@Composable
+internal fun BoxScope.EarlyPreview() = Watermark(text = "Early Preview")
+
+@Composable
+internal fun BoxScope.Watermark(
+    modifier: Modifier = Modifier,
+    text: String,
+    backgroundColor: Color = Color.Red.copy(alpha = 0.8f),
+    textColor: Color = Color.White,
+    alignment: Alignment = Alignment.TopEnd
+) {
+    Box(
+        modifier = modifier
+            .align(alignment)
+            .background(backgroundColor)
+            .padding(4.dp)
+    ) {
+        Text(text = text, color = textColor)
     }
 }

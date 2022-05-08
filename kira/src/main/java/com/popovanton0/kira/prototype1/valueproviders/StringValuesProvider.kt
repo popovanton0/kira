@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.popovanton0.kira.prototype1.ParameterDetails
+import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
 import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.NullableTextField
 import com.popovanton0.kira.ui.TextField
@@ -18,7 +19,7 @@ public fun ParameterDetails.nullableString(defaultValue: String?): ValuesProvide
 private class StringValuesProvider(
     defaultValue: String,
     private val parameterDetails: ParameterDetails,
-) : ValuesProvider<String> {
+) : PropertyBasedValuesProvider<String> {
     override var currentValue: String by mutableStateOf(defaultValue)
 
     @Composable
@@ -32,7 +33,7 @@ private class StringValuesProvider(
 private class NullableStringValuesProvider(
     defaultValue: String?,
     private val parameterDetails: ParameterDetails,
-) : ValuesProvider<String?> {
+) : PropertyBasedValuesProvider<String?> {
     override var currentValue: String? by mutableStateOf(defaultValue)
 
     @Composable

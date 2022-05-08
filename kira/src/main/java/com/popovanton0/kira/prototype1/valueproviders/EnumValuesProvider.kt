@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.popovanton0.kira.prototype1.ParameterDetails
+import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
 import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.Dropdown
 
@@ -32,7 +33,7 @@ internal class NullableEnumValuesProvider<T : Enum<*>?>(
      * @see Enum.ordinal
      */
     private val enumConstants: Array<T>,
-) : ValuesProvider<T> {
+) : PropertyBasedValuesProvider<T> {
     private val enumConstantNames: List<String> = enumConstants.map { it?.name ?: "null" }
     override var currentValue: T by mutableStateOf(defaultValue)
 

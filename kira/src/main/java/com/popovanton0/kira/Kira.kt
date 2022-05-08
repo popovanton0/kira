@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.popovanton0.kira.prototype1.Car
 import com.popovanton0.kira.prototype1.Food
 import com.popovanton0.kira.prototype1.Skill
 
@@ -24,6 +25,8 @@ public fun TextCard(
     isRed: Boolean = text.contains(' '),
     skill: Skill? = Skill.LOW,
     food: Food = Food.BAD,
+    car: Car = Car(),
+    carN: Car? = null,
     cornerRadius: Dp = 12.dp
 ) {
     val shape = RoundedCornerShape(cornerRadius)
@@ -55,6 +58,8 @@ public fun TextCard(
                 },
                 fontSize = 18.sp,
             )
+            Text(text = "car: $car")
+            Text(text = "carN: $carN")
         }
     }
 }

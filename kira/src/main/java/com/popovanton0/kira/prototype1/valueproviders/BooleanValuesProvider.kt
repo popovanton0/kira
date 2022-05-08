@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.popovanton0.kira.prototype1.ParameterDetails
+import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
 import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.BooleanSwitch
 import com.popovanton0.kira.ui.NullableBooleanSwitch
@@ -18,7 +19,7 @@ public fun ParameterDetails.nullableBoolean(defaultValue: Boolean): ValuesProvid
 private class BooleanValuesProvider(
     defaultValue: Boolean,
     private val parameterDetails: ParameterDetails,
-) : ValuesProvider<Boolean> {
+) : PropertyBasedValuesProvider<Boolean> {
     override var currentValue: Boolean by mutableStateOf(defaultValue)
 
     @Composable
@@ -32,7 +33,7 @@ private class BooleanValuesProvider(
 private class NullableBooleanValuesProvider(
     defaultValue: Boolean?,
     private val parameterDetails: ParameterDetails,
-) : ValuesProvider<Boolean?> {
+) : PropertyBasedValuesProvider<Boolean?> {
     override var currentValue: Boolean? by mutableStateOf(defaultValue)
 
     @Composable
