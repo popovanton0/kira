@@ -10,15 +10,35 @@ import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.BooleanSwitch
 import com.popovanton0.kira.ui.NullableBooleanSwitch
 
-public fun boolean(parameterDetails: ParameterDetails, defaultValue: Boolean): ValuesProvider<Boolean> =
-    BooleanValuesProvider(defaultValue, parameterDetails)
+public fun booleanValuesProvider(paramName: String, defaultValue: Boolean): BooleanValuesProvider =
+    BooleanValuesProvider(paramName, defaultValue)
 
-public fun nullableBoolean(parameterDetails: ParameterDetails, defaultValue: Boolean?): ValuesProvider<Boolean?> =
-    NullableBooleanValuesProvider(defaultValue, parameterDetails)
-
-private class BooleanValuesProvider(
+public fun CompositeValuesProviderScope.booleanValuesProvider(
+    paramName: String,
     defaultValue: Boolean,
-    private val parameterDetails: ParameterDetails,
+): BooleanValuesProvider =
+     BooleanValuesProvider(paramName, defaultValue).also(::addValuesProvider)
+
+public class BooleanValuesProvider internal constructor(
+    public var paramName: String,
+    public var defaultValue: Boolean,
+) : ValuesProvider<Boolean> {
+    private lateinit var delegate: BooleanValuesProviderImpl
+
+    @Composable
+    override fun currentValue(): Boolean = delegate.currentValue()
+
+    @Composable
+    override fun Ui(): Unit = delegate.Ui()
+
+    override fun initialize() {
+        delegate = BooleanValuesProviderImpl(paramName, defaultValue)
+    }
+}
+
+private class BooleanValuesProviderImpl(
+    private val paramName: String,
+    defaultValue: Boolean,
 ) : PropertyBasedValuesProvider<Boolean> {
     override var currentValue: Boolean by mutableStateOf(defaultValue)
 
@@ -26,7 +46,7 @@ private class BooleanValuesProvider(
     override fun Ui() = BooleanSwitch(
         checked = currentValue,
         onCheckedChange = { currentValue = it },
-        label = parameterDetails.name
+        label = paramName
     )
 }
 

@@ -4,48 +4,48 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.popovanton0.kira.prototype1.ParameterDetails
 import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
-import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.Dropdown
-import kotlin.reflect.KClass
 
-public inline fun <reified T : Enum<T>> ParameterDetails.enum(defaultValue: T): ValuesProvider<T> =
-    NullableEnumValuesProvider(defaultValue, this, T::class.java.enumConstants!!)
+public inline fun <reified T : Enum<T>> enum(
+    paramName: String,
+    defaultValue: T
+): EnumValuesProvider<T> =
+    EnumValuesProvider(defaultValue, paramName, T::class.java.enumConstants!!)
 
-public fun ParameterDetails.enum(
-    defaultValue: Enum<*>,
-    kClass: KClass<Enum<*>>,
-): ValuesProvider<Enum<*>> =
-    NullableEnumValuesProvider(defaultValue, this, kClass.java.enumConstants!!)
-
-public inline fun <reified T : Enum<*>?> ParameterDetails.nullableEnum(
+public inline fun <reified T : Enum<*>?> nullableEnum(
+    paramName: String,
     defaultValue: T?
-): ValuesProvider<T?> = NullableEnumValuesProvider(
+): EnumValuesProvider<T?> = EnumValuesProvider(
     defaultValue = defaultValue,
-    parameterDetails = this,
+    paramName = paramName,
     enumConstants = T::class.java.enumConstants!!
         .toMutableList()
         .apply { add(0, null) }
         .toTypedArray()
 )
+public inline fun <reified T : Enum<T>> CompositeValuesProviderScope.enum(
+    paramName: String,
+    defaultValue: T
+): EnumValuesProvider<T> =
+    EnumValuesProvider(defaultValue, paramName, T::class.java.enumConstants!!)
+        .also(::addValuesProvider)
 
-public fun ParameterDetails.nullableEnum(
-    defaultValue: Enum<*>?,
-    kClass: KClass<Enum<*>>,
-): ValuesProvider<Enum<*>?> = NullableEnumValuesProvider(
+public inline fun <reified T : Enum<*>?> CompositeValuesProviderScope.nullableEnum(
+    paramName: String,
+    defaultValue: T?
+): EnumValuesProvider<T?> = EnumValuesProvider(
     defaultValue = defaultValue,
-    parameterDetails = this,
-    enumConstants = kClass.java.enumConstants!!
+    paramName = paramName,
+    enumConstants = T::class.java.enumConstants!!
         .toMutableList()
         .apply { add(0, null) }
         .toTypedArray()
-)
+).also(::addValuesProvider)
 
-@PublishedApi
-internal class NullableEnumValuesProvider<T : Enum<*>?>(
+public class EnumValuesProvider<T : Enum<*>?> @PublishedApi internal constructor(
     defaultValue: T,
-    private val parameterDetails: ParameterDetails,
+    private val paramName: String,
     /**
      * Sorted by ordinal
      * @see java.lang.Class.getEnumConstants
@@ -65,7 +65,7 @@ internal class NullableEnumValuesProvider<T : Enum<*>?>(
             },
             onSelect = { currentValue = enumConstants[it] },
             options = enumConstantNames,
-            label = parameterDetails.name,
+            label = paramName,
         )
     }
 }

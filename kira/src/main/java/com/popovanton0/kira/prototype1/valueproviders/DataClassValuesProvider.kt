@@ -1,4 +1,5 @@
 package com.popovanton0.kira.prototype1.valueproviders
+/*
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -95,3 +96,4 @@ internal class DataClassValuesProvider<T : Any>(
         valueProviders.forEach { it.Ui() }
     }
 }
+*/

@@ -15,110 +15,127 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
 import com.popovanton0.kira.prototype1.ParameterDetails
-import com.popovanton0.kira.prototype1.ValueProviderBuilder
 import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.VerticalDivider
 
-public fun <T : Any, P1> composite2(
-    paramName: String,
-    label: String,
-    provider1: ValuesProvider<P1>,
-    injector: @Composable (P1) -> T, // injector, builder, producer, creator, factory, provider
-): ValuesProvider<T> = TODO()
 
-public fun <T : Any, P1, P2> composite2(
-    paramName: String,
-    label: String,
-    provider1: ValuesProvider<P1>,
-    provider2: ValuesProvider<P2>,
-    injector: @Composable (P1, P2) -> T, // injector, builder, producer, creator, factory, provider
-): CompositeValueProviderBuilder<T> {
-    val valueProviders = listOf(provider1, provider2)
-    injector(valueProviders[0] as P1, valueProviders[1] as P2)
-    TODO()
-}
+public open class CompositeValuesProviderScope {
+    internal val valuesProviders = mutableListOf<ValuesProvider<*>>()
+    //public open fun addAllValuesProviders(): Unit = Unit
 
-public class CompositeValueProviderBuilder3Scope internal constructor() {
-    internal val valueProviderBuilders = mutableListOf<ValueProviderBuilder<*>>()
+    public fun <T> injector(block: @Composable () -> T): Injector<T> = Injector(block)
 
-    public fun addValueProviderBuilder(valuesProvider: ValueProviderBuilder<*>) {
-        valueProviderBuilders.add(valuesProvider)
+    public fun addValuesProvider(valuesProvider: ValuesProvider<*>) {
+        valuesProviders.add(valuesProvider)
     }
 }
 
-public data class Injector<T>(val injector: @Composable () -> T)
+public data class Injector<T> internal constructor(val injector: @Composable () -> T)
 
-public data class CompositeValueProviderBuilder3<T : Any>(
-    public val paramName: String,
-    public val label: String,
-    public val block: CompositeValueProviderBuilder3Scope.() -> Injector<T>
-): ValueProviderBuilder<T> {
-    override fun build(): ValuesProvider<T> {
-        val scope = CompositeValueProviderBuilder3Scope()
-        val injector = scope.block().injector
-        return CompositeValuesProvider(
+public fun <T : Any, Scope : CompositeValuesProviderScope>
+        compositeValuesProvider(
+    scope: Scope,
+    paramName: String,
+    label: String,
+    block: Scope.() -> Injector<T>,
+): CompositeValuesProvider<T, Scope> =
+    CompositeValuesProvider(scope, paramName, label, block)
+
+public fun <T : Any, Scope : CompositeValuesProviderScope>
+        nullableCompositeValuesProvider(
+    scope: Scope,
+    paramName: String,
+    label: String,
+    isNullByDefault: Boolean,
+    block: Scope.() -> Injector<T>,
+): NullableCompositeValuesProvider<T, Scope> =
+    NullableCompositeValuesProvider(scope, paramName, label, isNullByDefault, block)
+
+public fun <T : Any, Scope : CompositeValuesProviderScope>
+        CompositeValuesProviderScope.compositeValuesProvider(
+    scope: Scope,
+    paramName: String,
+    label: String,
+    block: Scope.() -> Injector<T>,
+): CompositeValuesProvider<T, Scope> =
+    CompositeValuesProvider(scope, paramName, label, block).also(::addValuesProvider)
+
+public fun <T : Any, Scope : CompositeValuesProviderScope>
+        CompositeValuesProviderScope.nullableCompositeValuesProvider(
+    scope: Scope,
+    paramName: String,
+    label: String,
+    isNullByDefault: Boolean,
+    block: Scope.() -> Injector<T>,
+): NullableCompositeValuesProvider<T, Scope> =
+    NullableCompositeValuesProvider(scope, paramName, label, isNullByDefault, block)
+        .also(::addValuesProvider)
+
+public class CompositeValuesProvider<T : Any, Scope : CompositeValuesProviderScope>
+internal constructor(
+    public val scope: Scope,
+    public var paramName: String,
+    public var label: String,
+    block: Scope.() -> Injector<T>
+) : ValuesProvider<T> {
+    private lateinit var delegate: ValuesProvider<T>
+    private val injector: Injector<T> = scope.block()
+
+    override fun initialize() {
+        //scope.addAllValuesProviders()
+        val valueProviders = scope.valuesProviders.toList()
+        valueProviders.forEach { it.initialize() } // todo where to initialize
+        delegate = CompositeValuesProviderImpl(
             parameterDetails = ParameterDetails(paramName),
-            /**
-             * create a copy using [map] so that editing of the original list would not interfere
-             */
-            providers = scope.valueProviderBuilders.map { it.build() },
+            providers = valueProviders,
             label = label,
-            injector = injector,
+            injector = injector.injector,
             nullable = false,
             isNullByDefault = false,
         ) as ValuesProvider<T>
     }
+
+    @Composable
+    override fun currentValue(): T = delegate.currentValue()
+
+    @Composable
+    override fun Ui(): Unit = delegate.Ui()
 }
 
-public interface CompositeValueProviderBuilder2<T : Any> {
-    public val paramName: String
-    public val label: String
-    public val provider1: ValuesProvider<P1>
-    public val provider2: ValuesProvider<P2>
-    public val injector: @Composable (P1, P2) -> T
+public class NullableCompositeValuesProvider<T : Any, Scope : CompositeValuesProviderScope>
+internal constructor(
+    public val scope: Scope,
+    public var paramName: String,
+    public var label: String,
+    public var isNullByDefault: Boolean,
+    block: Scope.() -> Injector<T>
+) : ValuesProvider<T?> {
+    private lateinit var delegate: ValuesProvider<T?>
+    private val injector: Injector<T> = scope.block()
+
+    override fun initialize() {
+        //scope.addAllValuesProviders()
+        val valueProviders = scope.valuesProviders.toList()
+        valueProviders.forEach { it.initialize() } // todo where to initialize
+        delegate = CompositeValuesProviderImpl(
+            parameterDetails = ParameterDetails(paramName),
+            providers = valueProviders,
+            label = label,
+            injector = injector.injector,
+            nullable = true,
+            isNullByDefault = isNullByDefault,
+        )
+    }
+
+    @Composable
+    override fun currentValue(): T? = delegate.currentValue()
+
+    @Composable
+    override fun Ui(): Unit = delegate.Ui()
 }
 
-public data class CompositeValueProviderBuilder<T : Any, P1, P2> internal constructor(
-    val paramName: String,
-    val label: String,
-    val provider1: ValueProviderBuilder<P1>,
-    val provider2: ValueProviderBuilder<P2>,
-    val injector: @Composable (P1, P2) -> T,
-) : ValueProviderBuilder<T> {
-    override fun build(): ValuesProvider<T> = CompositeValuesProvider(
-        parameterDetails = ParameterDetails(paramName),
-        providers = listOf(provider1.build(), provider2.build()),
-        label = label,
-        injector = { injector(provider1.currentValue(), provider2.currentValue()) },
-        nullable = false,
-        isNullByDefault = false,
-    ) as ValuesProvider<T>
-}
-
-public fun <T : Any> ParameterDetails.composite(
-    label: String,
-    vararg providers: ValuesProvider<*>,
-    injector: @Composable () -> T, // injector, builder, producer, creator, factory, provider
-): ValuesProvider<T> = CompositeValuesProvider(
-    parameterDetails = this,
-    providers = providers,
-    label = label,
-    injector = injector,
-    nullable = false,
-    isNullByDefault = false
-) as ValuesProvider<T>
-
-public fun <T : Any> ParameterDetails.nullableComposite(
-    label: String,
-    vararg providers: ValuesProvider<*>,
-    isNullByDefault: Boolean = false,
-    injector: @Composable () -> T,
-): ValuesProvider<T?> =
-    CompositeValuesProvider(this, providers, label, injector, nullable = true, isNullByDefault)
-
-@PublishedApi
-internal class CompositeValuesProvider<T : Any>(
+private class CompositeValuesProviderImpl<T : Any>(
     private val parameterDetails: ParameterDetails,
     private val providers: List<ValuesProvider<*>>,
     private val label: String,

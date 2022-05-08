@@ -10,21 +10,34 @@ import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.NullableTextField
 import com.popovanton0.kira.ui.TextField
 
-public fun CompositeValueProviderBuilder3Scope.string3(
-    parameterDetails: ParameterDetails,
-    defaultValue: String
-): ValuesProvider<String> =
-    StringValuesProvider(defaultValue, parameterDetails)
+public fun stringValuesProvider(paramName: String, defaultValue: String): StringValuesProvider =
+    StringValuesProvider(paramName, defaultValue)
 
-public fun string(parameterDetails: ParameterDetails, defaultValue: String): ValuesProvider<String> =
-    StringValuesProvider(defaultValue, parameterDetails)
-
-public fun nullableString(parameterDetails: ParameterDetails, defaultValue: String?): ValuesProvider<String?> =
-    NullableStringValuesProvider(defaultValue, parameterDetails)
-
-private class StringValuesProvider(
+public fun CompositeValuesProviderScope.stringValuesProvider(
+    paramName: String,
     defaultValue: String,
-    private val parameterDetails: ParameterDetails,
+): StringValuesProvider = StringValuesProvider(paramName, defaultValue).also(::addValuesProvider)
+
+public class StringValuesProvider internal constructor(
+    public var paramName: String,
+    public var defaultValue: String,
+) : ValuesProvider<String> {
+    private lateinit var delegate: StringValuesProviderImpl
+
+    @Composable
+    override fun currentValue(): String = delegate.currentValue()
+
+    @Composable
+    override fun Ui(): Unit = delegate.Ui()
+
+    override fun initialize() {
+        delegate = StringValuesProviderImpl(paramName, defaultValue)
+    }
+}
+
+private class StringValuesProviderImpl(
+    private val paramName: String,
+    defaultValue: String,
 ) : PropertyBasedValuesProvider<String> {
     override var currentValue: String by mutableStateOf(defaultValue)
 
@@ -32,7 +45,7 @@ private class StringValuesProvider(
     override fun Ui() = TextField(
         value = currentValue,
         onValueChange = { currentValue = it },
-        label = parameterDetails.name
+        label = paramName
     )
 }
 
