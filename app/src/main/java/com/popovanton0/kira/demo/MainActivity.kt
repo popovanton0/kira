@@ -3,57 +3,72 @@ package com.popovanton0.kira.demo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.popovanton0.kira.TextCard
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.prototype1.*
 import com.popovanton0.kira.prototype1.valueproviders.*
 
 public class CarScope : KiraScope() {
-    public var model: StringValuesProvider by lateinitVal()
-    public var lame: BooleanValuesProvider by lateinitVal()
-    public var lameN: NullableBooleanValuesProvider by lateinitVal()
-    public var cookerQuality: EnumValuesProvider<Food?> by lateinitVal()
-    public var engine: NullableCompositeValuesProvider<Engine, EngineScope> by lateinitVal()
+    public var model: StringSupplierBuilder by lateinitVal()
+    public var lame: BooleanSupplierBuilder by lateinitVal()
+    public var lameN: NullableBooleanSupplierBuilder by lateinitVal()
+    public var cookerQuality: NullableEnumSupplierBuilder<Food?> by lateinitVal()
+    public var engine: NullableCompoundSupplierBuilder<Engine, EngineScope> by lateinitVal()
 }
 
 public class EngineScope : KiraScope() {
-    public var model: StringValuesProvider by lateinitVal()
-    public var diesel: BooleanValuesProvider by lateinitVal()
+    public var model: StringSupplierBuilder by lateinitVal()
+    public var diesel: BooleanSupplierBuilder by lateinitVal()
 }
 
-public class TextCardScope : KiraScope() {
-    public var text: StringValuesProvider by lateinitVal()
-    public var isRed: BooleanValuesProvider by lateinitVal()
-    public var skill: EnumValuesProvider<Skill?> by lateinitVal()
-    public var food: EnumValuesProvider<Food> by lateinitVal()
-    public var car: CompositeValuesProvider<Car, CarScope> by lateinitVal()
-    public var carN: NullableCompositeValuesProvider<Car, CarScope> by lateinitVal()
-    //public var cornerRadius: Dp by lateinitVal()
+public class TextCardScope : GeneratedKiraScope<TextCardScope.ReassignScope>(ReassignScope()) {
+    public class ReassignScope {
+        public lateinit var text: SupplierBuilder<String>
+        public lateinit var isRed: SupplierBuilder<Boolean>
+        public lateinit var skill: SupplierBuilder<Skill?>
+        public lateinit var food: SupplierBuilder<Food>
+        public lateinit var car: SupplierBuilder<Car>
+        public lateinit var carN: SupplierBuilder<Car?>
+    }
+
+    public var text: StringSupplierBuilder
+        get() = reassignScope.text as StringSupplierBuilder
+        set(value) { reassignScope.text = value }
+    public var isRed: BooleanSupplierBuilder
+        get() = reassignScope.isRed as BooleanSupplierBuilder
+        set(value) { reassignScope.isRed = value }
+    public var skill: NullableEnumSupplierBuilder<Skill?>
+        get() = reassignScope.skill as NullableEnumSupplierBuilder<Skill?>
+        set(value) { reassignScope.skill = value }
+    public var food: EnumSupplierBuilder<Food>
+        get() = reassignScope.food as EnumSupplierBuilder<Food>
+        set(value) { reassignScope.food = value }
+    public var car: CompoundSupplierBuilder<Car, *>
+        get() = reassignScope.car as CompoundSupplierBuilder<Car, *>
+        set(value) { reassignScope.car = value }
+    public var carN: NullableCompoundSupplierBuilder<Car, *>
+        get() = reassignScope.carN as NullableCompoundSupplierBuilder<Car, *>
+        set(value) { reassignScope.carN = value }
+
+    override fun collectSuppliers(): List<Supplier<*>> = with(reassignScope) {
+        listOf(text, isRed, skill, food, car, carN,)
+    }
 }
 
-val root = root(
-    scope = TextCardScope(),
-) {
-    text = stringValuesProvider(paramName = "text", defaultValue = "Lorem")
+val root = root(TextCardScope()) {
+    text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
     food = enum(paramName = "food", defaultValue = Food.GOOD)
-    car = compositeValuesProvider(
+    car = compound(
         scope = CarScope(),
-        paramName = "car",
+        paramName = "car default",
         label = "Car"
     ) {
         carBody()
     }
-    carN = nullableCompositeValuesProvider(
+    carN = nullableCompound(
         scope = CarScope(),
         paramName = "car",
         label = "Car",
@@ -62,29 +77,31 @@ val root = root(
         carBody()
     }
     injector {
-        TextCard(
-            text = text.currentValue(),
-            isRed = isRed.currentValue(),
-            skill = skill.currentValue(),
-            food = food.currentValue(),
-            car = car.currentValue(),
-            carN = carN.currentValue(),
-        )
+        DefaultHeader {
+            TextCard(
+                text = text.currentValue(),
+                isRed = isRed.currentValue(),
+                skill = skill.currentValue(),
+                food = food.currentValue(),
+                car = this.car.currentValue(),
+                carN = carN.currentValue(),
+            )
+        }
     }
 }
 
 private fun CarScope.carBody(): Injector<Car> {
-    model = stringValuesProvider(paramName = "model", defaultValue = "Tesla")
+    model = string(paramName = "model", defaultValue = "Tesla")
     lame = boolean(paramName = "lame", defaultValue = false)
-    lameN = nullableBoolean(paramName = "lame", defaultValue = null)
+    lameN = nullableBoolean(paramName = "lameN", defaultValue = null)
     cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
-    engine = nullableCompositeValuesProvider(
+    engine = nullableCompound(
         scope = EngineScope(),
         paramName = "engine",
         label = "Engine",
         isNullByDefault = true
     ) {
-        model = stringValuesProvider(paramName = "model", defaultValue = "Merlin")
+        model = string(paramName = "model", defaultValue = "Merlin")
         diesel = boolean(paramName = "diesel", defaultValue = false)
         injector {
             Engine(
@@ -97,7 +114,7 @@ private fun CarScope.carBody(): Injector<Car> {
         Car(
             model = model.currentValue(),
             lame = lame.currentValue(),
-            lameN = lame.currentValue(),
+            lameN = lameN.currentValue(),
             cookerQuality = cookerQuality.currentValue(),
             engine = engine.currentValue() ?: Engine("null"),
         )
@@ -110,26 +127,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             KiraTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    //Content()
-
-                    val textCard = object : FunctionParameters<Unit> {
-                        override val valueProviders: List<ValuesProvider<*>> = listOf(root)
-
-                        @Composable
-                        override fun invoke() = root.currentValue()
-                    }
-                    KiraScreen(textCard)
+                    //root.scope.car = with(root.scope) {
+                    //    compound("car", "Car") {
+                    //        injector {
+                    //            Car(model = "CUSTOM !!!!")
+                    //        }
+                    //    }
+                    //}
+                    KiraScreen(root)
                 }
             }
         }
     }
-}
-
-@Composable
-private fun Content() = Column(
-    Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-) {
-
 }

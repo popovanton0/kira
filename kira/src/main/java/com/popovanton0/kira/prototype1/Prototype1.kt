@@ -2,13 +2,10 @@ package com.popovanton0.kira.prototype1
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -20,55 +17,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.popovanton0.kira.prototype1.valueproviders.RootCompoundSupplierBuilder
 
-public interface FunctionParameters<ReturnType> {
-    public val valueProviders: List<ValuesProvider<*>>
-
-    @Composable
-    public fun invoke(): ReturnType
-
-    /*public companion object {
-        public operator fun <T> invoke(valueProviders: List<ValuesProvider<*>>): FunctionParameters<T> = object : FunctionParameters<T> {
-            override val valueProviders: List<ValuesProvider<*>> = valueProviders
-
-            @Composable
-            override fun invoke(): T {
-                valueProviders.forEach { it. }
-            }
-
-        }
-    }*/
-}
-
-public data class ParameterDetails(
-    val name: String,
-)
-
-public typealias ValuesProviderProvider<T> = ParameterDetails.() -> ValuesProvider<T>
-
-public enum class Skill { LOW, OK, SICK }
-public enum class Food { BAD, GOOD, EXCELLENT }
-public data class Engine(
-    val model: String = "Merlin",
-    val diesel: Boolean = false,
-)
-
-public data class Car(
-    val model: String = "Tesla",
-    val lame: Boolean = false,
-    val lameN: Boolean? = null,
-    val cookerQuality: Food? = null,
-    val engine: Engine = Engine(),
-)
-
-public interface PropertyBasedValuesProvider<T> : ValuesProvider<T> {
+public interface PropertyBasedSupplier<T> : Supplier<T> {
     public var currentValue: T
 
     @Composable
     override fun currentValue(): T = currentValue
 }
 
-public interface ValuesProvider<T> {
+public interface Supplier<T> {
 
     @Composable
     public fun currentValue(): T
@@ -93,11 +51,36 @@ public interface ValuesProvider<T> {
     */
 }
 
-public class KiraViewModel<ReturnType : Any>(
-    internal val params: FunctionParameters<ReturnType>
+public abstract class SupplierBuilder<T> : Supplier<T> {
+    public class BuildKey internal constructor()
+
+    public abstract fun build(key: BuildKey): Supplier<T>
+
+    private lateinit var supplier: Supplier<T>
+
+    @Composable
+    override fun currentValue(): T =
+        if (::supplier.isInitialized) supplier.currentValue() else notInitError()
+
+    @Composable
+    override fun Ui(): Unit =
+        if (::supplier.isInitialized) supplier.Ui() else notInitError()
+
+    override fun initialize() {
+        supplier = build(buildKey)
+    }
+
+    private companion object {
+        private val buildKey = BuildKey()
+        private fun notInitError(): Nothing = error("Supplier is not initialized yet")
+    }
+}
+
+private class KiraViewModel<ReturnType : Any>(
+    val root: RootCompoundSupplierBuilder<ReturnType, *>
 ) : ViewModel() {
     init {
-        params.valueProviders.forEach { it.initialize() }
+        root.initialize()
     }
 }
 
@@ -118,20 +101,13 @@ public fun DefaultHeader(function: @Composable () -> Unit): Unit = Box(
 }
 
 @Composable
-public fun <ReturnType : Any> KiraScreen(
-    params: FunctionParameters<ReturnType>,
-    header: @Composable (function: @Composable () -> Unit) -> Unit = { DefaultHeader(it) }
-) {
+public fun <ReturnType : Any> KiraScreen(root: RootCompoundSupplierBuilder<ReturnType, *>) {
     val vm = viewModel<KiraViewModel<ReturnType>>(factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            KiraViewModel(params) as T
+            KiraViewModel(root) as T
     })
-    val params = vm.params
     Box {
-        LazyColumn {
-            item { header { params.invoke() } }
-            items(params.valueProviders) { it.Ui() }
-        }
+        Column(Modifier.verticalScroll(rememberScrollState())) { vm.root.Ui() }
         EarlyPreview()
     }
 }

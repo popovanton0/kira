@@ -7,8 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.popovanton0.kira.prototype1.ExperimentalKiraApi
 import com.popovanton0.kira.prototype1.ParameterDetails
-import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
-import com.popovanton0.kira.prototype1.ValuesProvider
+import com.popovanton0.kira.prototype1.PropertyBasedSupplier
+import com.popovanton0.kira.prototype1.Supplier
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
@@ -16,7 +16,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
 @ExperimentalKiraApi
-public inline fun <reified T : Any> ParameterDetails.dataClass(defaultValue: T): ValuesProvider<T> {
+public inline fun <reified T : Any> ParameterDetails.dataClass(defaultValue: T): Supplier<T> {
     return dataClass(defaultValue, T::class)
 }
 
@@ -24,22 +24,22 @@ public inline fun <reified T : Any> ParameterDetails.dataClass(defaultValue: T):
 public fun <T : Any> ParameterDetails.dataClass(
     defaultValue: T,
     kClass: KClass<T>
-): ValuesProvider<T> {
+): Supplier<T> {
     require(kClass.isData) { "${kClass.qualifiedName} must be a data class" }
-    val dataClassValuesProvider = DataClassValuesProvider(kClass, defaultValue)
-    return composite(label = kClass.qualifiedName!!, dataClassValuesProvider) {
-        dataClassValuesProvider.currentValue()
+    val dataClassSupplier = DataClassSupplier(kClass, defaultValue)
+    return composite(label = kClass.qualifiedName!!, dataClassSupplier) {
+        dataClassSupplier.currentValue()
     }
 }
 
-//public inline fun <T : Any?> ParameterDetails.nullableDataClass(defaultValue: T): ValuesProvider<T?> =
-//    NullableDataClassValuesProvider(defaultValue, this, nullable = true)
+//public inline fun <T : Any?> ParameterDetails.nullableDataClass(defaultValue: T): Supplier<T?> =
+//    NullableDataClassSupplier(defaultValue, this, nullable = true)
 
 @PublishedApi
-internal class DataClassValuesProvider<T : Any>(
+internal class DataClassSupplier<T : Any>(
     private val kClass: KClass<T>,
     defaultValue: T,
-) : PropertyBasedValuesProvider<T> {
+) : PropertyBasedSupplier<T> {
 
     private val primaryConstructor = kClass.primaryConstructor
         ?: error("Data class must have a primary constructor")
@@ -50,7 +50,7 @@ internal class DataClassValuesProvider<T : Any>(
         }
     }
     @OptIn(ExperimentalKiraApi::class)
-    private val valueProviders: List<ValuesProvider<*>> = properties.map { property ->
+    private val valueProviders: List<Supplier<*>> = properties.map { property ->
         val type = property.returnType
         val parameterDetails = ParameterDetails(property.name)
         val defaultVal = property.get(defaultValue)

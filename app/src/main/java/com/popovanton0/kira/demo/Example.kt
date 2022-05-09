@@ -1,4 +1,4 @@
-package com.popovanton0.kira
+package com.popovanton0.kira.demo
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -14,13 +14,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.popovanton0.kira.prototype1.Car
-import com.popovanton0.kira.prototype1.Food
-import com.popovanton0.kira.prototype1.Skill
+
+enum class Skill { LOW, OK, SICK }
+enum class Food { BAD, GOOD, EXCELLENT }
+data class Engine(
+    val model: String = "Merlin",
+    val diesel: Boolean = false,
+)
+
+data class Car(
+    val model: String = "Tesla",
+    val lame: Boolean = false,
+    val lameN: Boolean? = null,
+    val cookerQuality: Food? = null,
+    val engine: Engine = Engine(),
+)
 
 @Preview
 @Composable
-public fun TextCard(
+fun TextCard(
     text: String = "Example",
     isRed: Boolean = text.contains(' '),
     skill: Skill? = Skill.LOW,
@@ -61,7 +73,7 @@ public fun TextCard(
             )
             Text(text = "car: $car")
             Text(text = "carN: $carN")
-            Text(text = "autoCar: $autoCar")
+            //Text(text = "autoCar: $autoCar")
         }
     }
 }

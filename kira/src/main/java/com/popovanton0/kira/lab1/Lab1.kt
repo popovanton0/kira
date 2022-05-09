@@ -28,13 +28,13 @@ public inline fun <T : FunctionParameters> T.copy1(block: T.() -> T): T = block(
 
 
 public data class TextCardParams4(
-    val text: ParameterDetails.() -> ValuesProvider<String> = {
+    val text: ParameterDetails.() -> Supplier<String> = {
 
     },
-    val isRed: ParameterDetails.() -> ValuesProvider<Boolean> = {
-        ValuesProvider.Boolean(this, defaultValue = false)
+    val isRed: ParameterDetails.() -> Supplier<Boolean> = {
+        Supplier.Boolean(this, defaultValue = false)
     },
-    val cornerRadius: ParameterDetails.() -> ValuesProvider<Dp> = {
+    val cornerRadius: ParameterDetails.() -> Supplier<Dp> = {
 
     },
 ) : FunctionParameters {
@@ -43,17 +43,17 @@ public data class TextCardParams4(
 }
 
 public class TextCardParams3Impl() : TextCardParams3() {
-    override val isRed: ParameterDetails.() -> ValuesProvider<Boolean> = super.isRed.copy
+    override val isRed: ParameterDetails.() -> Supplier<Boolean> = super.isRed.copy
 }
 
 public abstract class TextCardParams3(
-    public open val text: ParameterDetails.() -> ValuesProvider<String> = {
+    public open val text: ParameterDetails.() -> Supplier<String> = {
 
     },
-    public open val isRed: ParameterDetails.() -> ValuesProvider<Boolean> = {
-        ValuesProvider.Boolean(this, defaultValue = false)
+    public open val isRed: ParameterDetails.() -> Supplier<Boolean> = {
+        Supplier.Boolean(this, defaultValue = false)
     },
-    public open val cornerRadius: ParameterDetails.() -> ValuesProvider<Dp> = {
+    public open val cornerRadius: ParameterDetails.() -> Supplier<Dp> = {
 
     },
 ) : FunctionParameters {
@@ -63,9 +63,9 @@ public abstract class TextCardParams3(
 
 public abstract class TextCardParams2 : FunctionParameters {
     public open val text: FunctionParameter<String> =
-        FunctionParameter("text", ValuesProvider.String, null)
+        FunctionParameter("text", Supplier.String, null)
     public open val isRed: FunctionParameter<Boolean> =
-        FunctionParameter("isRed", ValuesProvider.Boolean, null)
+        FunctionParameter("isRed", Supplier.Boolean, null)
     public abstract val cornerRadius: FunctionParameter<Dp> // = FunctionParameter("cornerRadius", null, null)
 
     public override val functionCaller: MutableStateFlow<List<Any>> = MutableStateFlow(listOf())
@@ -84,13 +84,13 @@ public class TextCardParams2Impl : TextCardParams2() {
 
 public data class FunctionParameter<T>(
     val displayName: String,
-    val valuesProvider: ValuesProvider<T>?,
+    val valuesProvider: Supplier<T>?,
     val valuesValidator: ((Any) -> ValidationResult)?,
 ) {
     public data class ValidationResult(val valid: Boolean, val reason: String)
 }
 
-public interface ValuesProvider<T> {
+public interface Supplier<T> {
     public val defaultValue: T
     public val parameterDetails: ParameterDetails
     public var currentValue: T
@@ -101,7 +101,7 @@ public interface ValuesProvider<T> {
     public class Boolean(
         override val parameterDetails: ParameterDetails,
         override val defaultValue: kotlin.Boolean,
-    ) : ValuesProvider<kotlin.Boolean> {
+    ) : Supplier<kotlin.Boolean> {
         public override var currentValue: kotlin.Boolean by mutableStateOf(defaultValue)
 
         @Composable
@@ -115,17 +115,17 @@ public interface ValuesProvider<T> {
 
     }
 
-    public object Char : ValuesProvider<kotlin.Char>
+    public object Char : Supplier<kotlin.Char>
 
-    public object Byte : ValuesProvider<kotlin.Byte>
-    public object Short : ValuesProvider<kotlin.Short>
-    public object Int : ValuesProvider<kotlin.Int>
-    public object Long : ValuesProvider<kotlin.Long>
+    public object Byte : Supplier<kotlin.Byte>
+    public object Short : Supplier<kotlin.Short>
+    public object Int : Supplier<kotlin.Int>
+    public object Long : Supplier<kotlin.Long>
 
-    public object Float : ValuesProvider<kotlin.Float>
-    public object Double : ValuesProvider<kotlin.Double>
+    public object Float : Supplier<kotlin.Float>
+    public object Double : Supplier<kotlin.Double>
 
-    public object String : ValuesProvider<kotlin.String>
+    public object String : Supplier<kotlin.String>
 
     */
 /**
@@ -134,7 +134,7 @@ public interface ValuesProvider<T> {
 
     public class Enum<T>(
         public val values: List<Value<T>>
-    ) : ValuesProvider<T> {
+    ) : Supplier<T> {
         public sealed class Value<T> {
             public data class Group<T>(
                 val displayName: kotlin.String,
@@ -153,14 +153,14 @@ public class KiraViewModel(
     private val params: FunctionParameters,
 ) : ViewModel() {
     init {
-        ValuesProvider.Enum<Any>(
+        Supplier.Enum<Any>(
             listOf(
-                ValuesProvider.Enum.Value.Value("dsfds", {}),
-                ValuesProvider.Enum.Value.Group(
+                Supplier.Enum.Value.Value("dsfds", {}),
+                Supplier.Enum.Value.Group(
                     "hfgfg", listOf(
-                        ValuesProvider.Enum.Value.Value("dsfds", {}),
-                        ValuesProvider.Enum.Value.Value("dsfds", {}),
-                        ValuesProvider.Enum.Value.Value("dsfds", {}),
+                        Supplier.Enum.Value.Value("dsfds", {}),
+                        Supplier.Enum.Value.Value("dsfds", {}),
+                        Supplier.Enum.Value.Value("dsfds", {}),
                     )
                 ),
             )
