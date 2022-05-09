@@ -24,14 +24,14 @@ public inline fun <reified T : Enum<*>?> nullableEnum(
         .apply { add(0, null) }
         .toTypedArray()
 )
-public inline fun <reified T : Enum<T>> CompositeValuesProviderScope.enum(
+public inline fun <reified T : Enum<T>> KiraScope.enum(
     paramName: String,
     defaultValue: T
 ): EnumValuesProvider<T> =
     EnumValuesProvider(defaultValue, paramName, T::class.java.enumConstants!!)
         .also(::addValuesProvider)
 
-public inline fun <reified T : Enum<*>?> CompositeValuesProviderScope.nullableEnum(
+public inline fun <reified T : Enum<*>?> KiraScope.nullableEnum(
     paramName: String,
     defaultValue: T?
 ): EnumValuesProvider<T?> = EnumValuesProvider(

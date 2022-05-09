@@ -13,7 +13,7 @@ import com.popovanton0.kira.ui.TextField
 public fun stringValuesProvider(paramName: String, defaultValue: String): StringValuesProvider =
     StringValuesProvider(paramName, defaultValue)
 
-public fun CompositeValuesProviderScope.stringValuesProvider(
+public fun KiraScope.stringValuesProvider(
     paramName: String,
     defaultValue: String,
 ): StringValuesProvider = StringValuesProvider(paramName, defaultValue).also(::addValuesProvider)

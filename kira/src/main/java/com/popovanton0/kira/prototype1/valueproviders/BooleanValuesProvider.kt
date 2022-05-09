@@ -4,62 +4,82 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.popovanton0.kira.prototype1.ParameterDetails
 import com.popovanton0.kira.prototype1.PropertyBasedValuesProvider
 import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.BooleanSwitch
 import com.popovanton0.kira.ui.NullableBooleanSwitch
 
-public fun booleanValuesProvider(paramName: String, defaultValue: Boolean): BooleanValuesProvider =
-    BooleanValuesProvider(paramName, defaultValue)
-
-public fun CompositeValuesProviderScope.booleanValuesProvider(
+public fun KiraScope.boolean(
     paramName: String,
     defaultValue: Boolean,
-): BooleanValuesProvider =
-     BooleanValuesProvider(paramName, defaultValue).also(::addValuesProvider)
+): BooleanValuesProvider = BooleanValuesProvider(paramName, defaultValue).also(::addValuesProvider)
+
+public fun KiraScope.nullableBoolean(
+    paramName: String,
+    defaultValue: Boolean?,
+): NullableBooleanValuesProvider =
+    NullableBooleanValuesProvider(paramName, defaultValue).also(::addValuesProvider)
 
 public class BooleanValuesProvider internal constructor(
     public var paramName: String,
     public var defaultValue: Boolean,
 ) : ValuesProvider<Boolean> {
-    private lateinit var delegate: BooleanValuesProviderImpl
+    private lateinit var delegate: NullableBooleanValuesProviderImpl<Boolean>
 
     @Composable
-    override fun currentValue(): Boolean = delegate.currentValue()
+    override fun currentValue(): Boolean = delegate.currentValue()!!
 
     @Composable
     override fun Ui(): Unit = delegate.Ui()
 
     override fun initialize() {
-        delegate = BooleanValuesProviderImpl(paramName, defaultValue)
+        delegate = NullableBooleanValuesProviderImpl(paramName, defaultValue, nullable = false)
     }
 }
 
-private class BooleanValuesProviderImpl(
-    private val paramName: String,
-    defaultValue: Boolean,
-) : PropertyBasedValuesProvider<Boolean> {
-    override var currentValue: Boolean by mutableStateOf(defaultValue)
+public class NullableBooleanValuesProvider internal constructor(
+    public var paramName: String,
+    public var defaultValue: Boolean?,
+) : ValuesProvider<Boolean?> {
+    private lateinit var delegate: NullableBooleanValuesProviderImpl<Boolean?>
 
     @Composable
-    override fun Ui() = BooleanSwitch(
-        checked = currentValue,
-        onCheckedChange = { currentValue = it },
-        label = paramName
-    )
+    override fun currentValue(): Boolean? = delegate.currentValue()
+
+    @Composable
+    override fun Ui(): Unit = delegate.Ui()
+
+    override fun initialize() {
+        delegate = NullableBooleanValuesProviderImpl(paramName, defaultValue, nullable = true)
+    }
 }
 
-private class NullableBooleanValuesProvider(
-    defaultValue: Boolean?,
-    private val parameterDetails: ParameterDetails,
-) : PropertyBasedValuesProvider<Boolean?> {
-    override var currentValue: Boolean? by mutableStateOf(defaultValue)
+/*private class BooleanValuesProviderImpl(
+    paramName: String,
+    defaultValue: Boolean,
+) : NullableBooleanValuesProviderImpl<Boolean>(paramName, defaultValue, nullable = false)*/
+
+private open class NullableBooleanValuesProviderImpl<T : Boolean?>(
+    private val paramName: String,
+    defaultValue: T?,
+    private val nullable: Boolean,
+) : PropertyBasedValuesProvider<T?> {
+    override var currentValue: T? by mutableStateOf(defaultValue)
 
     @Composable
-    override fun Ui() = NullableBooleanSwitch(
-        checked = currentValue,
-        onCheckedChange = { currentValue = it },
-        label = parameterDetails.name
-    )
+    override fun Ui() {
+        if (nullable) {
+            NullableBooleanSwitch(
+                checked = currentValue,
+                onCheckedChange = { currentValue = it as T? },
+                label = paramName
+            )
+        } else {
+            BooleanSwitch(
+                checked = currentValue!!,
+                onCheckedChange = { currentValue = it as T? },
+                label = paramName
+            )
+        }
+    }
 }

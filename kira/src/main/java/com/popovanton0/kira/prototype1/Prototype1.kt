@@ -56,6 +56,7 @@ public data class Engine(
 public data class Car(
     val model: String = "Tesla",
     val lame: Boolean = false,
+    val lameN: Boolean? = null,
     val cookerQuality: Food? = null,
     val engine: Engine = Engine(),
 )

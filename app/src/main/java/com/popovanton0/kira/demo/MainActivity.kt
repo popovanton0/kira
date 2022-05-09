@@ -16,19 +16,20 @@ import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.prototype1.*
 import com.popovanton0.kira.prototype1.valueproviders.*
 
-public class CarScope : CompositeValuesProviderScope() {
+public class CarScope : KiraScope() {
     public var model: StringValuesProvider by lateinitVal()
     public var lame: BooleanValuesProvider by lateinitVal()
+    public var lameN: NullableBooleanValuesProvider by lateinitVal()
     public var cookerQuality: EnumValuesProvider<Food?> by lateinitVal()
     public var engine: NullableCompositeValuesProvider<Engine, EngineScope> by lateinitVal()
 }
 
-public class EngineScope : CompositeValuesProviderScope() {
+public class EngineScope : KiraScope() {
     public var model: StringValuesProvider by lateinitVal()
     public var diesel: BooleanValuesProvider by lateinitVal()
 }
 
-public class TextCardScope : CompositeValuesProviderScope() {
+public class TextCardScope : KiraScope() {
     public var text: StringValuesProvider by lateinitVal()
     public var isRed: BooleanValuesProvider by lateinitVal()
     public var skill: EnumValuesProvider<Skill?> by lateinitVal()
@@ -42,7 +43,7 @@ val root = root(
     scope = TextCardScope(),
 ) {
     text = stringValuesProvider(paramName = "text", defaultValue = "Lorem")
-    isRed = booleanValuesProvider(paramName = "isRed", defaultValue = false)
+    isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
     food = enum(paramName = "food", defaultValue = Food.GOOD)
     car = compositeValuesProvider(
@@ -74,7 +75,8 @@ val root = root(
 
 private fun CarScope.carBody(): Injector<Car> {
     model = stringValuesProvider(paramName = "model", defaultValue = "Tesla")
-    lame = booleanValuesProvider(paramName = "lame", defaultValue = false)
+    lame = boolean(paramName = "lame", defaultValue = false)
+    lameN = nullableBoolean(paramName = "lame", defaultValue = null)
     cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
     engine = nullableCompositeValuesProvider(
         scope = EngineScope(),
@@ -83,7 +85,7 @@ private fun CarScope.carBody(): Injector<Car> {
         isNullByDefault = true
     ) {
         model = stringValuesProvider(paramName = "model", defaultValue = "Merlin")
-        diesel = booleanValuesProvider(paramName = "diesel", defaultValue = false)
+        diesel = boolean(paramName = "diesel", defaultValue = false)
         injector {
             Engine(
                 model = model.currentValue(),
@@ -95,6 +97,7 @@ private fun CarScope.carBody(): Injector<Car> {
         Car(
             model = model.currentValue(),
             lame = lame.currentValue(),
+            lameN = lame.currentValue(),
             cookerQuality = cookerQuality.currentValue(),
             engine = engine.currentValue() ?: Engine("null"),
         )

@@ -19,8 +19,7 @@ import com.popovanton0.kira.prototype1.ValuesProvider
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.VerticalDivider
 
-
-public open class CompositeValuesProviderScope {
+public open class KiraScope {
     internal val valuesProviders = mutableListOf<ValuesProvider<*>>()
     //public open fun addAllValuesProviders(): Unit = Unit
 
@@ -31,32 +30,32 @@ public open class CompositeValuesProviderScope {
     }
 }
 
-public data class Injector<T> internal constructor(val injector: @Composable () -> T)
+public class Injector<T> internal constructor(internal val injector: @Composable () -> T)
 
-public fun <T : Any, Scope : CompositeValuesProviderScope> root(
+public fun <T : Any, Scope : KiraScope> root(
     scope: Scope,
     block: Scope.() -> Injector<T>,
 ): CompositeValuesProvider<T, Scope> =
     CompositeValuesProvider(scope, "", "", block)
 
-public fun <T : Any> CompositeValuesProviderScope.compositeValuesProvider(
+public fun <T : Any> KiraScope.compositeValuesProvider(
     paramName: String,
     label: String,
-    block: CompositeValuesProviderScope.() -> Injector<T>,
-): CompositeValuesProvider<T, CompositeValuesProviderScope> =
-    CompositeValuesProvider(CompositeValuesProviderScope(), paramName, label, block).also(::addValuesProvider)
+    block: KiraScope.() -> Injector<T>,
+): CompositeValuesProvider<T, KiraScope> =
+    CompositeValuesProvider(KiraScope(), paramName, label, block).also(::addValuesProvider)
 
-public fun <T : Any> CompositeValuesProviderScope.nullableCompositeValuesProvider(
+public fun <T : Any> KiraScope.nullableCompositeValuesProvider(
     paramName: String,
     label: String,
     isNullByDefault: Boolean,
-    block: CompositeValuesProviderScope.() -> Injector<T>,
-): NullableCompositeValuesProvider<T, CompositeValuesProviderScope> =
-    NullableCompositeValuesProvider(CompositeValuesProviderScope(), paramName, label, isNullByDefault, block)
+    block: KiraScope.() -> Injector<T>,
+): NullableCompositeValuesProvider<T, KiraScope> =
+    NullableCompositeValuesProvider(KiraScope(), paramName, label, isNullByDefault, block)
         .also(::addValuesProvider)
 
-public fun <T : Any, Scope : CompositeValuesProviderScope>
-        CompositeValuesProviderScope.compositeValuesProvider(
+public fun <T : Any, Scope : KiraScope>
+        KiraScope.compositeValuesProvider(
     scope: Scope,
     paramName: String,
     label: String,
@@ -64,8 +63,8 @@ public fun <T : Any, Scope : CompositeValuesProviderScope>
 ): CompositeValuesProvider<T, Scope> =
     CompositeValuesProvider(scope, paramName, label, block).also(::addValuesProvider)
 
-public fun <T : Any, Scope : CompositeValuesProviderScope>
-        CompositeValuesProviderScope.nullableCompositeValuesProvider(
+public fun <T : Any, Scope : KiraScope>
+        KiraScope.nullableCompositeValuesProvider(
     scope: Scope,
     paramName: String,
     label: String,
@@ -75,7 +74,7 @@ public fun <T : Any, Scope : CompositeValuesProviderScope>
     NullableCompositeValuesProvider(scope, paramName, label, isNullByDefault, block)
         .also(::addValuesProvider)
 
-public class CompositeValuesProvider<T : Any, Scope : CompositeValuesProviderScope>
+public class CompositeValuesProvider<T : Any, Scope : KiraScope>
 internal constructor(
     public val scope: Scope,
     public var paramName: String,
@@ -106,7 +105,7 @@ internal constructor(
     override fun Ui(): Unit = delegate.Ui()
 }
 
-public class NullableCompositeValuesProvider<T : Any, Scope : CompositeValuesProviderScope>
+public class NullableCompositeValuesProvider<T : Any, Scope : KiraScope>
 internal constructor(
     public val scope: Scope,
     public var paramName: String,
