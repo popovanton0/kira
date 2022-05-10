@@ -1,12 +1,13 @@
-package com.popovanton0.kira.prototype1.valueproviders
+package com.popovanton0.kira.suppliers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.popovanton0.kira.prototype1.PropertyBasedSupplier
-import com.popovanton0.kira.prototype1.Supplier
-import com.popovanton0.kira.prototype1.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
+import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.ui.NullableTextField
 import com.popovanton0.kira.ui.TextField
 

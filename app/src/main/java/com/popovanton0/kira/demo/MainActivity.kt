@@ -5,9 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
-import com.popovanton0.kira.prototype1.*
-import com.popovanton0.kira.prototype1.valueproviders.*
+import com.popovanton0.kira.lateinitVal
+import com.popovanton0.kira.suppliers.*
+import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.compound.*
+import com.popovanton0.kira.ui.DefaultHeader
 
 public class CarScope : KiraScope() {
     public var model: StringSupplierBuilder by lateinitVal()
@@ -22,40 +27,40 @@ public class EngineScope : KiraScope() {
     public var diesel: BooleanSupplierBuilder by lateinitVal()
 }
 
-public class TextCardScope : GeneratedKiraScope<TextCardScope.ReassignScope>(ReassignScope()) {
-    public class ReassignScope {
-        public lateinit var text: SupplierBuilder<String>
-        public lateinit var isRed: SupplierBuilder<Boolean>
-        public lateinit var skill: SupplierBuilder<Skill?>
-        public lateinit var food: SupplierBuilder<Food>
-        public lateinit var car: SupplierBuilder<Car>
-        public lateinit var carN: SupplierBuilder<Car?>
+public class TextCardScope : GeneratedKiraScope<TextCardScope.SupplierImplsScope>() {
+    override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+
+    public class SupplierImplsScope(private val scope: TextCardScope): GeneratedKiraScope.SupplierImplsScope() {
+        public var text: StringSupplierBuilder
+            get() = scope.text as StringSupplierBuilder
+            set(value) { scope.text = value }
+        public var isRed: BooleanSupplierBuilder
+            get() = scope.isRed as BooleanSupplierBuilder
+            set(value) { scope.isRed = value }
+        public var skill: NullableEnumSupplierBuilder<Skill?>
+            get() = scope.skill as NullableEnumSupplierBuilder<Skill?>
+            set(value) { scope.skill = value }
+        public var food: EnumSupplierBuilder<Food>
+            get() = scope.food as EnumSupplierBuilder<Food>
+            set(value) { scope.food = value }
+        public var car: CompoundSupplierBuilder<Car, *>
+            get() = scope.car as CompoundSupplierBuilder<Car, *>
+            set(value) { scope.car = value }
+        public var carN: NullableCompoundSupplierBuilder<Car, *>
+            get() = scope.carN as NullableCompoundSupplierBuilder<Car, *>
+            set(value) { scope.carN = value }
     }
 
-    public var text: StringSupplierBuilder
-        get() = reassignScope.text as StringSupplierBuilder
-        set(value) { reassignScope.text = value }
-    public var isRed: BooleanSupplierBuilder
-        get() = reassignScope.isRed as BooleanSupplierBuilder
-        set(value) { reassignScope.isRed = value }
-    public var skill: NullableEnumSupplierBuilder<Skill?>
-        get() = reassignScope.skill as NullableEnumSupplierBuilder<Skill?>
-        set(value) { reassignScope.skill = value }
-    public var food: EnumSupplierBuilder<Food>
-        get() = reassignScope.food as EnumSupplierBuilder<Food>
-        set(value) { reassignScope.food = value }
-    public var car: CompoundSupplierBuilder<Car, *>
-        get() = reassignScope.car as CompoundSupplierBuilder<Car, *>
-        set(value) { reassignScope.car = value }
-    public var carN: NullableCompoundSupplierBuilder<Car, *>
-        get() = reassignScope.carN as NullableCompoundSupplierBuilder<Car, *>
-        set(value) { reassignScope.carN = value }
+    public lateinit var text: Supplier<String>
+    public lateinit var isRed: Supplier<Boolean>
+    public lateinit var skill: Supplier<Skill?>
+    public lateinit var food: Supplier<Food>
+    public lateinit var car: Supplier<Car>
+    public lateinit var carN: Supplier<Car?>
 
-    override fun collectSuppliers(): List<Supplier<*>> = with(reassignScope) {
+    override fun collectSuppliers(): List<Supplier<*>> =
         listOf(text, isRed, skill, food, car, carN,)
-    }
 }
-
 val root = root(TextCardScope()) {
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
@@ -83,7 +88,7 @@ val root = root(TextCardScope()) {
                 isRed = isRed.currentValue(),
                 skill = skill.currentValue(),
                 food = food.currentValue(),
-                car = this.car.currentValue(),
+                car = car.currentValue(),
                 carN = carN.currentValue(),
             )
         }
@@ -127,14 +132,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             KiraTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    //root.scope.car = with(root.scope) {
-                    //    compound("car", "Car") {
-                    //        injector {
-                    //            Car(model = "CUSTOM !!!!")
-                    //        }
-                    //    }
-                    //}
+                    val root = root {
+                        val isFastCar = nullableBoolean("paramName:isFastCar", true)
+                        injector { Text(text = "car is " + if (isFastCar.currentValue() == true) "fast" else "slow") }
+                    }
+
                     KiraScreen(root)
+                    /*root.modify {
+                        supplierImpls { isRed.paramName = "isRed changed" }
+                        food = compound(
+                            paramName = "text compound",
+                            label = "String"
+                        ) {
+                            val s = enum(paramName = "text", defaultValue = Food.BAD)
+                            injector { s.currentValue() }
+                        }
+                    }*/
                 }
             }
         }

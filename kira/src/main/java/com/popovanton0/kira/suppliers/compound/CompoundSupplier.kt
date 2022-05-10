@@ -1,4 +1,6 @@
-package com.popovanton0.kira.prototype1.valueproviders
+@file:OptIn(ExperimentalContracts::class)
+
+package com.popovanton0.kira.suppliers.compound
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -14,42 +16,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
-import com.popovanton0.kira.prototype1.Supplier
-import com.popovanton0.kira.prototype1.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.VerticalDivider
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind.EXACTLY_ONCE
+import kotlin.contracts.contract
 
-public open class KiraScope {
-    internal val suppliers = mutableListOf<Supplier<*>>()
-
-    public fun <T> injector(block: @Composable () -> T): Injector<T> = Injector(block)
-
-    public fun addSupplier(supplier: SupplierBuilder<*>) {
-        suppliers.add(supplier)
-    }
+public fun <T : Any> root(
+    block: KiraScope.() -> Injector<T>,
+): RootCompoundSupplierBuilder<T, KiraScope> {
+    contract { callsInPlace(block, EXACTLY_ONCE) }
+    return RootCompoundSupplierBuilder(KiraScope(), block)
 }
-
-/**
- * DO NOT use in your own code, implementations of this class SHOULD only be generated automatically
- */
-public abstract class GeneratedKiraScope<ReassignScope : Any>(protected val reassignScope: ReassignScope) : KiraScope() {
-    public fun reassign(block: ReassignScope.() -> Unit): Unit = reassignScope.block()
-
-    public abstract fun collectSuppliers(): List<Supplier<*>>
-}
-
-public class Injector<T> internal constructor(internal val injector: @Composable () -> T)
 
 public fun <T : Any, Scope : KiraScope> root(
     scope: Scope,
     block: Scope.() -> Injector<T>,
-): RootCompoundSupplierBuilder<T, Scope> = RootCompoundSupplierBuilder(scope, block)
+): RootCompoundSupplierBuilder<T, Scope> {
+    contract { callsInPlace(block, EXACTLY_ONCE) }
+    return RootCompoundSupplierBuilder(scope, block)
+}
 
 public class RootCompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
-    public val scope: Scope,
+    private val scope: Scope,
     block: Scope.() -> Injector<T>,
 ) : SupplierBuilder<T>() {
     private val injector: Injector<T> = scope.block()
+
+    public fun modify(block: Scope.() -> Unit): RootCompoundSupplierBuilder<T, Scope> {
+        if (isInitialized) alreadyInitializedError()
+        scope.block()
+        return this
+    }
+
     override fun build(key: BuildKey): Supplier<T> {
         val suppliers = scope.suppliers
         if (scope is GeneratedKiraScope<*>) {
@@ -59,7 +60,7 @@ public class RootCompoundSupplierBuilder<T : Any, Scope : KiraScope> internal co
         suppliers.forEach { it.initialize() }
         return CompoundSupplierImpl(
             paramName = "",
-            suppliers = suppliers,
+            suppliers = suppliers.toList(),
             label = "",
             injector = injector.injector,
             nullable = false,
@@ -103,13 +104,20 @@ public fun <T : Any, Scope : KiraScope> KiraScope.nullableCompound(
         .also(::addSupplier)
 
 public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
-    public val scope: Scope,
+    private val scope: Scope,
     public var paramName: String,
     public var label: String,
     block: Scope.() -> Injector<T>,
     private val isRoot: Boolean = false,
 ) : SupplierBuilder<T>() {
     private val injector: Injector<T> = scope.block()
+
+    public fun modify(block: Scope.() -> Unit): CompoundSupplierBuilder<T, Scope> {
+        if (isInitialized) alreadyInitializedError()
+        scope.block()
+        return this
+    }
+
     override fun build(key: BuildKey): Supplier<T> {
         val suppliers = scope.suppliers
         if (scope is GeneratedKiraScope<*>) {
@@ -119,7 +127,7 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
         suppliers.forEach { it.initialize() }
         return CompoundSupplierImpl(
             paramName = paramName,
-            suppliers = suppliers,
+            suppliers = suppliers.toList(),
             label = label,
             injector = injector.injector,
             nullable = false,
@@ -131,13 +139,20 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
 
 public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope>
 internal constructor(
-    public val scope: Scope,
+    private val scope: Scope,
     public var paramName: String,
     public var label: String,
     public var isNullByDefault: Boolean,
     block: Scope.() -> Injector<T>
 ) : SupplierBuilder<T?>() {
     private val injector: Injector<T> = scope.block()
+
+    public fun modify(block: Scope.() -> Unit): NullableCompoundSupplierBuilder<T, Scope> {
+        if (isInitialized) alreadyInitializedError()
+        scope.block()
+        return this
+    }
+
     override fun build(key: BuildKey): Supplier<T?> {
         val suppliers = scope.suppliers
         if (scope is GeneratedKiraScope<*>) {
@@ -147,7 +162,7 @@ internal constructor(
         suppliers.forEach { it.initialize() }
         return CompoundSupplierImpl(
             paramName = paramName,
-            suppliers = suppliers,
+            suppliers = suppliers.toList(),
             label = label,
             injector = injector.injector,
             nullable = true,

@@ -1,4 +1,4 @@
-package com.popovanton0.kira.prototype1
+package com.popovanton0.kira
 
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
