@@ -1,13 +1,11 @@
-@file:OptIn(KspExperimental::class)
-
 package com.popovanton0.kira.processing
 
-import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.*
 import com.popovanton0.kira.annotations.Kira
+import com.popovanton0.kira.processing.generators.FunctionGenerator
 
 class KiraProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
@@ -21,7 +19,12 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                 if (!kiraAnn.currentModuleIsTarget()) return@forEach
                 when (annotated) {
                     is KSFunctionDeclaration -> processFunction(kiraAnn, annotated)
-                    is KSClassDeclaration -> TODO()
+                    is KSClassDeclaration -> {
+                        when {
+                            Modifier.DATA in annotated.modifiers -> TODO()
+                            Modifier.SEALED in annotated.modifiers -> TODO()
+                        }
+                    }
                     else -> error("@Kira annotation is applicable only to classes and functions")
                 }
             }
@@ -29,18 +32,7 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
     }
 
     private fun processFunction(kiraAnn: Kira, annotated: KSFunctionDeclaration) {
-        annotated.parameters.mapNotNull {
-            val name = it.name?.asString()
-                ?: if (it.hasDefault) return@mapNotNull null
-                else error("Functions with unnamed params are not supported")
-            val type: KSType
-            // todo if (it.isVararg) type = Array<it.type>; *arrayOf
-            type = it.type.resolve().starProjection()
-
-            Parameter(name, type)
-        }.forEach {
-
-        }
+        FunctionGenerator().generateCode(kiraAnn, annotated, isRoot = true)
     }
 
     /**
