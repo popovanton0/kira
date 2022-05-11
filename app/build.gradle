@@ -44,14 +44,8 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    namespace 'com.popovanton0.kira.demo'
 }
-/*
-kotlin {
-    sourceSets {
-        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
-        test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
-    }
-}*/
 
 dependencies {
     implementation project(':kira')
