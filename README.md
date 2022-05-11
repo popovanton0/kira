@@ -6,7 +6,9 @@ with any parameters. Useful for building demo screens in playground apps of vari
 In active development, no usable version is released
 
 ### Demo Video
-[<img width="300" src="https://user-images.githubusercontent.com/15000556/167842393-6916d7a6-446b-4b70-ace8-d2be393255cd.jpg" alt="Kira — Early Demo on YouTube">](https://www.youtube.com/watch?v=qPdr5vrSbmQ)
+<a href="https://www.youtube.com/watch?v=qPdr5vrSbmQ" target="_blank">
+    <img width="300" src="https://user-images.githubusercontent.com/15000556/167842393-6916d7a6-446b-4b70-ace8-d2be393255cd.jpg" alt="Kira — Early Demo on YouTube">
+</a>
 
 ## Getting Started
 
