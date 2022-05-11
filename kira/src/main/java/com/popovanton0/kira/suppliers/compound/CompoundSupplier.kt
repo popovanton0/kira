@@ -43,31 +43,29 @@ public class RootCompoundSupplierBuilder<T : Any, Scope : KiraScope> internal co
     private val scope: Scope,
     block: Scope.() -> Injector<T>,
 ) : SupplierBuilder<T>() {
-    private val injector: Injector<T> = scope.block()
+    private var injector: Injector<T> = scope.block()
 
     public fun modify(block: Scope.() -> Unit): RootCompoundSupplierBuilder<T, Scope> {
-        if (isInitialized) alreadyInitializedError()
-        scope.block()
+        if (!isInitialized) scope.block() else alreadyInitializedError()
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<T> {
-        val suppliers = scope.suppliers
-        if (scope is GeneratedKiraScope<*>) {
-            suppliers.clear()
-            suppliers.addAll(scope.collectSuppliers())
-        }
-        suppliers.forEach { it.initialize() }
-        return CompoundSupplierImpl(
-            paramName = "",
-            suppliers = suppliers.toList(),
-            label = "",
-            injector = injector.injector,
-            nullable = false,
-            isNullByDefault = false,
-            isRoot = true,
-        ) as Supplier<T>
+    public fun modifyInjector(
+        block: Scope.(previousInjector: Injector<T>) -> Injector<T>
+    ): RootCompoundSupplierBuilder<T, Scope> {
+        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
+        return this
     }
+
+    override fun build(key: BuildKey): Supplier<T> = CompoundSupplierImpl(
+        paramName = "",
+        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
+        label = "",
+        injector = injector.injector,
+        nullable = false,
+        isNullByDefault = false,
+        isRoot = true,
+    ) as Supplier<T>
 }
 
 public fun <T : Any> KiraScope.compound(
@@ -108,67 +106,52 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
     public var paramName: String,
     public var label: String,
     block: Scope.() -> Injector<T>,
-    private val isRoot: Boolean = false,
 ) : SupplierBuilder<T>() {
-    private val injector: Injector<T> = scope.block()
+    private var injector: Injector<T> = scope.block()
 
-    public fun modify(block: Scope.() -> Unit): CompoundSupplierBuilder<T, Scope> {
-        if (isInitialized) alreadyInitializedError()
-        scope.block()
+    public fun modifyInjector(
+        block: Scope.(previousInjector: Injector<T>) -> Injector<T>
+    ): CompoundSupplierBuilder<T, Scope> {
+        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<T> {
-        val suppliers = scope.suppliers
-        if (scope is GeneratedKiraScope<*>) {
-            suppliers.clear()
-            suppliers.addAll(scope.collectSuppliers())
-        }
-        suppliers.forEach { it.initialize() }
-        return CompoundSupplierImpl(
-            paramName = paramName,
-            suppliers = suppliers.toList(),
-            label = label,
-            injector = injector.injector,
-            nullable = false,
-            isNullByDefault = false,
-            isRoot = isRoot,
-        ) as Supplier<T>
-    }
+    override fun build(key: BuildKey): Supplier<T> = CompoundSupplierImpl(
+        paramName = paramName,
+        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
+        label = label,
+        injector = injector.injector,
+        nullable = false,
+        isNullByDefault = false,
+        isRoot = false,
+    ) as Supplier<T>
 }
 
-public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope>
-internal constructor(
+public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
     private val scope: Scope,
     public var paramName: String,
     public var label: String,
     public var isNullByDefault: Boolean,
     block: Scope.() -> Injector<T>
 ) : SupplierBuilder<T?>() {
-    private val injector: Injector<T> = scope.block()
+    private var injector: Injector<T> = scope.block()
 
-    public fun modify(block: Scope.() -> Unit): NullableCompoundSupplierBuilder<T, Scope> {
-        if (isInitialized) alreadyInitializedError()
-        scope.block()
+    public fun modifyInjector(
+        block: Scope.(previousInjector: Injector<T>) -> Injector<T>
+    ): NullableCompoundSupplierBuilder<T, Scope> {
+        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<T?> {
-        val suppliers = scope.suppliers
-        if (scope is GeneratedKiraScope<*>) {
-            suppliers.clear()
-            suppliers.addAll(scope.collectSuppliers())
-        }
-        suppliers.forEach { it.initialize() }
-        return CompoundSupplierImpl(
-            paramName = paramName,
-            suppliers = suppliers.toList(),
-            label = label,
-            injector = injector.injector,
-            nullable = true,
-            isNullByDefault = isNullByDefault,
-        )
-    }
+    override fun build(key: BuildKey): Supplier<T?> = CompoundSupplierImpl(
+        paramName = paramName,
+        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
+        label = label,
+        injector = injector.injector,
+        nullable = true,
+        isNullByDefault = isNullByDefault,
+        isRoot = false,
+    )
 }
 
 private class CompoundSupplierImpl<T : Any>(
@@ -178,7 +161,7 @@ private class CompoundSupplierImpl<T : Any>(
     private val injector: @Composable () -> T,
     private val nullable: Boolean,
     private val isNullByDefault: Boolean,
-    private val isRoot: Boolean = false,
+    private val isRoot: Boolean,
 ) : Supplier<T?> {
 
     private lateinit var _currentValue: MutableState<T?>
@@ -198,7 +181,9 @@ private class CompoundSupplierImpl<T : Any>(
     @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
     @Composable
     override fun Ui() = Column {
-        if (!::_currentValue.isInitialized) currentValue()
+        if (!::_currentValue.isInitialized) {
+            currentValue()
+        }
         else if (_currentValue.value != null) {
             val value = injector()
             latestNonNullValue = value

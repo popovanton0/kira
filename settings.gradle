@@ -16,3 +16,4 @@ rootProject.name = "kira"
 include ':app'
 include ':kira'
 include ':kira-processor'
+include ':kira-annotations'

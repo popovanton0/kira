@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.lateinitVal
@@ -27,10 +26,10 @@ public class EngineScope : KiraScope() {
     public var diesel: BooleanSupplierBuilder by lateinitVal()
 }
 
-public class TextCardScope : GeneratedKiraScope<TextCardScope.SupplierImplsScope>() {
+public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierImplsScope>() {
     override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
 
-    public class SupplierImplsScope(private val scope: TextCardScope): GeneratedKiraScope.SupplierImplsScope() {
+    public class SupplierImplsScope(private val scope: TextCardScope): GeneratedKiraScopeWithImpls.SupplierImplsScope() {
         public var text: StringSupplierBuilder
             get() = scope.text as StringSupplierBuilder
             set(value) { scope.text = value }
@@ -59,8 +58,9 @@ public class TextCardScope : GeneratedKiraScope<TextCardScope.SupplierImplsScope
     public lateinit var carN: Supplier<Car?>
 
     override fun collectSuppliers(): List<Supplier<*>> =
-        listOf(text, isRed, skill, food, car, carN,)
+        listOf(text, isRed, skill, food, car, carN)
 }
+
 val root = root(TextCardScope()) {
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
@@ -126,20 +126,18 @@ private fun CarScope.carBody(): Injector<Car> {
     }
 }
 
+////////////////////////////////////////////////////////////////
+//////    All of the code above will be auto-generated  ////////
+////////////////////////////////////////////////////////////////
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             KiraTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    val root = root {
-                        val isFastCar = nullableBoolean("paramName:isFastCar", true)
-                        injector { Text(text = "car is " + if (isFastCar.currentValue() == true) "fast" else "slow") }
-                    }
-
-                    KiraScreen(root)
                     /*root.modify {
-                        supplierImpls { isRed.paramName = "isRed changed" }
+                        generatedSupplierImpls { isRed.paramName = "isRed" }
                         food = compound(
                             paramName = "text compound",
                             label = "String"
@@ -148,6 +146,7 @@ class MainActivity : ComponentActivity() {
                             injector { s.currentValue() }
                         }
                     }*/
+                    KiraScreen(root)
                 }
             }
         }

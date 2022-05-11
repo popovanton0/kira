@@ -10,6 +10,8 @@ import kotlin.reflect.KProperty
  *
  * Subsequent tries to change the value of the property will be ignored, if [exceptionMsg] is
  * null. Otherwise, [IllegalAccessException] will bw thrown with [exceptionMsg].
+ *
+ * TODO remove
  */
 public fun <T : Any> lateinitVal(
     exceptionMsg: String = "Value of this property cannot be changed."

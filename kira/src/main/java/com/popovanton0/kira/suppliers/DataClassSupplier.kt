@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.popovanton0.kira.ExperimentalKiraApi
+import com.popovanton0.kira.annotations.ExperimentalKiraApi
 import com.popovanton0.kira.prototype1.ParameterDetails
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.Supplier

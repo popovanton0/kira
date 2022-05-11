@@ -17,9 +17,9 @@ public fun Dropdown(
     var expanded by remember { mutableStateOf(false) }
     ListItem(
         modifier = Modifier.clickable { expanded = true },
-        secondaryText = { Text(text = options[selectedOptionIndex]) },
         text = { Text(text = label) },
         trailing = {
+            Text(text = options[selectedOptionIndex])
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }

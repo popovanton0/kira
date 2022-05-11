@@ -31,4 +31,3 @@ public fun <ReturnType : Any> KiraScreen(root: RootCompoundSupplierBuilder<Retur
         EarlyPreview()
     }
 }
-
