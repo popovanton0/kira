@@ -7,6 +7,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.lateinitVal
 import com.popovanton0.kira.suppliers.*
@@ -71,7 +72,7 @@ public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierI
 
 public interface Oak
 
-fun textCartRoot(oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Unit>) = root(TextCardScope()) {
+fun textCartRoot(/*oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Unit>*/) = root(TextCardScope()) {
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
@@ -156,7 +157,7 @@ class MainActivity : ComponentActivity() {
                             injector { s.currentValue() }
                         }
                     }*/
-                    //KiraScreen(root)
+                    KiraScreen(textCartRoot())
                 }
             }
         }

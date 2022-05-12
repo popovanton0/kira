@@ -5,6 +5,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.*
 import com.popovanton0.kira.annotations.Kira
+import com.popovanton0.kira.processing.generators.render
 
 class KiraProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
@@ -52,65 +53,14 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
 
         val params = collectSuitableParameters(annotated)
 
-        val s: Function1<Unit, Unit> = { _ -> }
-        params[2].run { listOf(this) }.map { param ->
+        params[3].run { listOf(this) }.map { param ->
             if (param.type.isFunctionType || param.type.isSuspendFunctionType) {
-                // todo delegate to the user impl of the injector ()
+                // todo isFunctionType delegate to the user impl of the injector
                 // todo And add var to the GeneratedKiraScope
-
-                "Function types are not yet supported: " + param.type
-                param.type.generateCode()
             }
-            //when (param.type.declaration.typeParameters.first().) {
-            //    -> {}
-            //    else -> {}
-            //}
-            else "null"
+            param.type.render()
         }.first().also(::error)
     }
-
-    private fun KSType.generateCode(): String {
-        if (isFunctionType || isSuspendFunctionType) {
-            // @Composable ((Char,Unit) -> Unit,Int,Unit,) -> Unit
-            // @Composable (@Composable Char.()->Unit).(Int) -> Unit
-            val isSuspend = declaration.simpleName.asString().startsWith("Suspend")
-            val hasExtension = annotations.any {
-                it.qualifiedName() == "kotlin.ExtensionFunctionType"
-            }
-            val isComposable = annotations.any {
-                it.qualifiedName() == "androidx.compose.runtime.Composable"
-            }
-            //this.arguments.joinToString(prefix = "<", postfix = ">") { it.type!!.resolve().generateCode() }
-            val code = buildString {
-                if (isComposable) append("@androidx.compose.runtime.Composable ")
-                if (isSuspend) append("suspend ")
-                // assume that there is no explicitly specified variance in
-                // function types like `Function1<Char, Unit>`
-                val args = arguments.map { it.type!!.resolve().generateCode() }
-
-                if (hasExtension) append("${args[0]}.")
-                append("(")
-                args.forEachIndexed { index, arg ->
-                    // first arg type is the type of the extension
-                    if (index == 0 && hasExtension) return@forEachIndexed
-                    append(arg)
-                    append(',')
-                    // last arg type is the return type
-                    if (index == args.lastIndex) return@forEachIndexed
-                }
-                append(") -> ")
-                append(args.last()) // Function always has the return type
-            }
-            return code
-        }
-        return this.declaration.qualifiedName!!.asString()
-    }
-
-    /**
-     * Calling this method is expensive because it calls [KSTypeReference.resolve]
-     */
-    private fun KSAnnotation.qualifiedName() =
-        annotationType.resolve().declaration.qualifiedName?.asString()
 
     private fun collectSuitableParameters(function: KSFunctionDeclaration): List<Parameter> {
         val params = mutableListOf<Parameter>()

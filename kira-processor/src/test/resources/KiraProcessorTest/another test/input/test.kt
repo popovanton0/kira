@@ -6,4 +6,11 @@ private annotation class Composable
 
 
 @Kira
-fun ExampleFunction2(ds: () -> Unit, ds2: suspend () -> Unit, ds3: @DF (@DF Char.()->Unit).(Int) -> Unit) = Unit
+fun ExampleFunction2(
+    ds: () -> Unit,
+    ds2: suspend () -> Unit,
+    ds3: @DF (@DF Char.() -> Unit).(Int) -> Unit,
+    ds4: List<MutableList<in () -> Map<Any?, (suspend () -> Float?)?> >>
+) {
+
+}
