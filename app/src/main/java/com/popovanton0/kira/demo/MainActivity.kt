@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.lateinitVal
@@ -150,5 +152,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun Preview() = KiraTheme {
+    Surface(color = MaterialTheme.colors.background) {
+        KiraScreen(root)
     }
 }

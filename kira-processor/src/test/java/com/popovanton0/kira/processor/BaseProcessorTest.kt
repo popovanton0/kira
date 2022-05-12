@@ -88,14 +88,6 @@ abstract class BaseProcessorTest {
                 it.copyTo(File(outputDir, it.name))
             }
         } else {
-            /*val compilationFails = outputDir.listFiles()?.singleOrNull()
-            if (compilationFails?.name == "compilationFails") {
-                assertThat(exitCode)
-                    .isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-                assertThat(messages)
-                    .contains(compilationFails.readText())
-            }*/
-
             assertThat(generatedSources.size)
                 .isEqualTo(outputDir.listFiles()?.size ?: 0)
 

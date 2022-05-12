@@ -1,9 +1,9 @@
-@file:OptIn(ExperimentalContracts::class)
-
 package com.popovanton0.kira.suppliers.compound
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
@@ -11,6 +11,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -20,52 +21,42 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.VerticalDivider
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind.EXACTLY_ONCE
-import kotlin.contracts.contract
 
-public fun <T : Any> root(
-    block: KiraScope.() -> Injector<T>,
-): RootCompoundSupplierBuilder<T, KiraScope> {
-    contract { callsInPlace(block, EXACTLY_ONCE) }
+public fun root(
+    block: KiraScope.() -> Injector<Unit>,
+): RootCompoundSupplierBuilder<KiraScope> {
     return RootCompoundSupplierBuilder(KiraScope(), block)
 }
 
-public fun <T : Any, Scope : KiraScope> root(
+public fun <Scope : KiraScope> root(
     scope: Scope,
-    block: Scope.() -> Injector<T>,
-): RootCompoundSupplierBuilder<T, Scope> {
-    contract { callsInPlace(block, EXACTLY_ONCE) }
+    block: Scope.() -> Injector<Unit>,
+): RootCompoundSupplierBuilder<Scope> {
     return RootCompoundSupplierBuilder(scope, block)
 }
 
-public class RootCompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
+public class RootCompoundSupplierBuilder<Scope : KiraScope> internal constructor(
     private val scope: Scope,
-    block: Scope.() -> Injector<T>,
-) : SupplierBuilder<T>() {
-    private var injector: Injector<T> = scope.block()
+    block: Scope.() -> Injector<Unit>,
+) : SupplierBuilder<Unit>() {
+    private var injector: Injector<Unit> = scope.block()
 
-    public fun modify(block: Scope.() -> Unit): RootCompoundSupplierBuilder<T, Scope> {
+    public fun modify(block: Scope.() -> Unit): RootCompoundSupplierBuilder<Scope> {
         if (!isInitialized) scope.block() else alreadyInitializedError()
         return this
     }
 
     public fun modifyInjector(
-        block: Scope.(previousInjector: Injector<T>) -> Injector<T>
-    ): RootCompoundSupplierBuilder<T, Scope> {
+        block: Scope.(previousInjector: Injector<Unit>) -> Injector<Unit>
+    ): RootCompoundSupplierBuilder<Scope> {
         if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<T> = CompoundSupplierImpl(
-        paramName = "",
+    override fun build(key: BuildKey): Supplier<Unit> = RootCompoundSupplierImpl(
         suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
-        label = "",
-        injector = injector.injector,
-        nullable = false,
-        isNullByDefault = false,
-        isRoot = true,
-    ) as Supplier<T>
+        injector = injector,
+    )
 }
 
 public fun <T : Any> KiraScope.compound(
@@ -123,7 +114,6 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
         injector = injector.injector,
         nullable = false,
         isNullByDefault = false,
-        isRoot = false,
     ) as Supplier<T>
 }
 
@@ -150,7 +140,6 @@ public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> interna
         injector = injector.injector,
         nullable = true,
         isNullByDefault = isNullByDefault,
-        isRoot = false,
     )
 }
 
@@ -161,7 +150,6 @@ private class CompoundSupplierImpl<T : Any>(
     private val injector: @Composable () -> T,
     private val nullable: Boolean,
     private val isNullByDefault: Boolean,
-    private val isRoot: Boolean,
 ) : Supplier<T?> {
 
     private lateinit var _currentValue: MutableState<T?>
@@ -183,18 +171,13 @@ private class CompoundSupplierImpl<T : Any>(
     override fun Ui() = Column {
         if (!::_currentValue.isInitialized) {
             currentValue()
-        }
-        else if (_currentValue.value != null) {
+        } else if (_currentValue.value != null) {
             val value = injector()
             latestNonNullValue = value
             _currentValue.value = value
         }
         Row {
-            if (isRoot) {
-                Column {
-                    suppliers.forEach { it.Ui() }
-                }
-            } else ListItem(
+            ListItem(
                 modifier = Modifier.weight(1f),
                 overlineText = { Text(text = "Type: $label") }, // TODO localize
                 text = { Text(text = paramName) },
@@ -224,6 +207,29 @@ private class CompoundSupplierImpl<T : Any>(
                         _currentValue.value = if (isNull) null else latestNonNullValue
                     }
                 )
+            }
+        }
+    }
+}
+
+private class RootCompoundSupplierImpl(
+    private val injector: Injector<Unit>,
+    private val suppliers: List<Supplier<*>>
+) : Supplier<Unit> {
+
+    @Composable
+    override fun currentValue() = Unit
+
+    @Composable
+    override fun Ui() = BoxWithConstraints {
+        if (maxWidth / maxHeight < 1) LazyColumn {
+            item { injector() }
+            items(suppliers) { it.Ui() }
+        }
+        else Row {
+            Box(modifier = Modifier.weight(1f).align(Alignment.CenterVertically)) { injector() }
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(suppliers) { it.Ui() }
             }
         }
     }
