@@ -7,7 +7,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.lateinitVal
 import com.popovanton0.kira.suppliers.*
@@ -33,23 +32,29 @@ public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierI
 
     public class SupplierImplsScope(private val scope: TextCardScope): GeneratedKiraScopeWithImpls.SupplierImplsScope() {
         public var text: StringSupplierBuilder
-            get() = scope.text as StringSupplierBuilder
+            get() = scope.text as? StringSupplierBuilder ?: implChanged()
             set(value) { scope.text = value }
+
         public var isRed: BooleanSupplierBuilder
-            get() = scope.isRed as BooleanSupplierBuilder
+            get() = scope.isRed as? BooleanSupplierBuilder ?: implChanged()
             set(value) { scope.isRed = value }
+
         public var skill: NullableEnumSupplierBuilder<Skill?>
-            get() = scope.skill as NullableEnumSupplierBuilder<Skill?>
+            get() = scope.skill as? NullableEnumSupplierBuilder<Skill?> ?: implChanged()
             set(value) { scope.skill = value }
+
         public var food: EnumSupplierBuilder<Food>
-            get() = scope.food as EnumSupplierBuilder<Food>
+            get() = scope.food as? EnumSupplierBuilder<Food> ?: implChanged()
             set(value) { scope.food = value }
+
         public var car: CompoundSupplierBuilder<Car, *>
-            get() = scope.car as CompoundSupplierBuilder<Car, *>
+            get() = scope.car as? CompoundSupplierBuilder<Car, *> ?: implChanged()
             set(value) { scope.car = value }
+
         public var carN: NullableCompoundSupplierBuilder<Car, *>
-            get() = scope.carN as NullableCompoundSupplierBuilder<Car, *>
+            get() = scope.carN as? NullableCompoundSupplierBuilder<Car, *> ?: implChanged()
             set(value) { scope.carN = value }
+
     }
 
     public lateinit var text: Supplier<String>
@@ -58,12 +63,15 @@ public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierI
     public lateinit var food: Supplier<Food>
     public lateinit var car: Supplier<Car>
     public lateinit var carN: Supplier<Car?>
+    public lateinit var oak: Supplier<Oak> // todo
 
     override fun collectSuppliers(): List<Supplier<*>> =
         listOf(text, isRed, skill, food, car, carN)
 }
 
-val root = root(TextCardScope()) {
+public interface Oak
+
+fun textCartRoot(oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Unit>) = root(TextCardScope()) {
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
@@ -148,7 +156,7 @@ class MainActivity : ComponentActivity() {
                             injector { s.currentValue() }
                         }
                     }*/
-                    KiraScreen(root)
+                    //KiraScreen(root)
                 }
             }
         }
@@ -159,6 +167,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Preview() = KiraTheme {
     Surface(color = MaterialTheme.colors.background) {
-        KiraScreen(root)
+        //KiraScreen(root)
     }
 }
