@@ -37,7 +37,7 @@ fun ExampleFunction3(
     ds7: Rock,
     ds8: Rock?,
     ds9: Engine,
-    ds10: Engine?,
+    vararg ds10: Engine? = arrayOf(null),
 ) {
 
 }
