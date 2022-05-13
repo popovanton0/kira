@@ -13,20 +13,36 @@ import com.popovanton0.kira.ui.Dropdown
 public inline fun <reified T : Enum<T>> KiraScope.enum(
     paramName: String,
     defaultValue: T
-): EnumSupplierBuilder<T> =
-    EnumSupplierBuilder(paramName,defaultValue, T::class.java.enumConstants!!.toMutableList())
+): EnumSupplierBuilder<T> {
+    val enumConstants = T::class.java.enumConstants!!.toMutableList()
+    return EnumSupplierBuilder(paramName, defaultValue, enumConstants)
         .also(::addSupplier)
+}
+
+public inline fun <reified T : Enum<T>> KiraScope.enum(
+    paramName: String,
+): EnumSupplierBuilder<T> {
+    val clazz = T::class.java
+    val enumConstants = clazz.enumConstants!!.toMutableList()
+    val defaultValue = enumConstants.firstOrNull()
+        ?: error("Enum class ${clazz.name} cannot be instantiated because it has no entries")
+    return EnumSupplierBuilder(paramName, defaultValue, enumConstants)
+        .also(::addSupplier)
+}
 
 public inline fun <reified T : Enum<*>?> KiraScope.nullableEnum(
     paramName: String,
     defaultValue: T
-): NullableEnumSupplierBuilder<T> = NullableEnumSupplierBuilder(
-    paramName = paramName,
-    defaultValue = defaultValue,
-    enumConstants = T::class.java.enumConstants!!
+): NullableEnumSupplierBuilder<T> {
+    val enumConstants = T::class.java.enumConstants!!
         .toMutableList()
         .apply { add(0, null) }
-).also(::addSupplier)
+    return NullableEnumSupplierBuilder(
+        paramName = paramName,
+        defaultValue = defaultValue,
+        enumConstants = enumConstants
+    ).also(::addSupplier)
+}
 
 public class EnumSupplierBuilder<T : Enum<*>> @PublishedApi internal constructor(
     public var paramName: String,

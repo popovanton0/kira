@@ -39,6 +39,7 @@ fun TextCard(
     food: Food = Food.BAD,
     car: Car = Car(),
     carN: Car? = null,
+    rock: Rock? = null,
     cornerRadius: Dp = 12.dp,
     autoCar: Car = Car()
 ) {
@@ -73,6 +74,7 @@ fun TextCard(
             )
             Text(text = "car: $car")
             Text(text = "carN: $carN")
+            Text(text = "rock: $rock")
             //Text(text = "autoCar: $autoCar")
         }
     }

@@ -64,19 +64,21 @@ public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierI
     public lateinit var food: Supplier<Food>
     public lateinit var car: Supplier<Car>
     public lateinit var carN: Supplier<Car?>
-    public lateinit var oak: Supplier<Oak> // todo
+    public lateinit var rock: Supplier<Rock?>
+    public lateinit var oak: Supplier<Oak>
 
     override fun collectSuppliers(): List<Supplier<*>> =
-        listOf(text, isRed, skill, food, car, carN)
+        listOf(text, isRed, skill, food, car, carN, rock)
 }
 
 public interface Oak
+public object Rock
 
 fun textCartRoot(/*oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Unit>*/) = root(TextCardScope()) {
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
-    food = enum(paramName = "food", defaultValue = Food.GOOD)
+    food = enum(paramName = "food")
     car = compound(
         scope = CarScope(),
         paramName = "car default",
@@ -92,6 +94,20 @@ fun textCartRoot(/*oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Un
     ) {
         carBody()
     }
+    rock = nullableCompound<Rock>(
+        paramName = "rock",
+        label = "Rock",
+        isNullByDefault = true,
+    ) {
+        injector {
+            Rock
+        }
+    }/*
+    rock = singleValue(
+        paramName = "rock",
+        typeName = "Rock",
+        value = Rock,
+    )*/
     injector {
         DefaultHeader {
             TextCard(
@@ -101,6 +117,7 @@ fun textCartRoot(/*oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Un
                 food = food.currentValue(),
                 car = car.currentValue(),
                 carN = carN.currentValue(),
+                rock = rock.currentValue(),
             )
         }
     }

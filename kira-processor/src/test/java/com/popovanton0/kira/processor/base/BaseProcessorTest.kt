@@ -4,7 +4,7 @@
  * under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  */
 
-package com.popovanton0.kira.processor
+package com.popovanton0.kira.processor.base
 
 import com.popovanton0.kira.processing.KiraProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
