@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ManagedVirtualDevice
+
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
@@ -37,6 +39,20 @@ android {
         kotlinCompilerExtensionVersion compose_version
     }
     namespace 'com.popovanton0.kira'
+
+    testOptions {
+        managedDevices {
+            devices {
+                pixel2api30 (ManagedVirtualDevice) {
+                    device = "Pixel 2"
+                    // Use only API levels 27 and higher.
+                    apiLevel = 30
+                    systemImageSource = "aosp"
+                    require64Bit = false
+                }
+            }
+        }
+    }
 }
 
 dependencies {
