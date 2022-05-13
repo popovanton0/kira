@@ -1,5 +1,6 @@
 package com.popovanton0.kira.processing
 
+import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -81,7 +82,7 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                 param.isCompoundableClass() -> {
                     param.renderCompoundSupplier(resolver, kiraAnn)
                 }
-                else -> error("Unknown type")
+                else -> error("Unknown type: ${param.type.render()}")
             }
         }
         return res
@@ -95,6 +96,8 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         if (classKind != ClassKind.CLASS && classKind != ClassKind.ANNOTATION_CLASS) return false
         if (declaration.typeParameters.isNotEmpty()) return false
         if (declaration.primaryConstructor == null) return false
+        if (declaration.isAbstract()) return false
+        if (Modifier.SEALED in declaration.modifiers) return false
         return true
     }
 
@@ -102,18 +105,28 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         return Modifier.ENUM in type.declaration.modifiers
     }
 
+    /**
+     * Used to detect cyclic dependencies. Contains full names of the processed classes while
+     * recursively diving into the dependencies hierarchy.
+     */
+    private val knownClasses = mutableSetOf<String>()
+
+    /**
+     * ```
+     * carN = nullableCompound(
+     *     scope = CarScope(),
+     *     paramName = "car",
+     *     label = "Car",
+     *     isNullByDefault = true,
+     * ) {
+     *    carBody()
+     * }
+     * ```
+     */
     private fun Parameter.renderCompoundSupplier(
         resolver: Resolver,
         kiraAnn: Kira
     ): String = buildString {
-        // carN = nullableCompound(
-        //     scope = CarScope(),
-        //     paramName = "car",
-        //     label = "Car",
-        //     isNullByDefault = true,
-        // ) {
-        //    carBody()
-        // }
         append("val ")
         append(name)
         append(" = ")
@@ -136,20 +149,31 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         append("\n) {")
 
         val classDeclaration = type.declaration as KSClassDeclaration
+        val className = classDeclaration.qualifiedName!!.asString()
         when {
             classDeclaration.classKind == ClassKind.OBJECT -> {
                 append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
-                append(classDeclaration.qualifiedName!!.asString()) // object instance invocation
+                append(className) // object instance invocation
                 append("\n\t}")
             }
             classDeclaration.primaryConstructor!!.parameters.isEmpty() -> {
-                append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t")
-                append(classDeclaration.qualifiedName!!.asString())
+                append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
+                append(className)
                 append("()") // primary constructor invocation
                 append("\n\t}")
             }
             else -> {
+                if (!knownClasses.add(className)) {
+                    val errorMsg = knownClasses.joinToString(
+                        prefix = "Circular dependency detected: \n\t\t",
+                        separator = " -> \n\t\t",
+                        postfix = " -> \n\t\t$className"
+                    )
+                    error(errorMsg)
+                }
                 val res = processFunction(resolver, kiraAnn, classDeclaration.primaryConstructor!!)
+                knownClasses.remove(className)
+
                 res.lines().forEach {
                     append("\n\t")
                     append(it)
@@ -159,8 +183,12 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         append("\n}")
     }
 
+    /**
+     * ```
+     * text = enum(paramName = "text")
+     * ```
+     */
     private fun Parameter.renderEnumSupplier(): String = buildString {
-        // text = enum(paramName = "text")
         append("val ")
         append(name)
         append(" = ")
@@ -179,8 +207,12 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         append(')')
     }
 
+    /**
+     * ```
+     * text = boolean(paramName = "text", defaultValue = boolean)
+     * ```
+     */
     private fun Parameter.renderBooleanSupplier(): String = buildString {
-        // text = boolean(paramName = "text", defaultValue = boolean)
         append("val ")
         append(name)
         append(" = ")
@@ -201,9 +233,12 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         append(')')
     }
 
-
+    /**
+     * ```
+     * text = string(paramName = "text", defaultValue = "Lorem")
+     * ```
+     */
     private fun Parameter.renderStringSupplier(): String = buildString {
-        // text = string(paramName = "text", defaultValue = "Lorem")
         append("val ")
         append(name)
         append(" = ")

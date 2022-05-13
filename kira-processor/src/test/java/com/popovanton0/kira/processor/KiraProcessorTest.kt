@@ -6,14 +6,18 @@ import org.junit.Test
 class KiraProcessorTest : BaseProcessorTest() {
 
     @Test
-    fun `function with generics`() {
-        assertCompilationFails("Functions with generics are not supported")
-    }
+    fun function_with_generics() =
+        compileInputsAndVerifyOutputs()
 
     @Test
-    fun `another test`() {
+    fun another_test() =
         compileInputsAndVerifyOutputs()
-    }
 
+    @Test
+    fun circular_dependency_one_level() =
+        compileInputsAndVerifyOutputs()
 
+    @Test
+    fun circular_dependency_many_levels() =
+        compileInputsAndVerifyOutputs()
 }

@@ -26,6 +26,8 @@ abstract class BaseProcessorTest {
     @JvmField
     val testNameRule = TestNameRule()
 
+    private val soutNormalizationRegex: Regex = " (\n\r?)".toRegex()
+
     /**
      * Collects the files in the "input" directory of this test's resources directory
      * and compiles them with Kotlin, returning the result.
@@ -70,8 +72,6 @@ abstract class BaseProcessorTest {
      * and validates that they match the generated sources of this compilation result.
      */
     protected fun KotlinCompilation.Result.assertGeneratedSources(compilation: KotlinCompilation) {
-        assertThat(exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
         val testResourcesDir = getTestResourcesDirectory(getRootResourcesDir())
         val outputDir = File(testResourcesDir, "output")
 
@@ -88,8 +88,22 @@ abstract class BaseProcessorTest {
                 it.copyTo(File(outputDir, it.name))
             }
         } else {
-            assertThat(generatedSources.size)
-                .isEqualTo(outputDir.listFiles()?.size ?: 0)
+            val expectedFiles = outputDir.listFiles() ?: emptyArray<File>()
+            if (expectedFiles.isEmpty()) {
+                assertThat(exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+            }
+            val compilationErrorFile = expectedFiles.singleOrNull()
+            if (compilationErrorFile?.name == "compilationError") {
+                assertThat(exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+
+                val actual = messages.replace(soutNormalizationRegex, "$1")
+                val expected = compilationErrorFile.readText().replace(soutNormalizationRegex, "$1")
+
+                assertThat(actual).contains(expected)
+                return
+            }
+
+            assertThat(generatedSources.size).isEqualTo(expectedFiles.size)
 
             generatedSources.forEach { actualFile ->
                 println("Generated: ${actualFile.name}")

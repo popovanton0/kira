@@ -13,25 +13,26 @@ internal fun KSType.render(variance: Variance = Variance.INVARIANT): String {
     return renderClassType(variance)
 }
 
-private fun KSType.renderClassType(variance: Variance): String {
-    val code = buildString {
-        val className = declaration.qualifiedName!!.asString()
-        if (variance.label.isNotEmpty()) {
-            append(variance.label)
-            append(' ')
-        }
-        append(className)
-        if (arguments.isNotEmpty()) {
-            append('<')
-            arguments.forEachIndexed { index, arg ->
-                append(arg.type!!.resolve().render(arg.variance))
-                if (index != arguments.lastIndex) append(',')
-            }
-            append('>')
-        }
-        if (isMarkedNullable) append("?")
+private fun KSType.renderClassType(variance: Variance): String = buildString {
+    val className = declaration.qualifiedName!!.asString()
+
+    append(variance.label)
+    when (variance) {
+        Variance.INVARIANT -> Unit
+        Variance.STAR -> return@buildString
+        Variance.COVARIANT, Variance.CONTRAVARIANT -> append(' ')
     }
-    return code
+    append(className)
+    
+    if (arguments.isNotEmpty()) {
+        append('<')
+        arguments.forEachIndexed { index, arg ->
+            append(arg.type!!.resolve().render(arg.variance))
+            if (index != arguments.lastIndex) append(',')
+        }
+        append('>')
+    }
+    if (isMarkedNullable) append("?")
 }
 
 private fun KSType.renderFunctionalType(variance: Variance): String {
