@@ -1,5 +1,7 @@
 package com.popovanton0.kira.processing
 
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -15,7 +17,7 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver.getSymbolsWithAnnotation("com.popovanton0.kira.annotations.Kira")
             .forEach { annotated ->
-                val kiraAnn = annotated.getKiraAnn()
+                val kiraAnn = annotated.getKiraAnn(resolver)
                 if (!kiraAnn.currentModuleIsTarget()) return@forEach
                 when (annotated) {
                     is KSFunctionDeclaration -> {
@@ -44,14 +46,20 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
             // todo delegate to the user impl of the injector
             "Only top level functions are supported"
         }
-        return processFunction(resolver, kiraAnn, function)
+        return processFunction(resolver, kiraAnn, function).sourceCode
     }
+
+    internal data class SupplierRenderResult(
+        val varName: String,
+        val typeName: String,
+        val sourceCode: String,
+    )
 
     private fun processFunction(
         resolver: Resolver,
         kiraAnn: Kira,
         function: KSFunctionDeclaration
-    ): String {
+    ): SupplierRenderResult {
         require(function.typeParameters.isEmpty()) { "Functions with generics are not supported" }
         require(Modifier.SUSPEND !in function.modifiers) {
             // todo delegate to the user impl of the injector
@@ -60,7 +68,7 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
 
         val params = collectSuitableParameters(function)
 
-        val res = params.joinToString(separator = "\n") { param ->
+        val res = params.map { param ->
             if (param.type.isFunctionType || param.type.isSuspendFunctionType) {
                 // todo isFunctionType delegate to the user impl of the injector
                 // todo And add var to the GeneratedKiraScope
@@ -84,8 +92,12 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                 }
                 else -> error("Unknown type: ${param.type.render()}")
             }
-        }
-        return res
+        }.joinToString(separator = "\n") { it.sourceCode }
+        return SupplierRenderResult(
+            "varName",
+            function.qualifiedName?.asString().toString(),
+            sourceCode = res
+        )
     }
 
     private fun Parameter.isCompoundableClass(): Boolean {
@@ -126,61 +138,73 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
     private fun Parameter.renderCompoundSupplier(
         resolver: Resolver,
         kiraAnn: Kira
-    ): String = buildString {
-        append("val ")
-        append(name)
-        append(" = ")
-        append("com.popovanton0.kira.suppliers.")
-        if (type.isMarkedNullable) {
-            append("nullableCompound")
-        } else {
-            append("compound")
-        }
-        append("(\n\tscope = TODO(),\n\t")
-        append("paramName = \"")
-        append(name)
-        append("\",\n\t")
-        append("label = \"")
-        append(type.render())
-        append("\"")
-        if (type.isMarkedNullable) {
-            append(",\n\tdefaultValue = null")
-        }
-        append("\n) {")
+    ): SupplierRenderResult {
+        val varName = name
+        val typeName = type.render()
+        val sourceCode = buildString {
+            append("com.popovanton0.kira.suppliers.")
+            if (type.isMarkedNullable) {
+                append("nullableCompound")
+            } else {
+                append("compound")
+            }
+            append("(\n\tscope = TODO(),\n\t")
+            append("paramName = \"")
+            append(name)
+            append("\",\n\t")
+            append("label = \"")
+            append(typeName)
+            append("\"")
+            if (type.isMarkedNullable) {
+                append(",\n\tdefaultValue = null")
+            }
+            append("\n) {")
 
-        val classDeclaration = type.declaration as KSClassDeclaration
-        val className = classDeclaration.qualifiedName!!.asString()
-        when {
-            classDeclaration.classKind == ClassKind.OBJECT -> {
-                append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
-                append(className) // object instance invocation
-                append("\n\t}")
-            }
-            classDeclaration.primaryConstructor!!.parameters.isEmpty() -> {
-                append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
-                append(className)
-                append("()") // primary constructor invocation
-                append("\n\t}")
-            }
-            else -> {
-                if (!knownClasses.add(className)) {
-                    val errorMsg = knownClasses.joinToString(
-                        prefix = "Circular dependency detected: \n\t\t",
-                        separator = " -> \n\t\t",
-                        postfix = " -> \n\t\t$className"
-                    )
-                    error(errorMsg)
+            val classDeclaration = type.declaration as KSClassDeclaration
+            val className = classDeclaration.qualifiedName!!.asString()
+            when {
+                classDeclaration.classKind == ClassKind.OBJECT -> {
+                    append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
+                    append(className) // object instance invocation
+                    append("\n\t}")
                 }
-                val res = processFunction(resolver, kiraAnn, classDeclaration.primaryConstructor!!)
-                knownClasses.remove(className)
+                classDeclaration.primaryConstructor!!.parameters.isEmpty() -> {
+                    append("\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
+                    append(className)
+                    append("()") // primary constructor invocation
+                    append("\n\t}")
+                }
+                else -> {
+                    if (!knownClasses.add(className)) {
+                        val errorMsg = knownClasses.joinToString(
+                            prefix = "Circular dependency detected: \n\t\t",
+                            separator = " -> \n\t\t",
+                            postfix = " -> \n\t\t$className"
+                        )
+                        error(errorMsg)
+                    }
+                    val res =
+                        processFunction(resolver, kiraAnn, classDeclaration.primaryConstructor!!)
+                    knownClasses.remove(className)
 
-                res.lines().forEach {
-                    append("\n\t")
-                    append(it)
+                    res.sourceCode.lines().forEach {
+                        append("\n\t")
+                        append(it)
+                    }
+
+                    // injector generation
+
+                    append("\n\n\tcom.popovanton0.kira.suppliers.compound.injector {\n\t\t")
+                    append(className)
+                    append("(\n\t\t\t") // primary constructor invocation
+                    append("TODO()\n\t\t")
+                    append(")")
+                    append("\n\t}")
                 }
             }
+            append("\n}")
         }
-        append("\n}")
+        return SupplierRenderResult(varName, typeName, sourceCode)
     }
 
     /**
@@ -188,23 +212,28 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
      * text = enum(paramName = "text")
      * ```
      */
-    private fun Parameter.renderEnumSupplier(): String = buildString {
-        append("val ")
-        append(name)
-        append(" = ")
-        append("com.popovanton0.kira.suppliers.")
-        if (type.isMarkedNullable) {
-            append("nullableEnum")
-        } else {
-            append("enum")
+    private fun Parameter.renderEnumSupplier(): SupplierRenderResult {
+        val varName = name
+        val typeName = type.render()
+        val sourceCode = buildString {
+            append("val ")
+            append(name)
+            append(" = ")
+            append("com.popovanton0.kira.suppliers.")
+            if (type.isMarkedNullable) {
+                append("nullableEnum")
+            } else {
+                append("enum")
+            }
+            append("(paramName = \"")
+            append(name)
+            append('"')
+            if (type.isMarkedNullable) {
+                append(", defaultValue = null")
+            }
+            append(')')
         }
-        append("(paramName = \"")
-        append(name)
-        append('"')
-        if (type.isMarkedNullable) {
-            append(", defaultValue = null")
-        }
-        append(')')
+        return SupplierRenderResult(varName, typeName, sourceCode)
     }
 
     /**
@@ -212,25 +241,27 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
      * text = boolean(paramName = "text", defaultValue = boolean)
      * ```
      */
-    private fun Parameter.renderBooleanSupplier(): String = buildString {
-        append("val ")
-        append(name)
-        append(" = ")
-        append("com.popovanton0.kira.suppliers.")
-        if (type.isMarkedNullable) {
-            append("nullableBoolean")
-        } else {
-            append("boolean")
+    private fun Parameter.renderBooleanSupplier(): SupplierRenderResult {
+        val varName = name
+        val typeName = type.render()
+        val sourceCode = buildString {
+            append("com.popovanton0.kira.suppliers.")
+            if (type.isMarkedNullable) {
+                append("nullableBoolean")
+            } else {
+                append("boolean")
+            }
+            append("(paramName = \"")
+            append(name)
+            append("\", defaultValue = ")
+            if (type.isMarkedNullable) {
+                append("null")
+            } else {
+                append("false")
+            }
+            append(')')
         }
-        append("(paramName = \"")
-        append(name)
-        append("\", defaultValue = ")
-        if (type.isMarkedNullable) {
-            append("null")
-        } else {
-            append("false")
-        }
-        append(')')
+        return SupplierRenderResult(varName, typeName, sourceCode)
     }
 
     /**
@@ -238,25 +269,27 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
      * text = string(paramName = "text", defaultValue = "Lorem")
      * ```
      */
-    private fun Parameter.renderStringSupplier(): String = buildString {
-        append("val ")
-        append(name)
-        append(" = ")
-        append("com.popovanton0.kira.suppliers.")
-        if (type.isMarkedNullable) {
-            append("nullableString")
-        } else {
-            append("string")
+    private fun Parameter.renderStringSupplier(): SupplierRenderResult {
+        val varName = name
+        val typeName = type.render()
+        val sourceCode = buildString {
+            append("com.popovanton0.kira.suppliers.")
+            if (type.isMarkedNullable) {
+                append("nullableString")
+            } else {
+                append("string")
+            }
+            append("(paramName = \"")
+            append(name)
+            append("\", defaultValue = ")
+            if (type.isMarkedNullable) {
+                append("null")
+            } else {
+                append("\"Example\"")
+            }
+            append(')')
         }
-        append("(paramName = \"")
-        append(name)
-        append("\", defaultValue = ")
-        if (type.isMarkedNullable) {
-            append("null")
-        } else {
-            append("\"Example\"")
-        }
-        append(')')
+        return SupplierRenderResult(varName, typeName, sourceCode)
     }
 
     private fun collectSuitableParameters(function: KSFunctionDeclaration): List<Parameter> {
@@ -301,7 +334,8 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         else -> false
     }
 
-    private fun KSAnnotated.getKiraAnn(): Kira {
+    @OptIn(KspExperimental::class)
+    private fun KSAnnotated.getKiraAnn(resolver: Resolver): Kira {
         val kiraAnnotation =
             annotations.singleOrNull { it.shortName.asString() == SHORT_KIRA_ANN_NAME }
             // null only in a rare case that there are other anns called `SHORT_KIRA_ANN_NAME`
@@ -310,9 +344,19 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                     fullAnnName.asString() == FULL_KIRA_ANN_NAME
                 }
         val args = kiraAnnotation.arguments
+        val kiraAnn = getAnnotationsByType(Kira::class).first()
+        kiraAnn.customization
         return Kira(
-            supplierImpls = args.getArgValue("supplierImpls", position = 0, default = true),
-            targetModule = args.getArgValue("targetModule", position = 1, default = "")
+            customization = (args[0] as KSAnnotation).arguments.getArgValue(
+                argName = "customization",
+                position = 0,
+                default = Kira.Customization(enabled = false, supplierImpls = false)
+            ),
+            targetModule = args.getArgValue(
+                argName = "targetModule",
+                position = 1,
+                default = ""
+            )
         )
     }
 
