@@ -1,4 +1,4 @@
-package com.popovanton0.kira.processing.generators
+package com.popovanton0.kira.processing.supplierprocessors
 
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Variance

@@ -19,7 +19,7 @@ enum class Quality { GOOD, BAD }
 object Rock
 data class Engine(
     val model: String = "Merlin",
-    val diesel: Engine2,
+    val diesel: Engine2?,
 )
 data class Engine2(
     val adsad: String = "Merlin",
