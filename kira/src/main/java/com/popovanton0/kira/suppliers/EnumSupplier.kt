@@ -14,7 +14,7 @@ public inline fun <reified T : Enum<T>> KiraScope.enum(
     paramName: String,
     defaultValue: T
 ): EnumSupplierBuilder<T> {
-    val enumConstants = T::class.java.enumConstants!!.toMutableList()
+    val enumConstants = enumValues<T>().toMutableList()
     return EnumSupplierBuilder(paramName, defaultValue, enumConstants)
         .also(::addSupplier)
 }
@@ -22,10 +22,10 @@ public inline fun <reified T : Enum<T>> KiraScope.enum(
 public inline fun <reified T : Enum<T>> KiraScope.enum(
     paramName: String,
 ): EnumSupplierBuilder<T> {
-    val clazz = T::class.java
-    val enumConstants = clazz.enumConstants!!.toMutableList()
-    val defaultValue = enumConstants.firstOrNull()
-        ?: error("Enum class ${clazz.name} cannot be instantiated because it has no entries")
+    val enumConstants = enumValues<T>().toMutableList()
+    val defaultValue = enumConstants.firstOrNull() ?: error(
+        "Enum class ${T::class.java.name} cannot be instantiated because it has no entries"
+    )
     return EnumSupplierBuilder(paramName, defaultValue, enumConstants)
         .also(::addSupplier)
 }
