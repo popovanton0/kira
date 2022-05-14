@@ -26,7 +26,7 @@ public class BooleanSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: Boolean,
 ) : SupplierBuilder<Boolean>() {
-    override fun build(key: BuildKey): Supplier<Boolean> =
+    override fun BuildKey.build(): Supplier<Boolean> =
         NullableBooleanSupplierImpl(paramName, defaultValue, nullable = false)
 }
 
@@ -34,7 +34,7 @@ public class NullableBooleanSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: Boolean?,
 ) : SupplierBuilder<Boolean?>() {
-    override fun build(key: BuildKey): Supplier<Boolean?> =
+    override fun BuildKey.build(): Supplier<Boolean?> =
         NullableBooleanSupplierImpl(paramName, defaultValue, nullable = true)
 }
 

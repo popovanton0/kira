@@ -53,7 +53,7 @@ public class RootCompoundSupplierBuilder<Scope : KiraScope> internal constructor
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<Unit> = RootCompoundSupplierImpl(
+    override fun BuildKey.build(): Supplier<Unit> = RootCompoundSupplierImpl(
         suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
         injector = injector,
     )
@@ -107,7 +107,7 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<T> = CompoundSupplierImpl(
+    override fun BuildKey.build(): Supplier<T> = CompoundSupplierImpl(
         paramName = paramName,
         suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
         label = label,
@@ -133,7 +133,7 @@ public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> interna
         return this
     }
 
-    override fun build(key: BuildKey): Supplier<T?> = CompoundSupplierImpl(
+    override fun BuildKey.build(): Supplier<T?> = CompoundSupplierImpl(
         paramName = paramName,
         suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
         label = label,
