@@ -49,7 +49,7 @@ public class EnumSupplierBuilder<T : Enum<*>> @PublishedApi internal constructor
     public var defaultValue: T,
     public val enumConstants: MutableList<T>,
 ) : SupplierBuilder<T>() {
-    override fun build(key: BuildKey): Supplier<T> =
+    override fun BuildKey.build(): Supplier<T> =
         EnumSupplier(paramName, defaultValue, enumConstants.toList())
 }
 
@@ -58,7 +58,7 @@ public class NullableEnumSupplierBuilder<T : Enum<*>?> @PublishedApi internal co
     public var defaultValue: T?,
     public val enumConstants: MutableList<T?>,
 ) : SupplierBuilder<T?>() {
-    override fun build(key: BuildKey): Supplier<T?> =
+    override fun BuildKey.build(): Supplier<T?> =
         EnumSupplier(paramName, defaultValue, enumConstants.toList())
 }
 

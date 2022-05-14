@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 public abstract class SupplierBuilder<T> : Supplier<T> {
     public class BuildKey internal constructor()
 
-    public abstract fun build(key: BuildKey): Supplier<T>
+    public abstract fun BuildKey.build(): Supplier<T>
 
     private lateinit var supplier: Supplier<T>
     public val isInitialized: Boolean get() = ::supplier.isInitialized
@@ -18,12 +18,12 @@ public abstract class SupplierBuilder<T> : Supplier<T> {
 
     public override fun initialize() {
         if (isInitialized) alreadyInitializedError()
-        supplier = build(buildKey)
+        supplier = buildKey.build()
     }
 
     public fun alreadyInitializedError(): Nothing = error("Supplier is already initialized")
 
-    public companion object {
+    private companion object {
         private val buildKey = BuildKey()
         private fun notInitError(): Nothing = error("Supplier is not initialized yet")
     }

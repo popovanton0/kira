@@ -27,7 +27,7 @@ public class StringSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: String,
 ) : SupplierBuilder<String>() {
-    override fun build(key: BuildKey): Supplier<String> =
+    override fun BuildKey.build(): Supplier<String> =
         NullableStringSupplierImpl(paramName, defaultValue, nullable = false)
 }
 
@@ -35,7 +35,7 @@ public class NullableStringSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: String?,
 ) : SupplierBuilder<String?>() {
-    override fun build(key: BuildKey): Supplier<String?> =
+    override fun BuildKey.build(): Supplier<String?> =
         NullableStringSupplierImpl(paramName, defaultValue, nullable = true)
 }
 
