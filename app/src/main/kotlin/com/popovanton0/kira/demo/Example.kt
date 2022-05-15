@@ -11,9 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.popovanton0.kira.annotations.Kira
 
 enum class Skill { LOW, OK, SICK }
 enum class Food { BAD, GOOD, EXCELLENT }
@@ -30,6 +30,7 @@ data class Car(
     val engine: Engine = Engine(),
 )
 
+@Kira
 @Preview
 @Composable
 fun TextCard(
@@ -40,10 +41,10 @@ fun TextCard(
     car: Car = Car(),
     carN: Car? = null,
     rock: Rock? = null,
-    cornerRadius: Dp = 12.dp,
+    //cornerRadius: Dp = 12.dp,
     autoCar: Car = Car()
 ) {
-    val shape = RoundedCornerShape(cornerRadius)
+    val shape = RoundedCornerShape(12.dp)
     Card(elevation = 8.dp, shape = shape) {
         Column(
             modifier = Modifier

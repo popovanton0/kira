@@ -1,5 +1,6 @@
+package sdf
+
 import com.popovanton0.kira.annotations.Kira
-import Composable as DF
 
 @Target(AnnotationTarget.TYPE)
 private annotation class Composable
@@ -9,7 +10,7 @@ private annotation class Composable
 fun ExampleFunction2(
     ds: () -> Unit,
     ds2: suspend () -> Unit,
-    ds3: @DF (@DF Char.() -> Unit).(Int) -> Unit,
+    ds3: @Composable (@Composable Char.() -> Unit).(Int) -> Unit,
     ds4: List<MutableList<in () -> Map<Any?, (suspend () -> Float?)?>>>
 ) {
 

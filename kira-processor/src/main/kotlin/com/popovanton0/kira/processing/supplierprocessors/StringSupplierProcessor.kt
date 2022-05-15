@@ -23,25 +23,27 @@ object StringSupplierProcessor : SupplierProcessor {
         if (paramTypeName != "kotlin.String" || type.declaration !is KSClassDeclaration)
             return@with null
 
+        val nullable = type.isMarkedNullable
         val sourceCode = buildString {
-            append("$SUPPLIERS_PKG_NAME.")
-            if (type.isMarkedNullable) append("nullableString") else append("string")
-            append("(paramName = \"")
-            append(name)
-            append("\", defaultValue = ")
-            if (type.isMarkedNullable) append("null") else append("\"Example\"")
+            if (nullable) append("nullableString") else append("string")
+            append("(paramName = \"name\", defaultValue = ")
+            if (nullable) append("null") else append("\"Example\"")
             append(')')
         }
 
         val renderedType = type.render()
         val supplierImplName =
-            if (type.isMarkedNullable) FULL_NULLABLE_STRING_SUPPLIER_NAME
+            if (nullable) FULL_NULLABLE_STRING_SUPPLIER_NAME
             else FULL_STRING_SUPPLIER_NAME
+        val imports =
+            if (nullable) "$SUPPLIERS_PKG_NAME.nullableString"
+            else "$SUPPLIERS_PKG_NAME.string"
         return SupplierRenderResult(
             varName = name,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
-            supplierImplType = "$supplierImplName<$renderedType>"
+            supplierImplType = "$supplierImplName<$renderedType>",
+            imports = listOf(imports)
         )
     }
 

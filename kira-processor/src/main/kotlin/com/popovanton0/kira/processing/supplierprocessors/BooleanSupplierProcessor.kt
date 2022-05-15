@@ -23,25 +23,27 @@ object BooleanSupplierProcessor : SupplierProcessor {
         if (paramTypeName != "kotlin.Boolean" || type.declaration !is KSClassDeclaration)
             return@with null
 
+        val nullable = type.isMarkedNullable
         val sourceCode = buildString {
-            append("$SUPPLIERS_PKG_NAME.")
-            if (type.isMarkedNullable) append("nullableBoolean") else append("boolean")
-            append("(paramName = \"")
-            append(name)
-            append("\", defaultValue = ")
-            if (type.isMarkedNullable) append("null") else append("false")
+            if (nullable) append("nullableBoolean") else append("boolean")
+            append("(paramName = \"name\", defaultValue = ")
+            if (nullable) append("null") else append("false")
             append(')')
         }
 
         val renderedType = type.render()
         val supplierImplName =
-            if (type.isMarkedNullable) FULL_NULLABLE_BOOLEAN_SUPPLIER_NAME
+            if (nullable) FULL_NULLABLE_BOOLEAN_SUPPLIER_NAME
             else FULL_BOOLEAN_SUPPLIER_NAME
+        val imports =
+            if (nullable) "$SUPPLIERS_PKG_NAME.nullableBoolean"
+            else "$SUPPLIERS_PKG_NAME.boolean"
         return SupplierRenderResult(
             varName = name,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
-            supplierImplType = "$supplierImplName<$renderedType>"
+            supplierImplType = "$supplierImplName<$renderedType>",
+            imports = listOf(imports)
         )
     }
 

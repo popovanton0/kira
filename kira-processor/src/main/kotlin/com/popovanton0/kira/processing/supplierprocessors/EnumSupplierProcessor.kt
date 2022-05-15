@@ -20,26 +20,28 @@ object EnumSupplierProcessor : SupplierProcessor {
         parameter: Parameter
     ): SupplierRenderResult? = with(parameter) {
         if (Modifier.ENUM !in type.declaration.modifiers) return@with null
+        val renderedType = type.render()
 
+        val nullable = type.isMarkedNullable
         val sourceCode = buildString {
-            append("$SUPPLIERS_PKG_NAME.")
-            if (type.isMarkedNullable) append("nullableEnum") else append("enum")
-            append("(paramName = \"")
-            append(name)
-            append('"')
-            if (type.isMarkedNullable) append(", defaultValue = null")
+            if (nullable) append("nullableEnum") else append("enum")
+            append("<$renderedType>(paramName = \"$name\"")
+            if (nullable) append(", defaultValue = null")
             append(')')
         }
 
-        val renderedType = type.render()
         val supplierImplName =
-            if (type.isMarkedNullable) FULL_NULLABLE_ENUM_SUPPLIER_NAME
+            if (nullable) FULL_NULLABLE_ENUM_SUPPLIER_NAME
             else FULL_ENUM_SUPPLIER_NAME
+        val imports =
+            if (nullable) "$SUPPLIERS_PKG_NAME.nullableEnum"
+            else "$SUPPLIERS_PKG_NAME.enum"
         return SupplierRenderResult(
             varName = name,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
-            supplierImplType = "$supplierImplName<$renderedType>"
+            supplierImplType = "$supplierImplName<$renderedType>",
+            imports = listOf(imports)
         )
     }
 

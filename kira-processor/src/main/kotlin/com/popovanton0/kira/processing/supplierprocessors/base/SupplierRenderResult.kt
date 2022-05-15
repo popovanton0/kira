@@ -6,6 +6,7 @@ data class SupplierRenderResult(
     val supplierType: String?,
     val supplierImplType: String?,
     val topLevelClassSource: String? = null,
+    val imports: List<String>? = null
 ) {
     init {
         if (supplierImplType != null) requireNotNull(supplierType)

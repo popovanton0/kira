@@ -1,6 +1,7 @@
 package com.popovanton0.kira.processing.supplierprocessors
 
 import com.google.devtools.ksp.isAbstract
+import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
@@ -50,37 +51,57 @@ object CompoundSupplierProcessor : SupplierProcessor {
     ): SupplierRenderResult? = with(parameter) {
         if (!parameter.isCompoundableClass()) return@with null
 
-        val typeName = type.render()
+        val renderedType = type.makeNotNullable().render()
         val nullable = type.isMarkedNullable
+        val imports = mutableListOf<String>()
         val sourceCode = buildString {
             val supplierFunName = if (nullable) "nullableCompound" else "compound"
-
-            appendLine("$SUPPLIERS_PKG_NAME.compound.$supplierFunName(")
+            imports += "$SUPPLIERS_PKG_NAME.compound.$supplierFunName"
+            appendLine("$supplierFunName<$renderedType>(")
             if (kiraAnn.customization.enabled) appendLine("\tscope = TODO(),")
             appendLine("\tparamName = \"$name\",")
-            append("\tlabel = \"$typeName\"")
-            if (nullable) appendLine(",\n\tdefaultValue = null") else appendLine()
+            append("\tlabel = \"$renderedType\"")
+            if (nullable) appendLine(",\n\tisNullByDefault = true") else appendLine()
             appendLine(") {")
 
             val classDeclaration = type.declaration as KSClassDeclaration
             val className = classDeclaration.qualifiedName!!.asString()
             var topLevelClassSource = ""
-            when {
-                classDeclaration.classKind == ClassKind.OBJECT -> append(
+            if (classDeclaration.classKind == ClassKind.OBJECT) {
+                append(
                     """
-                       |    $SUPPLIERS_PKG_NAME.compound.injector {
+                       |    injector {
                        |        $className
                        |    }
                     """.trimMargin()
                 )
-                classDeclaration.primaryConstructor!!.parameters.isEmpty() -> append(
-                    """
-                       |    $SUPPLIERS_PKG_NAME.compound.injector {
-                       |        $className()
-                       |    }
-                    """.trimMargin()
-                )
-                else -> constructorWithParams(className, classDeclaration, this)
+            } else {
+                val primaryConstructor = classDeclaration.primaryConstructor!!
+                if (primaryConstructor.isPrivate()) return@with null
+                if (primaryConstructor.parameters.isEmpty()) {
+                    append(
+                        """
+                           |    injector {
+                           |        $className()
+                           |    }
+                        """.trimMargin()
+                    )
+                } else {
+                    if (!knownClasses.add(className)) {
+                        val errorMsg = createCircularDependencyErrorMsg(className)
+                        knownClasses.clear()
+                        error(errorMsg)
+                    }
+                    val children: List<SupplierRenderResult> =
+                        processFunction(classDeclaration.primaryConstructor!!)
+                    knownClasses.remove(className)
+
+                    append("\t")
+                    appendCompoundSupplierBody(children, className)
+
+                    // aggregating child imports
+                    children.forEach { it.imports?.forEach(imports::add) }
+                }
             }
             append("\n}")
         }
@@ -91,26 +112,10 @@ object CompoundSupplierProcessor : SupplierProcessor {
         return SupplierRenderResult(
             varName = name,
             sourceCode = sourceCode,
-            supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$typeName>",
-            supplierImplType = "$supplierImplName<$typeName>"
+            supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
+            supplierImplType = "$supplierImplName<$renderedType>",
+            imports = imports
         )
-    }
-
-    private fun ProcessingScope.constructorWithParams(
-        className: String,
-        classDeclaration: KSClassDeclaration,
-        stringBuilder: StringBuilder
-    ) = with(stringBuilder) {
-        if (!knownClasses.add(className)) {
-            val errorMsg = createCircularDependencyErrorMsg(className)
-            knownClasses.clear()
-            error(errorMsg)
-        }
-        val children = processFunction(classDeclaration.primaryConstructor!!)
-        knownClasses.remove(className)
-
-        append("\t")
-        appendCompoundSupplierBody(children, className)
     }
 
     private fun createCircularDependencyErrorMsg(className: String) = knownClasses.joinToString(
@@ -148,7 +153,7 @@ public fun StringBuilder.appendCompoundSupplierBody(
 
     append(
         """
-               |    $SUPPLIERS_PKG_NAME.compound.injector {
+               |    injector {
                |        $constructorName(
                |            $constructorCallBody
                |        )

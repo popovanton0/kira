@@ -8,6 +8,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.KiraScreen
+import com.popovanton0.kira.demo.kira_generated_suppliers.TextCardRootSupplier
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.lateinitVal
 import com.popovanton0.kira.suppliers.*
@@ -15,12 +16,40 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.compound.*
 import com.popovanton0.kira.ui.DefaultHeader
 
-public class CarScope : KiraScope() {
-    public var model: StringSupplierBuilder by lateinitVal()
-    public var lame: BooleanSupplierBuilder by lateinitVal()
-    public var lameN: NullableBooleanSupplierBuilder by lateinitVal()
-    public var cookerQuality: NullableEnumSupplierBuilder<Food?> by lateinitVal()
-    public var engine: NullableCompoundSupplierBuilder<Engine, EngineScope> by lateinitVal()
+public class CarScope : GeneratedKiraScopeWithImpls<CarScope.SupplierImplsScope>() {
+
+    override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+
+    public class SupplierImplsScope(private val scope: CarScope): GeneratedKiraScopeWithImpls.SupplierImplsScope() {
+        public var model: StringSupplierBuilder
+            get() = scope.model as? StringSupplierBuilder ?: implChanged()
+            set(value) { scope.model = value }
+
+        public var lame: BooleanSupplierBuilder
+            get() = scope.lame as? BooleanSupplierBuilder ?: implChanged()
+            set(value) { scope.lame = value }
+
+        public var lameN: NullableBooleanSupplierBuilder
+            get() = scope.lameN as? NullableBooleanSupplierBuilder ?: implChanged()
+            set(value) { scope.lameN = value }
+
+        public var cookerQuality: NullableEnumSupplierBuilder<Food?>
+            get() = scope.cookerQuality as? NullableEnumSupplierBuilder<Food?> ?: implChanged()
+            set(value) { scope.cookerQuality = value }
+
+        public var engine: NullableCompoundSupplierBuilder<Engine, EngineScope>
+            get() = scope.engine as? NullableCompoundSupplierBuilder<Engine, EngineScope> ?: implChanged()
+            set(value) { scope.engine = value }
+    }
+
+    public lateinit var model: Supplier<String>
+    public lateinit var lame: Supplier<Boolean>
+    public lateinit var lameN: Supplier<Boolean?>
+    public lateinit var cookerQuality: Supplier<Food?>
+    public lateinit var engine: Supplier<Engine?>
+
+    override fun collectSuppliers(): List<Supplier<*>> =
+        listOf(model, lame, lameN, cookerQuality, engine)
 }
 
 public class EngineScope : KiraScope() {
@@ -74,7 +103,22 @@ public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierI
 public interface Oak
 public object Rock
 
-fun textCartRoot(/*oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Unit>*/) = root(TextCardScope()) {
+public data class TextCardMisses(
+    val carMisses: CarMisses
+) {
+    public data class CarMisses(
+        val model: Supplier<String>,
+        val engineMisses: EngineMisses
+    ) {
+        public data class EngineMisses(
+            val diesel: Supplier<Boolean>
+        )
+    }
+}
+
+fun textCardRoot(misses: KiraScope.() -> TextCardMisses) = root(TextCardScope()) {
+    val misses = misses()
+
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
@@ -84,7 +128,34 @@ fun textCartRoot(/*oak: Supplier<Oak>, injector: TextCardScope.() -> Injector<Un
         paramName = "car default",
         label = "Car"
     ) {
-        carBody()
+        model = misses.carMisses.model//string(paramName = "model", defaultValue = "Tesla")
+        lame = boolean(paramName = "lame", defaultValue = false)
+        lameN = nullableBoolean(paramName = "lameN", defaultValue = null)
+        cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
+        engine = nullableCompound(
+            scope = EngineScope(),
+            paramName = "engine",
+            label = "Engine",
+            isNullByDefault = true
+        ) {
+            model = string(paramName = "model", defaultValue = "Merlin")
+            diesel = boolean(paramName = "diesel", defaultValue = false) // misses.carMisses.engineMisses.diesel
+            injector {
+                Engine(
+                    model = model.currentValue(),
+                    diesel = diesel.currentValue(),
+                )
+            }
+        }
+        injector {
+            Car(
+                model = model.currentValue(),
+                lame = lame.currentValue(),
+                lameN = lameN.currentValue(),
+                cookerQuality = cookerQuality.currentValue(),
+                engine = engine.currentValue() ?: Engine("null"),
+            )
+        }
     }
     carN = nullableCompound(
         scope = CarScope(),
@@ -174,7 +245,17 @@ class MainActivity : ComponentActivity() {
                             injector { s.currentValue() }
                         }
                     }*/
-                    KiraScreen(textCartRoot())
+                    val root = textCardRoot {
+                        TextCardMisses(
+                            carMisses = TextCardMisses.CarMisses(
+                                model = string("model (missed)", "model default value (missed)"),
+                                engineMisses = TextCardMisses.CarMisses.EngineMisses(
+                                    diesel = boolean("diesel (missed)", true)
+                                )
+                            )
+                        )
+                    }
+                    KiraScreen(TextCardRootSupplier())
                 }
             }
         }
