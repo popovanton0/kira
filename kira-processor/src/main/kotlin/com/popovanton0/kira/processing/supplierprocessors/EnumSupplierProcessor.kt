@@ -2,7 +2,7 @@ package com.popovanton0.kira.processing.supplierprocessors
 
 import com.google.devtools.ksp.symbol.Modifier
 import com.popovanton0.kira.annotations.Kira
-import com.popovanton0.kira.processing.Parameter
+import com.popovanton0.kira.processing.FunctionParameter
 import com.popovanton0.kira.processing.supplierprocessors.base.ProcessingScope
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor.Companion.FULL_SUPPLIER_INTERFACE_NAME
@@ -15,17 +15,20 @@ object EnumSupplierProcessor : SupplierProcessor {
      * text = enum(paramName = "text")
      * ```
      */
-    override fun ProcessingScope.renderSupplier(
+    override fun renderSupplier(
+        processingScope: ProcessingScope,
         kiraAnn: Kira,
-        parameter: Parameter
-    ): SupplierRenderResult? = with(parameter) {
-        if (Modifier.ENUM !in type.declaration.modifiers) return@with null
-        val renderedType = type.render()
+        param: FunctionParameter,
+        missesPrefix: String
+    ): SupplierRenderResult? {
+        if (Modifier.ENUM !in param.resolvedType.declaration.modifiers) return null
+        val renderedType = param.resolvedType.render()
 
-        val nullable = type.isMarkedNullable
+        val nullable = param.resolvedType.isMarkedNullable
+        val paramName = param.name!!.asString()
         val sourceCode = buildString {
             if (nullable) append("nullableEnum") else append("enum")
-            append("<$renderedType>(paramName = \"$name\"")
+            append("<$renderedType>(paramName = \"$paramName\"")
             if (nullable) append(", defaultValue = null")
             append(')')
         }
@@ -37,7 +40,7 @@ object EnumSupplierProcessor : SupplierProcessor {
             if (nullable) "$SUPPLIERS_PKG_NAME.nullableEnum"
             else "$SUPPLIERS_PKG_NAME.enum"
         return SupplierRenderResult(
-            varName = name,
+            varName = paramName,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
             supplierImplType = "$supplierImplName<$renderedType>",

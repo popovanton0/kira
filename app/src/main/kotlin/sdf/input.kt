@@ -1,7 +1,6 @@
 package sdf
 
 import com.popovanton0.kira.annotations.Kira
-import java.util.function.Supplier
 
 @Target(AnnotationTarget.TYPE)
 private annotation class Composable
@@ -28,19 +27,6 @@ data class Engine2(
     val adsad: A,
     val hnghgj: B,
 )
-
-public data class ExampleFunction3Misses(
-    val ds10: ds10Misses
-) {
-    public data class ds10Misses(
-        val sdf: Supplier<A?>,
-        val engine2: ds10Misses.engine2Misses,
-    ) {
-        public data class engine2Misses(
-            val adsad: Supplier<A>,
-        )
-    }
-}
 
 
 @Kira

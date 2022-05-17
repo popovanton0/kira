@@ -61,11 +61,17 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
             // todo delegate to the user impl of the injector
             "Only top level functions are supported"
         }
+        require(function.typeParameters.isEmpty()) { "Functions with generics are not supported" }
+        require(Modifier.SUSPEND !in function.modifiers) {
+            // todo delegate to the user impl of the injector
+            "Suspend functions are not yet supported"
+        }
 
         val topLevelClassSources = mutableListOf<String>()
 
         val processingScope = ProcessingScopeImpl(kiraAnn)
-        val children = processFunction(processingScope, kiraAnn, function)
+        val params = function.parameters.map(::FunctionParameter)
+        val children = processFunction(processingScope, kiraAnn, params, "misses")
 
         val funName = function.qualifiedName!!.asString()
         val funSimpleName = function.simpleName.asString()
@@ -77,18 +83,63 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         appendLine()
         appendImportStatements(children)
         appendLine()
-        append("public fun ${funSimpleName}RootSupplier() = $SUPPLIERS_PKG_NAME.compound.root(")
+
+        val missClassesSourceCode: String? =
+            generateMisses(children, params, missParamName = funSimpleName)
+                ?.run(::generateMissClass)
+
+        missClassesSourceCode?.let(::appendLine)
+
+        append("public fun ${funSimpleName}RootSupplier(")
+        if (missClassesSourceCode != null) {
+            append("\n\tmisses: ${funSimpleName}Misses\n")
+        }
+        append(") = $SUPPLIERS_PKG_NAME.compound.root(")
         if (kiraAnn.customization.enabled) append("\n\tscope = TODO(),\n")
         append(") {\n\t")
 
-        appendCompoundSupplierBody(children, constructorName = funName)
+        appendCompoundSupplierBody(
+            children,
+            constructorName = funName,
+            "misses",
+            params
+        )
 
         appendLine("\n}")
     }
 
-    private fun StringBuilder.appendImportStatements(children: List<SupplierRenderResult>) {
+    private fun generateMissClass(
+        miss: Misses.Class
+    ): String = buildString {
+        val className = "${miss.paramName}Misses"
+        appendLine("public data class $className(")
+        miss.list.forEach { miss ->
+            when (miss) {
+                is Misses.Class -> {
+                    appendLine("\tval ${miss.paramName}: $className.${miss.paramName}Misses,")
+                }
+                is Misses.Single -> {
+                    appendLine("\tval ${miss.paramName}: Supplier<${miss.type}>,")
+                }
+            }
+        }
+        appendLine(") {")
+
+        miss.list.filterIsInstance<Misses.Class>().forEach { miss ->
+            generateMissClass(miss).lines().forEach { line ->
+                append("\t")
+                append(line)
+                appendLine()
+            }
+        }
+
+        appendLine("}")
+    }
+
+    private fun StringBuilder.appendImportStatements(children: List<SupplierRenderResult?>) {
+        appendLine("import com.popovanton0.kira.suppliers.base.Supplier")
         children.forEach {
-            it.imports?.forEach { import ->
+            it?.imports?.forEach { import ->
                 append("import ")
                 appendLine(import)
             }
@@ -96,66 +147,23 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
     }
 
     private inner class ProcessingScopeImpl(private val kiraAnn: Kira) : ProcessingScope {
-        override fun processFunction(function: KSFunctionDeclaration): List<SupplierRenderResult> =
-            processFunction(this, kiraAnn, function)
+        override fun processFunction(
+            params: List<FunctionParameter>,
+            missesPrefix: String
+        ): List<SupplierRenderResult?> = processFunction(this, kiraAnn, params, missesPrefix)
     }
 
     private fun processFunction(
         processingScope: ProcessingScope,
         kiraAnn: Kira,
-        function: KSFunctionDeclaration
-    ): List<SupplierRenderResult> {
-        require(function.typeParameters.isEmpty()) { "Functions with generics are not supported" }
-        require(Modifier.SUSPEND !in function.modifiers) {
-            // todo delegate to the user impl of the injector
-            "Suspend functions are not yet supported"
-        }
-
-        val params = collectSuitableParameters(function)
-
-        return params.map { param ->
-            if (param.type.isFunctionType || param.type.isSuspendFunctionType) {
-                // todo isFunctionType delegate to the user impl of the injector
-                // todo And add var to the GeneratedKiraScope
-                TODO("Functional types are not yet supported")
+        params: List<FunctionParameter>,
+        missesPrefix: String,
+    ): List<SupplierRenderResult?> = params.map { param ->
+        supplierProcessors.firstNotNullOfOrNull { supplierProcessor ->
+            with(supplierProcessor) {
+                renderSupplier(processingScope, kiraAnn, param, missesPrefix)
             }
-
-            supplierProcessors.firstNotNullOfOrNull { supplierProcessor ->
-                with(supplierProcessor) { processingScope.renderSupplier(kiraAnn, param) }
-            } ?: error("Unknown type: ${param.type.render()}")
         }
-    }
-
-    private fun collectSuitableParameters(function: KSFunctionDeclaration): List<Parameter> {
-        val params = mutableListOf<Parameter>()
-        val extensionReceiverRef = function.extensionReceiver
-        val extensionReceiverType = extensionReceiverRef?.resolve()
-        if (extensionReceiverType != null)
-            params += Parameter(
-                name = "",
-                type = extensionReceiverType,
-                typeRef = extensionReceiverRef,
-                isExtension = true
-            )
-
-        function.parameters.mapNotNullTo(params) { param ->
-            val hasDefault = param.hasDefault
-            if (param.isVararg)
-                if (hasDefault) return@mapNotNullTo null
-                else TODO("Vararg params are not currently supported")
-            val name = param.name?.asString()
-                ?: if (hasDefault) return@mapNotNullTo null
-                else error("Functions with unnamed params and no default values are not supported")
-            val typeRef = param.type
-            val type: KSType = typeRef.resolve()
-            if (type.isError) {
-                if (hasDefault) return@mapNotNullTo null
-                else error("""Type of the param "$name" cannot be resolved""")
-            }
-
-            Parameter(name, type, typeRef)
-        }
-        return params
     }
 
 

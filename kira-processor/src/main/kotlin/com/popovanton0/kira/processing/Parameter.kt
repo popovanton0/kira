@@ -1,11 +1,8 @@
 package com.popovanton0.kira.processing
 
 import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.KSValueParameter
 
-data class Parameter(
-    val name: String,
-    val type: KSType,
-    val typeRef: KSTypeReference,
-    val isExtension: Boolean = false
-)
+class FunctionParameter(val parameter: KSValueParameter) : KSValueParameter by parameter {
+    val resolvedType: KSType = parameter.type.resolve()
+}

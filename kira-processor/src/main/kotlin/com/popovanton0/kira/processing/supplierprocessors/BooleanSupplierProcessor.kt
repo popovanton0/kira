@@ -2,7 +2,7 @@ package com.popovanton0.kira.processing.supplierprocessors
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.popovanton0.kira.annotations.Kira
-import com.popovanton0.kira.processing.Parameter
+import com.popovanton0.kira.processing.FunctionParameter
 import com.popovanton0.kira.processing.supplierprocessors.base.ProcessingScope
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor.Companion.FULL_SUPPLIER_INTERFACE_NAME
@@ -15,23 +15,27 @@ object BooleanSupplierProcessor : SupplierProcessor {
      * text = boolean(paramName = "text", defaultValue = boolean)
      * ```
      */
-    override fun ProcessingScope.renderSupplier(
+    override fun renderSupplier(
+        processingScope: ProcessingScope,
         kiraAnn: Kira,
-        parameter: Parameter
-    ): SupplierRenderResult? = with(parameter) {
-        val paramTypeName = type.declaration.qualifiedName?.asString()
-        if (paramTypeName != "kotlin.Boolean" || type.declaration !is KSClassDeclaration)
-            return@with null
+        param: FunctionParameter,
+        missesPrefix: String
+    ): SupplierRenderResult? {
+        val declaration = param.resolvedType.declaration
+        val paramTypeName = declaration.qualifiedName?.asString()
+        if (paramTypeName != "kotlin.Boolean" || declaration !is KSClassDeclaration)
+            return null
 
-        val nullable = type.isMarkedNullable
+        val nullable = param.resolvedType.isMarkedNullable
+        val paramName = param.name!!.asString()
         val sourceCode = buildString {
             if (nullable) append("nullableBoolean") else append("boolean")
-            append("(paramName = \"name\", defaultValue = ")
+            append("(paramName = \"paramName\", defaultValue = ")
             if (nullable) append("null") else append("false")
             append(')')
         }
 
-        val renderedType = type.render()
+        val renderedType = param.resolvedType.render()
         val supplierImplName =
             if (nullable) FULL_NULLABLE_BOOLEAN_SUPPLIER_NAME
             else FULL_BOOLEAN_SUPPLIER_NAME
@@ -39,7 +43,7 @@ object BooleanSupplierProcessor : SupplierProcessor {
             if (nullable) "$SUPPLIERS_PKG_NAME.nullableBoolean"
             else "$SUPPLIERS_PKG_NAME.boolean"
         return SupplierRenderResult(
-            varName = name,
+            varName = paramName,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
             supplierImplType = "$supplierImplName<$renderedType>",

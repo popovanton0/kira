@@ -1,7 +1,10 @@
 package com.popovanton0.kira.processing.supplierprocessors.base
 
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.popovanton0.kira.processing.FunctionParameter
 
 interface ProcessingScope {
-    fun processFunction(function: KSFunctionDeclaration): List<SupplierRenderResult>
+    fun processFunction(
+        params: List<FunctionParameter>,
+        missesPrefix: String
+    ): List<SupplierRenderResult?>
 }

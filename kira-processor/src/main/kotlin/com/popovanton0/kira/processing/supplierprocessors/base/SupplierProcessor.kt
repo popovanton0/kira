@@ -1,10 +1,15 @@
 package com.popovanton0.kira.processing.supplierprocessors.base
 
 import com.popovanton0.kira.annotations.Kira
-import com.popovanton0.kira.processing.Parameter
+import com.popovanton0.kira.processing.FunctionParameter
 
 interface SupplierProcessor {
-    fun ProcessingScope.renderSupplier(kiraAnn: Kira, parameter: Parameter): SupplierRenderResult?
+    fun renderSupplier(
+        processingScope: ProcessingScope,
+        kiraAnn: Kira,
+        param: FunctionParameter,
+        missesPrefix: String,
+    ): SupplierRenderResult?
 
     companion object {
         const val SUPPLIERS_PKG_NAME = "com.popovanton0.kira.suppliers"
