@@ -189,66 +189,27 @@ internal fun generateMisses(
     children: List<SupplierRenderResult?>,
     params: List<FunctionParameter>,
     missParamName: String
-): Misses.Class? = children.zip(params).mapNotNull { (supplierRenderResult, param) ->
-    if (supplierRenderResult != null) {
-        val childMisses: Misses.Class? = supplierRenderResult.misses
-        childMisses ?: return@mapNotNull null
-    } else {
-        return@mapNotNull Misses.Single(
-            paramName = param.name!!.asString(),
-            type = param.resolvedType.render(),
-            //optional = param.hasDefault,
-        )
+): Misses.Class? {
+    val missesList = children.zip(params).mapNotNull { (supplierRenderResult, param) ->
+        if (supplierRenderResult != null) {
+            val childMisses: Misses.Class? = supplierRenderResult.misses
+            childMisses ?: return@mapNotNull null
+        } else {
+            return@mapNotNull Misses.Single(
+                paramName = param.name!!.asString(),
+                type = param.resolvedType.render(),
+                //optional = param.hasDefault,
+            )
+        }
     }
-}.let {
-    if (it.isEmpty()) {
-        null
-    } else {
-        Misses.Class(
-            paramName = missParamName,
-            list = it
-        )
+    missesList.let {
+        if (it.isEmpty()) {
+            return null
+        } else {
+            return Misses.Class(paramName = missParamName, list = it)
+        }
     }
 }
-
-
-/*internal fun collectSuitableParameters(function: KSFunctionDeclaration): List<Parameter?> {
-    val params = mutableListOf<Parameter?>()
-    val extensionReceiverRef = function.extensionReceiver
-    val extensionReceiverType = extensionReceiverRef?.resolve()
-    if (extensionReceiverType != null)
-        params += FunctionParameter(
-            name = "",
-            type = extensionReceiverType,
-            typeRef = extensionReceiverRef,
-            isExtension = true
-        )
-
-    function.parameters.mapTo(params) { param ->
-        val hasDefault = param.hasDefault
-        if (param.isVararg)
-            if (hasDefault) return@mapTo null
-            else return@mapTo null //TODO("Vararg params are not currently supported")
-        val name = param.name?.asString()
-            ?: if (hasDefault) return@mapTo null
-            else error("Functions with unnamed params and no default values are not supported")
-        val typeRef = param.type
-        val type: KSType = typeRef.resolve()
-        if (type.isError) {
-            if (hasDefault) return@mapTo null
-            else error("""Type of the param "$name" cannot be resolved""")
-        }
-        if (type.isFunctionType || type.isSuspendFunctionType) {
-            // todo isFunctionType delegate to the user impl of the injector
-            // todo And add var to the GeneratedKiraScope
-            TODO("Functional types are not yet supported")
-        }
-
-        Parameter(name, type, typeRef)
-    }
-    return params
-}*/
-
 
 internal fun StringBuilder.appendCompoundSupplierBody(
     children: List<SupplierRenderResult?>,
@@ -259,6 +220,9 @@ internal fun StringBuilder.appendCompoundSupplierBody(
     children.forEachIndexed { index, renderResult ->
         val parameter = parameters[index]
         val parameterName = parameter.name!!.asString()
+        // todo remove val if Kira.Customization.enabled == true
+        // todo append `_`s to every parameterName so that it is different from the package name
+        // todo so that they will not get confused and code will always compile. add unit test
         append("val $parameterName = ")
         if (renderResult == null) {
             append(missesPrefix)

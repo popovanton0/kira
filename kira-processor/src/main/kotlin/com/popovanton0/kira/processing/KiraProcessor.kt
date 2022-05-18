@@ -125,7 +125,8 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         }
         appendLine(") {")
 
-        miss.list.filterIsInstance<Misses.Class>().forEach { miss ->
+        miss.list.forEach { miss ->
+            if (miss !is Misses.Class) return@forEach
             generateMissClass(miss).lines().forEach { line ->
                 append("\t")
                 append(line)

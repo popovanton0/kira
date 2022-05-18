@@ -76,7 +76,7 @@ abstract class BaseProcessorTest {
         val outputDir = File(testResourcesDir, "output")
 
         if (UPDATE_TEST_OUTPUTS) {
-            outputDir.deleteRecursively()
+            outputDir.deleteRecursively { it.name != "compilationError" }
         }
         outputDir.mkdirs()
 
@@ -128,4 +128,7 @@ abstract class BaseProcessorTest {
         val className = testNameRule.className.substringAfterLast(".")
         return File(rootResourcesDir, "$className/${methodName}")
     }
+
+    private inline fun File.deleteRecursively(predicate: (File) -> Boolean) =
+        walkBottomUp().forEach { if (predicate(it)) it.delete() }
 }

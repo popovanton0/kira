@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/kira" />
             <option value="$PROJECT_DIR$/kira-annotations" />
             <option value="$PROJECT_DIR$/kira-processor" />
+            <option value="$PROJECT_DIR$/kira-processor-test" />
           </set>
         </option>
       </GradleProjectSettings>
