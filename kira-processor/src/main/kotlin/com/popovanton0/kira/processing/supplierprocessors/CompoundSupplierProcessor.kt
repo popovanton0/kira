@@ -50,7 +50,8 @@ object CompoundSupplierProcessor : SupplierProcessor {
         processingScope: ProcessingScope,
         kiraAnn: Kira,
         param: FunctionParameter,
-        missesPrefix: String
+        missesPrefix: String,
+        scopeClassPrefix: String
     ): SupplierRenderResult? {
         if (!param.isCompoundableClass()) return null
 
@@ -60,51 +61,64 @@ object CompoundSupplierProcessor : SupplierProcessor {
         val imports = mutableListOf<String>()
         var misses: Misses.Class? = null
 
+        var scopeClassName: String? = null
+        var scopeClassSource: String? = null
+
         val sourceCode = buildString {
             val supplierFunName = if (nullable) "nullableCompound" else "compound"
             imports += "$SUPPLIERS_PKG_NAME.compound.$supplierFunName"
 
-            appendCompoundSupplierFunctionCall(
-                supplierFunName = supplierFunName,
-                renderedType = renderedType,
-                kiraAnn = kiraAnn,
-                param = param,
-                nullable = nullable
-            )
-
             val classDeclaration = param.resolvedType.declaration as KSClassDeclaration
             val className = classDeclaration.qualifiedName!!.asString()
-
-            var topLevelClassSource = ""
+            val primaryConstructor = classDeclaration.primaryConstructor
 
             if (classDeclaration.classKind == ClassKind.OBJECT) {
+                appendCompoundSupplierFunctionCall(
+                    supplierFunName, renderedType, param, nullable, scopeClassName = null
+                )
                 appendInjectorWithObject(className)
+            } else if (primaryConstructor == null) return null
+            else if (primaryConstructor.isPrivate()) return null
+            else if (primaryConstructor.parameters.isEmpty()) {
+                appendInjectorWithClassWithEmptyConstructor(className)
             } else {
-                val primaryConstructor = classDeclaration.primaryConstructor!!
-                if (primaryConstructor.isPrivate()) return null
-                if (primaryConstructor.parameters.isEmpty()) {
-                    appendInjectorWithClassWithEmptyConstructor(className)
-                } else {
-                    val params = primaryConstructor.parameters.map(::FunctionParameter)
-                    val children: List<SupplierRenderResult?> = processingScope.processConstructor(
-                        className = className,
-                        parameters = params,
-                        missesPrefix = "$missesPrefix.$paramName"
-                    )
+                val params = primaryConstructor.parameters.map(::FunctionParameter)
+                scopeClassName = createScopeClassName(scopeClassPrefix, paramName)
+                val children: List<SupplierRenderResult?> = processingScope.processConstructor(
+                    className = className,
+                    parameters = params,
+                    missesPrefix = "$missesPrefix.$paramName",
+                    scopeClassPrefix = scopeClassName!!,
+                )
 
-                    misses = generateMisses(children, params, paramName)
+                if (children.all { it == null }) return null
 
-                    append("\t")
-                    appendCompoundSupplierBody(
-                        children = children,
-                        constructorName = className,
-                        missesPrefix = "$missesPrefix.$paramName",
-                        parameters = params
-                    )
+                misses = generateMisses(children, params, paramName)
 
-                    // aggregating child imports
-                    children.forEach { it?.imports?.forEach(imports::add) }
+                if (kiraAnn.customization.enabled) {
+                    scopeClassSource =
+                        if (kiraAnn.customization.supplierImpls)
+                            scopeClassWithImplsSource(imports, scopeClassName!!, params, children)
+                        else
+                            scopeClassSource(imports, scopeClassName!!, params, children)
                 }
+
+                appendCompoundSupplierFunctionCall(
+                    supplierFunName, renderedType, param, nullable,
+                    scopeClassName = if (kiraAnn.customization.enabled) scopeClassName else null
+                )
+
+                append("\t")
+                appendCompoundSupplierBody(
+                    kiraAnn = kiraAnn,
+                    children = children,
+                    constructorName = className,
+                    missesPrefix = "$missesPrefix.$paramName",
+                    parameters = params
+                )
+
+                // aggregating child imports
+                children.forEach { it?.imports?.forEach(imports::add) }
             }
             append("\n}")
         }
@@ -116,7 +130,8 @@ object CompoundSupplierProcessor : SupplierProcessor {
             varName = paramName,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
-            supplierImplType = "$supplierImplName<$renderedType>",
+            supplierImplType = "$supplierImplName<$renderedType, ${scopeClassName ?: "*"}>",
+            scopeClassSource = scopeClassSource,
             misses = misses,
             imports = imports
         )
@@ -125,14 +140,15 @@ object CompoundSupplierProcessor : SupplierProcessor {
     private fun ProcessingScope.processConstructor(
         className: String,
         parameters: List<FunctionParameter>,
-        missesPrefix: String
+        missesPrefix: String,
+        scopeClassPrefix: String,
     ): List<SupplierRenderResult?> {
         if (!knownClasses.add(className)) {
             val errorMsg = createCircularDependencyErrorMsg(className)
             knownClasses.clear()
             error(errorMsg)
         }
-        val children: List<SupplierRenderResult?> = processFunction(parameters, missesPrefix)
+        val children = processFunction(parameters, missesPrefix, scopeClassPrefix)
         knownClasses.remove(className)
         return children
     }
@@ -160,12 +176,14 @@ object CompoundSupplierProcessor : SupplierProcessor {
     private fun StringBuilder.appendCompoundSupplierFunctionCall(
         supplierFunName: String,
         renderedType: String,
-        kiraAnn: Kira,
         param: FunctionParameter,
-        nullable: Boolean
+        nullable: Boolean,
+        scopeClassName: String?,
     ) {
         appendLine("$supplierFunName<$renderedType>(")
-        if (kiraAnn.customization.enabled) appendLine("\tscope = TODO(),")
+        if (scopeClassName != null) {
+            appendLine("\tscope = ${scopeClassName}(),")
+        }
         appendLine("\tparamName = \"${param.name!!.asString()}\",")
         append("\tlabel = \"$renderedType\"")
         if (nullable) appendLine(",\n\tisNullByDefault = true") else appendLine()
@@ -198,7 +216,7 @@ internal fun generateMisses(
             return@mapNotNull Misses.Single(
                 paramName = param.name!!.asString(),
                 type = param.resolvedType.render(),
-                //optional = param.hasDefault,
+                //optional = param.hasDefault, todo handle default vars with no supplier
             )
         }
     }
@@ -212,6 +230,7 @@ internal fun generateMisses(
 }
 
 internal fun StringBuilder.appendCompoundSupplierBody(
+    kiraAnn: Kira,
     children: List<SupplierRenderResult?>,
     constructorName: String,
     missesPrefix: String,
@@ -220,10 +239,11 @@ internal fun StringBuilder.appendCompoundSupplierBody(
     children.forEachIndexed { index, renderResult ->
         val parameter = parameters[index]
         val parameterName = parameter.name!!.asString()
-        // todo remove val if Kira.Customization.enabled == true
-        // todo append `_`s to every parameterName so that it is different from the package name
-        // todo so that they will not get confused and code will always compile. add unit test
-        append("val $parameterName = ")
+        // todo add unit test: paramName is the same as the first section of the package name
+        if (kiraAnn.customization.enabled) append("this.")
+        // underscore is appended in case package name has the same beginning as the paramName
+        else append("val _")
+        append("$parameterName = ")
         if (renderResult == null) {
             append(missesPrefix)
             append('.')
@@ -241,7 +261,11 @@ internal fun StringBuilder.appendCompoundSupplierBody(
     val constructorCallBody = buildString {
         parameters.forEachIndexed { index, parameter ->
             val varName = parameter.name!!.asString()
-            append("$varName = $varName.currentValue()")
+            append("$varName = ")
+            if (kiraAnn.customization.enabled) append("this.")
+            // underscore is appended in case package name has the same beginning as the paramName
+            else append("_")
+            append("$varName.currentValue()")
             if (index != children.lastIndex) append(",\n\t\t\t")
         }
     }
@@ -256,4 +280,90 @@ internal fun StringBuilder.appendCompoundSupplierBody(
            |    }
         """.trimMargin()
     )
+}
+
+internal fun createScopeClassName(scopeClassPrefix: String, paramName: String): String {
+    val scopeClassNamePrefix = if (scopeClassPrefix.isEmpty()) "" else "$scopeClassPrefix."
+    return "$scopeClassNamePrefix${paramName.replaceFirstChar { it.titlecaseChar() }}Scope"
+}
+
+internal fun scopeClassWithImplsSource(
+    imports: MutableList<String>,
+    scopeClassName: String,
+    params: List<FunctionParameter>,
+    children: List<SupplierRenderResult?>
+) = buildString {
+    imports += "$SUPPLIERS_PKG_NAME.compound.GeneratedKiraScopeWithImpls"
+    imports += "$SUPPLIERS_PKG_NAME.compound.GeneratedKiraScopeWithImpls.SupplierImplsScope"
+    appendLine("public class $scopeClassName : GeneratedKiraScopeWithImpls<$scopeClassName.SupplierImplsScope>() {")
+    appendLine()
+    params.forEach { param ->
+        appendLine("\tpublic lateinit var ${param.name!!.asString()}: Supplier<${param.resolvedType.render()}>")
+    }
+    appendLine()
+
+    appendLine("\toverride val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)\n")
+
+    appendLine("\tpublic class SupplierImplsScope(private val scope: $scopeClassName): GeneratedKiraScopeWithImpls.SupplierImplsScope() {\n")
+
+    children.forEach { renderResult ->
+        with(renderResult ?: return@forEach) {
+            appendLine(
+                """
+                    |    public var $varName: ${supplierImplType!!}
+                    |        get() = scope.$varName as? $supplierImplType ?: implChanged()
+                    |        set(value) { scope.$varName = value }
+                    |        
+                    """.trimMargin().prependIndent()
+            )
+        }
+    }
+    appendLine("\t}\n")
+
+    append("\toverride fun collectSuppliers(): List<Supplier<*>> = listOf(")
+
+    children.forEach { renderResult ->
+        append(renderResult?.varName ?: return@forEach)
+        append(", ")
+    }
+
+    appendLine(")\n")
+
+    children.forEach { renderResult ->
+        renderResult ?: return@forEach
+        renderResult.scopeClassSource?.prependIndent()?.also(::appendLine) ?: return@forEach
+    }
+
+    appendLine("}")
+}
+
+internal fun scopeClassSource(
+    imports: MutableList<String>,
+    scopeClassName: String,
+    params: List<FunctionParameter>,
+    children: List<SupplierRenderResult?>
+) = buildString {
+    imports += "$SUPPLIERS_PKG_NAME.compound.GeneratedKiraScope"
+    appendLine("public class $scopeClassName : GeneratedKiraScope() {")
+    appendLine()
+    params.forEach { param ->
+        appendLine("\tpublic lateinit var ${param.name!!.asString()}: Supplier<${param.resolvedType.render()}>")
+    }
+    appendLine("\n")
+
+    append("\toverride fun collectSuppliers(): List<Supplier<*>> = listOf(")
+
+    children.forEach { renderResult ->
+        append(renderResult?.varName ?: return@forEach)
+        append(", ")
+    }
+
+    appendLine(")\n")
+
+    children.forEach { renderResult ->
+        renderResult ?: return@forEach
+        renderResult.scopeClassSource?.prependIndent()?.also(::appendLine) ?: return@forEach
+    }
+
+    appendLine("}")
 }

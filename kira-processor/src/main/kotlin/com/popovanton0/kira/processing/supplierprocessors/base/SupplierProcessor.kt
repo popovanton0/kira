@@ -9,6 +9,7 @@ interface SupplierProcessor {
         kiraAnn: Kira,
         param: FunctionParameter,
         missesPrefix: String,
+        scopeClassPrefix: String,
     ): SupplierRenderResult?
 
     companion object {

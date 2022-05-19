@@ -100,6 +100,11 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
 ) : SupplierBuilder<T>() {
     private var injector: Injector<T> = scope.block()
 
+    public fun modify(block: Scope.() -> Unit): CompoundSupplierBuilder<T, Scope> {
+        if (!isInitialized) scope.block() else alreadyInitializedError()
+        return this
+    }
+
     public fun modifyInjector(
         block: Scope.(previousInjector: Injector<T>) -> Injector<T>
     ): CompoundSupplierBuilder<T, Scope> {
@@ -125,6 +130,11 @@ public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> interna
     block: Scope.() -> Injector<T>
 ) : SupplierBuilder<T?>() {
     private var injector: Injector<T> = scope.block()
+
+    public fun modify(block: Scope.() -> Unit): NullableCompoundSupplierBuilder<T, Scope> {
+        if (!isInitialized) scope.block() else alreadyInitializedError()
+        return this
+    }
 
     public fun modifyInjector(
         block: Scope.(previousInjector: Injector<T>) -> Injector<T>

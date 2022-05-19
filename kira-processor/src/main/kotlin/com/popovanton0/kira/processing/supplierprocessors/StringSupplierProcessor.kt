@@ -19,7 +19,8 @@ object StringSupplierProcessor : SupplierProcessor {
         processingScope: ProcessingScope,
         kiraAnn: Kira,
         param: FunctionParameter,
-        missesPrefix: String
+        missesPrefix: String,
+        scopeClassPrefix: String
     ): SupplierRenderResult? {
         val declaration = param.resolvedType.declaration
         val paramTypeName = declaration.qualifiedName?.asString()
@@ -30,7 +31,7 @@ object StringSupplierProcessor : SupplierProcessor {
         val paramName = param.name!!.asString()
         val sourceCode = buildString {
             if (nullable) append("nullableString") else append("string")
-            append("(paramName = \"paramName\", defaultValue = ")
+            append("(paramName = \"$paramName\", defaultValue = ")
             if (nullable) append("null") else append("\"Example\"")
             append(')')
         }
@@ -46,7 +47,7 @@ object StringSupplierProcessor : SupplierProcessor {
             varName = paramName,
             sourceCode = sourceCode,
             supplierType = "$FULL_SUPPLIER_INTERFACE_NAME<$renderedType>",
-            supplierImplType = "$supplierImplName<$renderedType>",
+            supplierImplType = supplierImplName,
             imports = listOf(imports)
         )
     }

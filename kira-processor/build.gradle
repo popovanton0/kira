@@ -15,6 +15,7 @@ java {
 dependencies {
     implementation project(":kira-annotations")
     implementation "com.google.devtools.ksp:symbol-processing-api:$kotlin_version-$ksp_subversion"
+    implementation "com.squareup:kotlinpoet:1.11.0"
 
     testImplementation 'com.github.tschuchortdev:kotlin-compile-testing-ksp:1.4.8'
     testImplementation 'junit:junit:4.13.2'
@@ -28,7 +29,7 @@ afterEvaluate {
                 from components.java
                 groupId = 'com.popovanton0.kira'
                 artifactId = 'kira-processing'
-                version = '1.0.0'
+                version = '0.0.1'
             }
         }
     }

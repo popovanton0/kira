@@ -19,7 +19,8 @@ object EnumSupplierProcessor : SupplierProcessor {
         processingScope: ProcessingScope,
         kiraAnn: Kira,
         param: FunctionParameter,
-        missesPrefix: String
+        missesPrefix: String,
+        scopeClassPrefix: String
     ): SupplierRenderResult? {
         if (Modifier.ENUM !in param.resolvedType.declaration.modifiers) return null
         val renderedType = param.resolvedType.render()
