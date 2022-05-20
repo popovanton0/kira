@@ -1,6 +1,5 @@
 package sdf
 
-import com.popovanton0.kira.annotations.Customization
 import com.popovanton0.kira.annotations.Kira
 import java.util.function.Supplier
 
@@ -44,7 +43,7 @@ public data class ExampleFunction3Misses(
 }
 
 
-@Kira(customization = Customization(enabled = true, supplierImpls = true))
+@Kira
 fun ExampleFunction3(
     ds1: Quality = Quality.GOOD,
     ds2: Quality? = Quality.GOOD,

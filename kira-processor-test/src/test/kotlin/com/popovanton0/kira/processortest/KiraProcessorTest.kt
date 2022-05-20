@@ -1,6 +1,6 @@
-package com.popovanton0.kira.processor
+package com.popovanton0.kira.processortest
 
-import com.popovanton0.kira.processor.base.BaseProcessorTest
+import com.popovanton0.kira.processortest.base.BaseProcessorTest
 import org.junit.Test
 
 class KiraProcessorTest : BaseProcessorTest() {

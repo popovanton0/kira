@@ -285,6 +285,7 @@ class MainActivity : ComponentActivity() {
                     }.modify {
                         generatedSupplierImpls {
                             this.car.modify {
+                                engine = nullableSingleValue("engine", Engine("single value"), nullByDefault = true)
                                 generatedSupplierImpls {
                                     this.model.defaultValue = "heavily modified"
                                 }

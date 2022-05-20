@@ -1,6 +1,7 @@
 package com.popovanton0.kira.processing.supplierprocessors
 
-import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.ClassKind
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.popovanton0.kira.processing.FunctionParameter
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierData
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
@@ -10,28 +11,30 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
 
-object EnumSupplierProcessor : SupplierProcessor {
+object ObjectSupplierProcessor : SupplierProcessor {
     private val supplierImplType =
-        ClassName(SUPPLIERS_PKG_NAME, "EnumSupplierBuilder")
+        ClassName("$SUPPLIERS_PKG_NAME.compound", "CompoundSupplierBuilder")
     private val nullableSupplierImplType =
-        ClassName(SUPPLIERS_PKG_NAME, "NullableEnumSupplierBuilder")
+        ClassName("$SUPPLIERS_PKG_NAME.compound", "NullableCompoundSupplierBuilder")
+    private val kiraScope =
+        ClassName("$SUPPLIERS_PKG_NAME.compound", "KiraScope")
 
     /**
      * ```
-     * text = enum(paramName = "text")
+     * engine = nullableSingleValue("engine", Engine("single value"), nullByDefault = true)
      * ```
      */
     override fun provideSupplierFor(param: FunctionParameter): SupplierData? {
-        val resolvedType = param.resolvedType
-        if (Modifier.ENUM !in resolvedType.declaration.modifiers) return null
+        val declaration = param.resolvedType.declaration as? KSClassDeclaration ?: return null
+        if (declaration.classKind != ClassKind.OBJECT) return null
 
-        val nullable = resolvedType.isMarkedNullable
+        val nullable = param.resolvedType.isMarkedNullable
 
         return SupplierData(
             functionParameter = param,
             supplierInitializer = CodeBlock.of("TODO()"),
             supplierImplType = (if (nullable) nullableSupplierImplType else supplierImplType)
-                .parameterizedBy(resolvedType.toTypeName())
+                .parameterizedBy(param.resolvedType.makeNotNullable().toTypeName(), kiraScope)
         )
     }
 }

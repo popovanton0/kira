@@ -4,13 +4,17 @@ import androidx.compose.runtime.Composable
 import com.popovanton0.kira.suppliers.base.Supplier
 
 public open class KiraScope {
-    private val suppliers = mutableListOf<Supplier<*>>()
+    private lateinit var suppliers: MutableList<Supplier<*>>
 
     public fun addSupplier(supplier: Supplier<*>) {
+        if (!::suppliers.isInitialized) suppliers = mutableListOf()
         suppliers.add(supplier)
     }
 
-    public open fun collectSuppliers(): List<Supplier<*>> = suppliers
+    public open fun collectSuppliers(): List<Supplier<*>> {
+        if (!::suppliers.isInitialized) suppliers = mutableListOf()
+        return suppliers
+    }
 
     public fun <T> injector(block: @Composable () -> T): Injector<T> = Injector(block)
 }

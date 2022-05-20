@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.popovanton0.kira.annotations.Kira
 
 enum class Skill { LOW, OK, SICK }
 enum class Food { BAD, GOOD, EXCELLENT }
@@ -30,7 +29,6 @@ data class Car(
     val engine: Engine = Engine(),
 )
 
-@Kira
 @Preview
 @Composable
 fun TextCard(

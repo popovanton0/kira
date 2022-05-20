@@ -9,5 +9,5 @@ interface ProcessingScope {
         params: List<FunctionParameter>,
         missesPrefix: String,
         scopeClassPrefix: String,
-    ): List<SupplierRenderResult?>
+    ): List<SupplierData?>
 }

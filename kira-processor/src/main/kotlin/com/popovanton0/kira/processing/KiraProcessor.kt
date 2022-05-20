@@ -1,251 +1,240 @@
+@file:OptIn(KotlinPoetKspPreview::class)
+
 package com.popovanton0.kira.processing
 
-import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
-import com.google.devtools.ksp.symbol.*
-import com.popovanton0.kira.annotations.Customization
+import com.google.devtools.ksp.symbol.FunctionKind
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.Modifier
 import com.popovanton0.kira.annotations.Kira
-import com.popovanton0.kira.processing.supplierprocessors.*
-import com.popovanton0.kira.processing.supplierprocessors.base.ProcessingScope
-import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
+import com.popovanton0.kira.annotations.KiraRoot
+import com.popovanton0.kira.processing.supplierprocessors.BooleanSupplierProcessor
+import com.popovanton0.kira.processing.supplierprocessors.EnumSupplierProcessor
+import com.popovanton0.kira.processing.supplierprocessors.ObjectSupplierProcessor
+import com.popovanton0.kira.processing.supplierprocessors.StringSupplierProcessor
+import com.popovanton0.kira.processing.supplierprocessors.base.SupplierData
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor.Companion.SUPPLIERS_PKG_NAME
-import com.popovanton0.kira.processing.supplierprocessors.base.SupplierRenderResult
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.MemberName.Companion.member
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
+import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.ksp.writeTo
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 class KiraProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
-    private val moduleName: String = environment.options.getOrElse("moduleName") { "" }
-    private val supplierProcessors: List<SupplierProcessor> = listOf(
+    private val kotlinSimpleFunNameRegex = "[a-zA-Z_][a-zA-Z_\\d]*".toRegex()
+    private val supplierInterfaceName = ClassName("$SUPPLIERS_PKG_NAME.base", "Supplier")
+    private val generatedKiraScopeName =
+        ClassName("$KIRA_ROOT_PKG_NAME.suppliers.compound", "GeneratedKiraScopeWithImpls")
+    private val abstractImplsScopeName =
+        generatedKiraScopeName.nestedClass("SupplierImplsScope")
+    private val abstractImplsScope_implsChanged =
+        generatedKiraScopeName.member("implChanged")
+    private val collectSuppliersReturnType =
+        LIST.parameterizedBy(supplierInterfaceName.parameterizedBy(STAR))
+    private val supplierProcessors = listOf(
         StringSupplierProcessor,
         BooleanSupplierProcessor,
         EnumSupplierProcessor,
-        CompoundSupplierProcessor,
+        ObjectSupplierProcessor,
     )
 
+    @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        resolver.getSymbolsWithAnnotation("com.popovanton0.kira.annotations.Kira")
-            .forEach { annotated ->
-                val kiraAnn = annotated.getKiraAnn()
-                if (!kiraAnn.currentModuleIsTarget()) return@forEach
-                when (annotated) {
-                    is KSFunctionDeclaration -> {
-                        val res = processRootFunction(kiraAnn, annotated).replace("\t", "    ")
-                        val pkgName = annotated.packageName.asString()
-                        environment.codeGenerator.createNewFile(
-                            dependencies = Dependencies(true),
-                            packageName = ("$pkgName.kira_generated_suppliers").removePrefix("."),
-                            fileName = annotated.qualifiedName!!.asString(),
-                        ).use {
-                            it.writer().use { it.write(res) }
-                        }
-                    }
-                    is KSClassDeclaration -> {
-                        TODO("Auto-generation of suppliers for classes is not yet supported")
-                        when {
-                            Modifier.DATA in annotated.modifiers -> TODO()
-                            Modifier.SEALED in annotated.modifiers -> TODO()
-                        }
-                    }
-                    else -> error("@Kira annotation is applicable only to classes and functions")
+        val rootAnns = resolver.getSymbolsWithAnnotation(kiraRootAnnClass.canonicalName).toList()
+        if (false) {
+            if (rootAnns.isEmpty()) return emptyList()
+            if (rootAnns.size > 1) Errors.manyRootClasses(rootAnns)
+            val kiraRootAnn = rootAnns.first().getAnnotationsByType(KiraRoot::class).first()
+        }
+
+        resolver.getSymbolsWithAnnotation(kiraAnnClass.canonicalName).forEach { function ->
+            isValidKiraFunction(function)
+            val funPkgName = function.packageName.asString()
+            val funSimpleName = function.simpleName.asString()
+            val fullFunName = function.qualifiedName!!.asString()
+            val kiraAnn = function.getAnnotationsByType(Kira::class).first()
+            val fileName = kiraAnn.name.ifEmpty {
+                require(funSimpleName.matches(kotlinSimpleFunNameRegex)) {
+                    // todo write a lint rule for that
+                    Errors.funWithUnicodeCharsInTheName(fullFunName)
                 }
+                funSimpleName
             }
+
+            val supplierDataList: List<SupplierData> = function.parameters.mapNotNull { param ->
+                param.name ?: Errors.funParamWithNoName(fullFunName)
+                val functionParameter = FunctionParameter(param)
+                supplierProcessors.firstNotNullOfOrNull { it.provideSupplierFor(functionParameter) }
+            }
+
+            val generatedPkgName = "$KIRA_ROOT_PKG_NAME.generated.$funPkgName"
+            val scopeName = ClassName(generatedPkgName, "${fileName}Scope")
+            val supplierImplsScopeName = scopeName.nestedClass("SupplierImplsScope")
+
+            val file = FileSpec.builder(
+                packageName = generatedPkgName,
+                fileName = fileName
+            ).addType(
+                TypeSpec.classBuilder(scopeName)
+                    .superclass(generatedKiraScopeName.parameterizedBy(supplierImplsScopeName))
+                    .addProperty(supplierImplsScopeProp(supplierImplsScopeName))
+                    .addType(
+                        supplierImplsClass(supplierImplsScopeName, scopeName, supplierDataList)
+                    )
+                    .addProperties(lateinitSupplierProps(supplierDataList))
+                    .addFunction(collectSuppliersFun(supplierDataList))
+                    .build()
+            ).build()
+
+            file.writeTo(environment.codeGenerator, aggregating = false)
+        }
+
         return emptyList()
     }
 
-    private fun processRootFunction(
-        kiraAnn: Kira,
-        function: KSFunctionDeclaration
-    ): String = buildString {
-        require(function.functionKind == FunctionKind.TOP_LEVEL) {
-            // todo delegate to the user impl of the injector
-            "Only top level functions are supported"
-        }
-        require(function.typeParameters.isEmpty()) { "Functions with generics are not supported" }
-        require(Modifier.SUSPEND !in function.modifiers) {
-            // todo delegate to the user impl of the injector
-            "Suspend functions are not yet supported"
-        }
-
-        val funName = function.qualifiedName!!.asString()
-        val funSimpleName = function.simpleName.asString()
-        val scopeClassName = createScopeClassName("", funName.replace(".", "_"))
-
-        val processingScope = ProcessingScopeImpl(kiraAnn, function.packageName.asString())
-        val params = function.parameters.map(::FunctionParameter)
-        val children = processFunction(
-            processingScope, kiraAnn, params,
-            missesPrefix = "misses", scopeClassPrefix = scopeClassName
+    private fun supplierImplsClass(
+        implsScopeClassName: ClassName,
+        scopeClassName: ClassName,
+        supplierDataList: List<SupplierData>
+    ) = TypeSpec.classBuilder(implsScopeClassName)
+        .superclass(abstractImplsScopeName)
+        .primaryConstructor(
+            FunSpec.constructorBuilder()
+                .addParameter("scope", scopeClassName)
+                .build()
         )
-
-        val imports = mutableListOf<String>()
-        var scopeClassSource = ""
-
-        if (kiraAnn.customization.enabled) {
-            scopeClassSource =
-                if (kiraAnn.customization.supplierImpls)
-                    scopeClassWithImplsSource(imports, scopeClassName, params, children)
-                else
-                    scopeClassSource(imports, scopeClassName, params, children)
-        }
-
-        appendLine("// This code is autogenerated. Please, do not edit this file.")
-        val pkgName =
-            "${function.packageName.asString()}.kira_generated_suppliers".removePrefix(".")
-        appendLine("package $pkgName")
-        appendLine()
-        imports.forEach { appendLine("import $it") }
-        appendImportStatements(children)
-        appendLine()
-
-        appendLine(scopeClassSource)
-
-        val missClassesSourceCode: String? =
-            generateMisses(children, params, missParamName = funSimpleName)
-                ?.run(::generateMissClass)
-
-        missClassesSourceCode?.let(::appendLine)
-
-        append("public fun ${funSimpleName}RootSupplier(")
-        if (missClassesSourceCode != null) {
-            append("\n\tmisses: ${funSimpleName}Misses\n")
-        }
-        append(") = $SUPPLIERS_PKG_NAME.compound.root(")
-        if (kiraAnn.customization.enabled) append("\n\tscope = ${scopeClassName}(),\n")
-        append(") {\n\t")
-
-        appendCompoundSupplierBody(
-            kiraAnn = kiraAnn,
-            children = children,
-            constructorName = funName,
-            missesPrefix = "misses",
-            parameters = params
+        .addProperty(
+            PropertySpec.builder("scope", scopeClassName)
+                .initializer("scope")
+                .addModifiers(KModifier.PRIVATE)
+                .build()
         )
-
-        appendLine("\n}")
-    }
-
-    private fun generateMissClass(
-        miss: Misses.Class
-    ): String = buildString {
-        val className = "${miss.paramName.replaceFirstChar { it.titlecaseChar() }}Misses"
-        appendLine("public data class $className(")
-        miss.list.forEach { miss ->
-            when (miss) {
-                is Misses.Class -> {
-                    val paramName = miss.paramName
-                    val paramNameCapitalized = paramName.replaceFirstChar { it.titlecaseChar() }
-                    appendLine("\tval $paramName: $className.${paramNameCapitalized}Misses,")
-                }
-                is Misses.Single -> {
-                    appendLine("\tval ${miss.paramName}: Supplier<${miss.type}>,")
-                }
+        .apply {
+            supplierDataList.forEach { supplierData ->
+                supplierImplProperty(supplierData, scopeClassName)
             }
         }
-        appendLine(") {")
+        .build()
 
-        miss.list.forEach { miss ->
-            if (miss !is Misses.Class) return@forEach
-            generateMissClass(miss).lines().forEach { line ->
-                append("\t")
-                append(line)
-                appendLine()
-            }
+    private fun TypeSpec.Builder.supplierImplProperty(
+        supplierData: SupplierData,
+        scopeClassName: ClassName
+    ) {
+        val propName = supplierData.functionParameter.parameter.name!!.asString()
+        val supplierImpl = supplierData.supplierImplType
+        val lateinitProp = scopeClassName.member(propName)
+        addProperty(
+            PropertySpec.builder(propName, supplierImpl)
+                .mutable()
+                .getter(supplierImplPropertyGetter(lateinitProp, supplierImpl))
+                .setter(supplierImplPropertySetter(supplierImpl, lateinitProp))
+                .build()
+        )
+    }
+
+    /** `set(value) { scope.text = value }` */
+    private fun supplierImplPropertySetter(
+        supplierImpl: TypeName,
+        lateinitProp: MemberName
+    ) = FunSpec.setterBuilder()
+        .addParameter("value", supplierImpl)
+        .addStatement("scope.%N = value", lateinitProp)
+        .build()
+
+    /** `scope.text as? StringSupplierBuilder ?: implChanged()` */
+    private fun supplierImplPropertyGetter(
+        lateinitProp: MemberName,
+        supplierImpl: TypeName
+    ) = FunSpec.getterBuilder().addStatement(
+        "return scope.%N as? %T ?: %N()",
+        lateinitProp,
+        supplierImpl,
+        abstractImplsScope_implsChanged
+    ).build()
+
+    private fun lateinitSupplierProps(supplierDataList: List<SupplierData>): List<PropertySpec> =
+        supplierDataList.map { supplierData ->
+            val propName = supplierData.functionParameter.parameter.name!!.asString()
+            val supplierTypeArg = supplierData.functionParameter.resolvedType.toTypeName()
+            PropertySpec
+                .builder(
+                    name = propName,
+                    type = supplierInterfaceName.parameterizedBy(supplierTypeArg),
+                    KModifier.LATEINIT
+                )
+                .mutable()
+                .build()
         }
 
-        appendLine("}")
-    }
+    /** `override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)` */
+    private fun supplierImplsScopeProp(implsScopeClassName: ClassName) = PropertySpec.builder(
+        name = "supplierImplsScope",
+        type = implsScopeClassName,
+        KModifier.OVERRIDE
+    ).initializer("%T(this)", implsScopeClassName).build()
 
-    private fun StringBuilder.appendImportStatements(children: List<SupplierRenderResult?>) {
-        appendLine("import com.popovanton0.kira.suppliers.base.Supplier")
-        children.forEach {
-            it?.imports?.forEach { import ->
-                append("import ")
-                appendLine(import)
-            }
-        }
-    }
-
-    private inner class ProcessingScopeImpl(
-        private val kiraAnn: Kira,
-        override val pkgName: String
-    ) : ProcessingScope {
-        override fun processFunction(
-            params: List<FunctionParameter>,
-            missesPrefix: String,
-            scopeClassPrefix: String
-        ): List<SupplierRenderResult?> =
-            processFunction(this, kiraAnn, params, missesPrefix, scopeClassPrefix)
-    }
-
-    private fun processFunction(
-        processingScope: ProcessingScope,
-        kiraAnn: Kira,
-        params: List<FunctionParameter>,
-        missesPrefix: String,
-        scopeClassPrefix: String,
-    ): List<SupplierRenderResult?> = params.map { param ->
-        supplierProcessors.firstNotNullOfOrNull { supplierProcessor ->
-            with(supplierProcessor) {
-                renderSupplier(processingScope, kiraAnn, param, missesPrefix, scopeClassPrefix)
-            }
-        }
-    }
-
+    private val listOf = MemberName("kotlin.collections", "listOf")
 
     /**
-     * Whether [Kira.targetModule] is the same as the module we are currently processing
+     * `override fun collectSuppliers(): List<Supplier<*>> = listOf(text, isRed, skill, food, car,
+     *     carN, rock)`
      */
-    private fun Kira.currentModuleIsTarget(): Boolean = when {
-        targetModule.isBlank() -> true
-        targetModule.isNotBlank() && targetModule == moduleName -> true
-        else -> false
-    }
-
-    private fun KSAnnotated.getKiraAnn(): Kira {
-        val kiraAnnotation =
-            annotations.singleOrNull { it.shortName.asString() == SHORT_KIRA_ANN_NAME }
-            // null only in a rare case that there are other anns called `SHORT_KIRA_ANN_NAME`
-                ?: annotations.first {
-                    val fullAnnName = it.annotationType.resolve().declaration.qualifiedName!!
-                    fullAnnName.asString() == FULL_KIRA_ANN_NAME
-                }
-        val args = kiraAnnotation.arguments
-        return Kira(
-            customization = (args[0].value as KSAnnotation).asCustomizationAnn(),
-            targetModule = args.getArgValue(
-                argName = "targetModule",
-                position = 1,
-                default = ""
+    private fun collectSuppliersFun(supplierDataList: List<SupplierData>) =
+        FunSpec.builder("collectSuppliers")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(collectSuppliersReturnType)
+            .addCode(
+                CodeBlock
+                    .builder()
+                    .add("return %M(", listOf)
+                    .apply {
+                        supplierDataList.forEach { supplierData ->
+                            val propName =
+                                supplierData.functionParameter.parameter.name!!.asString()
+                            add(propName)
+                            add(", ")
+                        }
+                    }
+                    .add(")")
+                    .build()
             )
-        )
-    }
+            .build()
 
-    private fun KSAnnotation.asCustomizationAnn(): Customization {
-        return Customization(
-            enabled = arguments.getArgValue(
-                argName = "customization",
-                position = 0,
-                default = false
-            ),
-            supplierImpls = arguments.getArgValue(
-                argName = "supplierImpls",
-                position = 1,
-                default = false
-            ),
-        )
+    @OptIn(ExperimentalContracts::class)
+    private fun isValidKiraFunction(function: KSAnnotated) {
+        contract {
+            returns() implies (function is KSFunctionDeclaration)
+        }
+        require(function is KSFunctionDeclaration) {
+            "Only functions can be annotated with @${kiraAnnClass.simpleName}, but " +
+                    "${function.location} is not a function"
+        }
+        val fullFunName = function.qualifiedName?.asString()
+        require(function.functionKind == FunctionKind.TOP_LEVEL) {
+            "Only top level functions are supported, but $fullFunName is not"
+        }
+        require(!function.isPrivate()) {
+            "Function $fullFunName is private, thus it cannot be called"
+        }
+        require(function.typeParameters.isEmpty()) {
+            "Functions with generics are not supported: $fullFunName"
+        }
+        require(Modifier.SUSPEND !in function.modifiers) {
+            "Suspend functions are not supported: $fullFunName"
+        }
     }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> List<KSValueArgument>.getArgValue(
-        argName: String,
-        position: Int,
-        default: T
-    ): T = find { it.name?.asString() == argName }?.value as? T ?: getOrNull(position)?.value as? T
-    ?: default
 }
 
-private const val FULL_KIRA_ANN_NAME = "com.popovanton0.kira.annotations.Kira"
-private const val SHORT_KIRA_ANN_NAME = "Kira"
-
-
+internal const val KIRA_ROOT_PKG_NAME = "com.popovanton0.kira"
+internal val kiraAnnClass = Kira::class.java
+internal val kiraRootAnnClass = Kira::class.java

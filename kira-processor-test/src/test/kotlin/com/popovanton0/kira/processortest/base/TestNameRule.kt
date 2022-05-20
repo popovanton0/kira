@@ -1,4 +1,4 @@
-package com.popovanton0.kira.processor.base
+package com.popovanton0.kira.processortest.base
 
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description

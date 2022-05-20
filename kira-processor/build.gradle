@@ -12,10 +12,20 @@ java {
     withJavadocJar()
 }
 
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = '11'
+        freeCompilerArgs += [
+                '-opt-in=kotlin.RequiresOptIn,com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview'
+        ]
+    }
+}
+
 dependencies {
     implementation project(":kira-annotations")
     implementation "com.google.devtools.ksp:symbol-processing-api:$kotlin_version-$ksp_subversion"
-    implementation "com.squareup:kotlinpoet:1.11.0"
+    implementation "com.squareup:kotlinpoet:$kotlin_poet_version"
+    implementation "com.squareup:kotlinpoet-ksp:$kotlin_poet_version"
 
     testImplementation 'com.github.tschuchortdev:kotlin-compile-testing-ksp:1.4.8'
     testImplementation 'junit:junit:4.13.2'
