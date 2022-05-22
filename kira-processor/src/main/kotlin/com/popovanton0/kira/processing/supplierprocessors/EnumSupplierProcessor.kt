@@ -28,7 +28,6 @@ object EnumSupplierProcessor : SupplierProcessor {
         val nullable = resolvedType.isMarkedNullable
 
         return SupplierData(
-            functionParameter = param,
             supplierInitializer = CodeBlock.of("TODO()"),
             supplierImplType = (if (nullable) nullableSupplierImplType else supplierImplType)
                 .parameterizedBy(resolvedType.toTypeName())

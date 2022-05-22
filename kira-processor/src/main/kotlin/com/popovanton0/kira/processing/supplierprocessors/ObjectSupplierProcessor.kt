@@ -31,7 +31,6 @@ object ObjectSupplierProcessor : SupplierProcessor {
         val nullable = param.resolvedType.isMarkedNullable
 
         return SupplierData(
-            functionParameter = param,
             supplierInitializer = CodeBlock.of("TODO()"),
             supplierImplType = (if (nullable) nullableSupplierImplType else supplierImplType)
                 .parameterizedBy(param.resolvedType.makeNotNullable().toTypeName(), kiraScope)

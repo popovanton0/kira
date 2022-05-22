@@ -26,7 +26,6 @@ object BooleanSupplierProcessor : SupplierProcessor {
         val nullable = param.resolvedType.isMarkedNullable
 
         return SupplierData(
-            functionParameter = param,
             supplierInitializer = CodeBlock.of("TODO()"),
             supplierImplType = if (nullable) nullableSupplierImplType else supplierImplType
         )

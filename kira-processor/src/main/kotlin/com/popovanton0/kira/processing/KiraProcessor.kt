@@ -14,11 +14,8 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.annotations.KiraRoot
-import com.popovanton0.kira.processing.supplierprocessors.BooleanSupplierProcessor
-import com.popovanton0.kira.processing.supplierprocessors.EnumSupplierProcessor
-import com.popovanton0.kira.processing.supplierprocessors.ObjectSupplierProcessor
-import com.popovanton0.kira.processing.supplierprocessors.StringSupplierProcessor
-import com.popovanton0.kira.processing.supplierprocessors.base.SupplierData
+import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
+import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor.Companion.SUPPLIERS_PKG_NAME
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.MemberName.Companion.member
@@ -29,7 +26,10 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-class KiraProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
+class KiraProcessor(
+    private val environment: SymbolProcessorEnvironment,
+    private val supplierProcessors: List<SupplierProcessor>,
+) : SymbolProcessor {
 
     private val kotlinSimpleFunNameRegex = "[a-zA-Z_][a-zA-Z_\\d]*".toRegex()
     private val supplierInterfaceName = ClassName("$SUPPLIERS_PKG_NAME.base", "Supplier")
@@ -41,12 +41,6 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         generatedKiraScopeName.member("implChanged")
     private val collectSuppliersReturnType =
         LIST.parameterizedBy(supplierInterfaceName.parameterizedBy(STAR))
-    private val supplierProcessors = listOf(
-        StringSupplierProcessor,
-        BooleanSupplierProcessor,
-        EnumSupplierProcessor,
-        ObjectSupplierProcessor,
-    )
 
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -71,10 +65,22 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                 funSimpleName
             }
 
-            val supplierDataList: List<SupplierData> = function.parameters.mapNotNull { param ->
+            val parameterSuppliers: List<ParameterSupplier> = function.parameters.map { param ->
                 param.name ?: Errors.funParamWithNoName(fullFunName)
                 val functionParameter = FunctionParameter(param)
-                supplierProcessors.firstNotNullOfOrNull { it.provideSupplierFor(functionParameter) }
+                val supplierData = supplierProcessors.firstNotNullOfOrNull {
+                    it.provideSupplierFor(functionParameter)
+                }
+                if (supplierData != null)
+                    ParameterSupplier.Provided(functionParameter, supplierData)
+                else
+                    ParameterSupplier.Empty(functionParameter)
+            }
+
+            if (false) {
+                require(parameterSuppliers.none { it is ParameterSupplier.Empty }) {
+                    Errors.suitableProviderNotFound(parameterSuppliers, fullFunName)
+                }
             }
 
             val generatedPkgName = "$KIRA_ROOT_PKG_NAME.generated.$funPkgName"
@@ -89,12 +95,21 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                     .superclass(generatedKiraScopeName.parameterizedBy(supplierImplsScopeName))
                     .addProperty(supplierImplsScopeProp(supplierImplsScopeName))
                     .addType(
-                        supplierImplsClass(supplierImplsScopeName, scopeName, supplierDataList)
+                        supplierImplsClass(
+                            supplierImplsScopeName,
+                            scopeName,
+                            parameterSuppliers.filterIsInstance<ParameterSupplier.Provided>()
+                        )
                     )
-                    .addProperties(lateinitSupplierProps(supplierDataList))
-                    .addFunction(collectSuppliersFun(supplierDataList))
+                    .addProperties(lateinitSupplierProps(parameterSuppliers))
+                    .addFunction(collectSuppliersFun(parameterSuppliers))
                     .build()
-            ).build()
+            ).addFunction(
+                FunSpec.builder("s")
+
+                    .build()
+            )
+                .build()
 
             file.writeTo(environment.codeGenerator, aggregating = false)
         }
@@ -105,7 +120,7 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
     private fun supplierImplsClass(
         implsScopeClassName: ClassName,
         scopeClassName: ClassName,
-        supplierDataList: List<SupplierData>
+        parameterSuppliers: List<ParameterSupplier.Provided>,
     ) = TypeSpec.classBuilder(implsScopeClassName)
         .superclass(abstractImplsScopeName)
         .primaryConstructor(
@@ -120,18 +135,18 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                 .build()
         )
         .apply {
-            supplierDataList.forEach { supplierData ->
-                supplierImplProperty(supplierData, scopeClassName)
+            parameterSuppliers.forEach { parameterSupplier ->
+                supplierImplProperty(parameterSupplier, scopeClassName)
             }
         }
         .build()
 
     private fun TypeSpec.Builder.supplierImplProperty(
-        supplierData: SupplierData,
+        parameterSupplier: ParameterSupplier.Provided,
         scopeClassName: ClassName
     ) {
-        val propName = supplierData.functionParameter.parameter.name!!.asString()
-        val supplierImpl = supplierData.supplierImplType
+        val propName = parameterSupplier.parameter.name!!.asString()
+        val supplierImpl = parameterSupplier.supplierData.supplierImplType
         val lateinitProp = scopeClassName.member(propName)
         addProperty(
             PropertySpec.builder(propName, supplierImpl)
@@ -162,19 +177,20 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
         abstractImplsScope_implsChanged
     ).build()
 
-    private fun lateinitSupplierProps(supplierDataList: List<SupplierData>): List<PropertySpec> =
-        supplierDataList.map { supplierData ->
-            val propName = supplierData.functionParameter.parameter.name!!.asString()
-            val supplierTypeArg = supplierData.functionParameter.resolvedType.toTypeName()
-            PropertySpec
-                .builder(
-                    name = propName,
-                    type = supplierInterfaceName.parameterizedBy(supplierTypeArg),
-                    KModifier.LATEINIT
-                )
-                .mutable()
-                .build()
-        }
+    private fun lateinitSupplierProps(
+        parameterSuppliers: List<ParameterSupplier>
+    ): List<PropertySpec> = parameterSuppliers.map { parameterSupplier ->
+        val propName = parameterSupplier.parameter.name!!.asString()
+        val supplierTypeArg = parameterSupplier.parameter.resolvedType.toTypeName()
+        PropertySpec
+            .builder(
+                name = propName,
+                type = supplierInterfaceName.parameterizedBy(supplierTypeArg),
+                KModifier.LATEINIT
+            )
+            .mutable()
+            .build()
+    }
 
     /** `override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)` */
     private fun supplierImplsScopeProp(implsScopeClassName: ClassName) = PropertySpec.builder(
@@ -189,7 +205,7 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
      * `override fun collectSuppliers(): List<Supplier<*>> = listOf(text, isRed, skill, food, car,
      *     carN, rock)`
      */
-    private fun collectSuppliersFun(supplierDataList: List<SupplierData>) =
+    private fun collectSuppliersFun(parameterSuppliers: List<ParameterSupplier>) =
         FunSpec.builder("collectSuppliers")
             .addModifiers(KModifier.OVERRIDE)
             .returns(collectSuppliersReturnType)
@@ -198,9 +214,8 @@ class KiraProcessor(private val environment: SymbolProcessorEnvironment) : Symbo
                     .builder()
                     .add("return %M(", listOf)
                     .apply {
-                        supplierDataList.forEach { supplierData ->
-                            val propName =
-                                supplierData.functionParameter.parameter.name!!.asString()
+                        parameterSuppliers.forEach { parameterSupplier ->
+                            val propName = parameterSupplier.parameter.name!!.asString()
                             add(propName)
                             add(", ")
                         }

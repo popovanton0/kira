@@ -2,8 +2,9 @@ package com.popovanton0.kira.processing
 
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
 
-object Errors {
+internal object Errors {
     fun manyRootClasses(rootAnns: List<KSAnnotated>): Nothing {
         val annotatedClassNames = rootAnns.joinToString {
             val classDeclaration = it as KSClassDeclaration
@@ -24,4 +25,17 @@ object Errors {
     fun funParamWithNoName(fullFunName: String): Nothing = error(
         "One of $fullFunName's params has no name"
     )
+
+    fun suitableProviderNotFound(
+        parameterSuppliers: List<ParameterSupplier>,
+        fullFunName: String
+    ): Nothing {
+        val parasWithNoProviders = parameterSuppliers
+            .filterIsInstance<ParameterSupplier.Empty>()
+            .joinToString { it.parameter.name!!.asString() }
+        error(
+            "No suitable provider was found for these parameters of the $fullFunName " +
+                    "function:\n$parasWithNoProviders"
+        )
+    }
 }

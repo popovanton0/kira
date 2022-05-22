@@ -5,8 +5,7 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.compound.CompoundSupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.KiraScope
-import sdf.Quality
-import sdf.Rock
+import sdf.*
 
 public class ExampleFunction3Scope :
     GeneratedKiraScopeWithImpls<ExampleFunction3Scope.SupplierImplsScope>() {
@@ -26,8 +25,14 @@ public class ExampleFunction3Scope :
 
   public lateinit var ds7: Supplier<Rock>
 
+  public lateinit var ds8: Supplier<B?>
+
+  public lateinit var ds9: Supplier<A>
+
+  public lateinit var ds10: Supplier<Engine?>
+
   public override fun collectSuppliers(): List<Supplier<*>> = listOf(ds1, ds2, ds3, ds4, ds5, ds6,
-      ds7, )
+      ds7, ds8, ds9, ds10, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunction3Scope,
@@ -74,4 +79,7 @@ public class ExampleFunction3Scope :
         scope.ds7 = value
       }
   }
+}
+
+public fun s(): Unit {
 }
