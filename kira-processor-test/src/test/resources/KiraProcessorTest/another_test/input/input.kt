@@ -1,6 +1,7 @@
-package sdf
+package sdf1
 
 import com.popovanton0.kira.annotations.Kira
+import com.popovanton0.kira.annotations.KiraRoot
 import java.util.function.Supplier
 
 @Target(AnnotationTarget.TYPE)
@@ -52,13 +53,16 @@ fun ExampleFunction3(
     ds5: Boolean,
     ds6: Boolean?,
     ds7: Rock,
-    ds8: B?,
-    ds9: A,
-    ds10: Engine?,
+    //ds8: B?,
+    //ds9: A,
+    //ds10: Engine?,
     //vararg ds10: Engine? = arrayOf(null),
 ) {
 
 }
+
+@KiraRoot
+object RootModule
 
 abstract class A(b: B, c: C)
 interface B//(c: C)

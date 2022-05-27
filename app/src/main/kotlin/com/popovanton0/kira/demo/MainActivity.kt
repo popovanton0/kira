@@ -141,7 +141,7 @@ public data class TextCardMisses(
     }
 }
 
-fun textCardRoot(misses: KiraScope.() -> TextCardMisses) = root(TextCardScope()) {
+fun textCardRoot(misses: KiraScope.() -> TextCardMisses) = kira(TextCardScope()) {
     val misses = misses()
 
     text = string(paramName = "text", defaultValue = "Lorem")

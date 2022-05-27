@@ -26,8 +26,8 @@ object StringSupplierProcessor : SupplierProcessor {
         val nullable = param.resolvedType.isMarkedNullable
 
         return SupplierData(
-            supplierInitializer = CodeBlock.of("TODO()"),
-            supplierImplType = if (nullable) nullableSupplierImplType else supplierImplType
+            initializer = CodeBlock.of("TODO()"),
+            implType = if (nullable) nullableSupplierImplType else supplierImplType
         )
     }
 }

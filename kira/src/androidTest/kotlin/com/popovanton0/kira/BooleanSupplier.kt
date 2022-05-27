@@ -4,8 +4,7 @@ import androidx.compose.material.Text
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.popovanton0.kira.suppliers.boolean
-import com.popovanton0.kira.suppliers.compound.injector
-import com.popovanton0.kira.suppliers.compound.root
+import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.nullableBoolean
 import org.junit.Rule
 import org.junit.Test
@@ -17,7 +16,7 @@ internal class BooleanSupplier {
 
     @Test
     fun booleanSupplier(): Unit = with(composeTestRule) {
-        val root = root {
+        val root = kira {
             val isFastCar = boolean("paramName:isFastCar", true)
             injector { Text(text = "car's " + if (isFastCar.currentValue()) "fast" else "slow") }
         }
@@ -37,7 +36,7 @@ internal class BooleanSupplier {
 
     @Test
     fun nullableBooleanSupplier(): Unit = with(composeTestRule) {
-        val root = root {
+        val root = kira {
             val isFastCar = nullableBoolean("paramName:isFastCar", true)
             injector {
                 val value = when (isFastCar.currentValue()) {
@@ -68,16 +67,3 @@ internal class BooleanSupplier {
             .assertExists("Value was not changed to 'null'")
     }
 }
-
-/*
-/**
-         * [boolean] will not be added to the screen because:
-         * 1. calling [modify] after initialization is prohibited; initialization is performed in
-         * [KiraScreen].
-         */
-        Assert.assertThrows(Throwable::class.java) {
-            root.modify {
-                isFastCar = boolean("changed param name", true)
-            }
-        }
- */

@@ -4,7 +4,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.TypeName
 
 data class SupplierData constructor(
-    val supplierImplType: TypeName,
-    val supplierInitializer: CodeBlock,
+    val implType: TypeName,
+    val initializer: CodeBlock,
 )
 

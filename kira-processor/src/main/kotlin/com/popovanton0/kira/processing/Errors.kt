@@ -29,13 +29,12 @@ internal object Errors {
     fun suitableProviderNotFound(
         parameterSuppliers: List<ParameterSupplier>,
         fullFunName: String
-    ): Nothing {
+    ): String {
         val parasWithNoProviders = parameterSuppliers
             .filterIsInstance<ParameterSupplier.Empty>()
             .joinToString { it.parameter.name!!.asString() }
-        error(
-            "No suitable provider was found for these parameters of the $fullFunName " +
-                    "function:\n$parasWithNoProviders"
-        )
+
+        return "No suitable provider was found for these parameters of the $fullFunName " +
+                "function:\n$parasWithNoProviders"
     }
 }

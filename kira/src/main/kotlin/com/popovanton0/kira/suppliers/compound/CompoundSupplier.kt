@@ -22,43 +22,6 @@ import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.VerticalDivider
 
-public fun root(
-    block: KiraScope.() -> Injector<Unit>,
-): RootCompoundSupplierBuilder<KiraScope> {
-    return RootCompoundSupplierBuilder(KiraScope(), block)
-}
-
-public fun <Scope : KiraScope> root(
-    scope: Scope,
-    block: Scope.() -> Injector<Unit>,
-): RootCompoundSupplierBuilder<Scope> {
-    return RootCompoundSupplierBuilder(scope, block)
-}
-
-public class RootCompoundSupplierBuilder<Scope : KiraScope> internal constructor(
-    private val scope: Scope,
-    block: Scope.() -> Injector<Unit>,
-) : SupplierBuilder<Unit>() {
-    private var injector: Injector<Unit> = scope.block()
-
-    public fun modify(block: Scope.() -> Unit): RootCompoundSupplierBuilder<Scope> {
-        if (!isInitialized) scope.block() else alreadyInitializedError()
-        return this
-    }
-
-    public fun modifyInjector(
-        block: Scope.(previousInjector: Injector<Unit>) -> Injector<Unit>
-    ): RootCompoundSupplierBuilder<Scope> {
-        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
-        return this
-    }
-
-    override fun BuildKey.build(): Supplier<Unit> = RootCompoundSupplierImpl(
-        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
-        injector = injector,
-    )
-}
-
 public fun <T : Any> KiraScope.compound(
     paramName: String,
     label: String,
@@ -217,29 +180,6 @@ private class CompoundSupplierImpl<T : Any>(
                         _currentValue.value = if (isNull) null else latestNonNullValue
                     }
                 )
-            }
-        }
-    }
-}
-
-private class RootCompoundSupplierImpl(
-    private val injector: Injector<Unit>,
-    private val suppliers: List<Supplier<*>>
-) : Supplier<Unit> {
-
-    @Composable
-    override fun currentValue() = Unit
-
-    @Composable
-    override fun Ui() = BoxWithConstraints {
-        if (maxWidth / maxHeight < 1) LazyColumn {
-            item { injector() }
-            items(suppliers) { it.Ui() }
-        }
-        else Row {
-            Box(modifier = Modifier.weight(1f).align(Alignment.CenterVertically)) { injector() }
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(suppliers) { it.Ui() }
             }
         }
     }

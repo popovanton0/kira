@@ -8,6 +8,8 @@ package com.popovanton0.kira.processortest.base
 
 import com.popovanton0.kira.processing.KiraProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
+import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.COMPILATION_ERROR
+import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
@@ -56,7 +58,7 @@ abstract class BaseProcessorTest {
     protected fun assertCompilationFails(errorMessage: String) {
         compileInputs { _, result ->
             assertThat(result.exitCode)
-                .isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+                .isEqualTo(COMPILATION_ERROR)
 
             assertThat(result.messages)
                 .contains(errorMessage)
@@ -75,8 +77,8 @@ abstract class BaseProcessorTest {
         val testResourcesDir = getTestResourcesDirectory(getRootResourcesDir())
         val outputDir = File(testResourcesDir, "output")
 
-        if (UPDATE_TEST_OUTPUTS) {
-            outputDir.deleteRecursively { it.name != "compilationError" }
+        if (UPDATE_TEST_OUTPUTS) outputDir.deleteRecursively {
+            it.name != "compilationError" && it.name != "compilationSuccess"
         }
         outputDir.mkdirs()
 
@@ -90,11 +92,13 @@ abstract class BaseProcessorTest {
         } else {
             val expectedFiles = outputDir.listFiles() ?: emptyArray<File>()
             if (expectedFiles.isEmpty()) {
-                assertThat(exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+                assertThat(exitCode).isEqualTo(OK)
             }
             val compilationErrorFile = expectedFiles.singleOrNull()
-            if (compilationErrorFile?.name == "compilationError") {
-                assertThat(exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+            val markerFileName = compilationErrorFile?.name
+            if (markerFileName == "compilationError" || markerFileName == "compilationSuccess") {
+                assertThat(exitCode)
+                    .isEqualTo(if (markerFileName.contains("Error")) COMPILATION_ERROR else OK)
 
                 val actual = messages.replace(soutNormalizationRegex, "$1")
                 val expected = compilationErrorFile.readText().replace(soutNormalizationRegex, "$1")

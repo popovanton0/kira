@@ -14,6 +14,10 @@ class KiraProcessorTest : BaseProcessorTest() {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun unknown_parameter_types() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun circular_dependency_one_level() =
         compileInputsAndVerifyOutputs()
 
