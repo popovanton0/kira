@@ -7,9 +7,12 @@ import com.popovanton0.kira.processing.supplierprocessors.base.SupplierData
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor.Companion.SUPPLIERS_PKG_NAME
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.buildCodeBlock
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.withIndent
 
 object ObjectSupplierProcessor : SupplierProcessor {
     private val supplierImplType =
@@ -18,10 +21,19 @@ object ObjectSupplierProcessor : SupplierProcessor {
         ClassName("$SUPPLIERS_PKG_NAME.compound", "NullableCompoundSupplierBuilder")
     private val kiraScope =
         ClassName("$SUPPLIERS_PKG_NAME.compound", "KiraScope")
+    private val builderFunName =
+        MemberName(SUPPLIERS_PKG_NAME, "singleValue")
+    private val nullableBuilderFunName =
+        MemberName(SUPPLIERS_PKG_NAME, "nullableSingleValue")
 
     /**
      * ```
-     * engine = nullableSingleValue("engine", Engine("single value"), nullByDefault = true)
+     * ds8 = nullableSingleValue(
+     *     paramName = "ds8",
+     *     value = Rock,
+     *     typeName = "sdf1.Rock",
+     *     nullByDefault = true
+     * )
      * ```
      */
     override fun provideSupplierFor(param: FunctionParameter): SupplierData? {
@@ -31,9 +43,25 @@ object ObjectSupplierProcessor : SupplierProcessor {
         val nullable = param.resolvedType.isMarkedNullable
 
         return SupplierData(
-            initializer = CodeBlock.of("TODO()"),
+            initializer = initializer(nullable, param.name!!.asString(), declaration.toClassName()),
             implType = (if (nullable) nullableSupplierImplType else supplierImplType)
                 .parameterizedBy(param.resolvedType.makeNotNullable().toTypeName(), kiraScope)
         )
+    }
+
+    private fun initializer(
+        nullable: Boolean,
+        paramName: String,
+        objectName: ClassName
+    ) = buildCodeBlock {
+        val funName = if (nullable) nullableBuilderFunName else builderFunName
+        addStatement("%M(", funName)
+        withIndent {
+            addStatement("paramName = %S,", paramName)
+            addStatement("value = %T,", objectName)
+            addStatement("typeName = %S,", objectName.canonicalName)
+            if (nullable) addStatement("nullByDefault = true")
+        }
+        addStatement(")")
     }
 }

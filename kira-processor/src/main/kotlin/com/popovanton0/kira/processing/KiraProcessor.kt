@@ -144,35 +144,38 @@ class KiraProcessor(
         .addSuperinterface(kiraProviderName.parameterizedBy(scopeName))
         .addProperty(
             PropertySpec.builder(
-                "kira",
-                kiraSupplierName.parameterizedBy(scopeName),
-                KModifier.OVERRIDE
+                "kira", kiraSupplierName.parameterizedBy(scopeName), KModifier.OVERRIDE
             ).initializer(
-                CodeBlock.builder()
-                    .beginControlFlow("%M(%T()) {", kiraBuilderFunName, scopeName)
-                    .apply {
-                        parameterSuppliers.forEach { parameterSupplier ->
-                            val paramName = parameterSupplier.parameter.name!!.asString()
-                            addStatement(
-                                "%N = %L", paramName, parameterSupplier.supplierData.initializer
-                            )
-                        }
+                buildCodeBlock {
+                    beginControlFlow("%M(%T()) {", kiraBuilderFunName, scopeName)
+                    parameterSuppliers.forEach { parameterSupplier ->
+                        val paramName = parameterSupplier.parameter.name!!.asString()
+                        add(
+                            "%N = %L\n", paramName, parameterSupplier.supplierData.initializer
+                        )
                     }
-                    .beginControlFlow("injector {")
-                    .addStatement("%M(", MemberName(funPkgName, funSimpleName))
-                    .withIndent {
-                        parameterSuppliers.forEach { parameterSupplier ->
-                            val paramName = parameterSupplier.parameter.name!!.asString()
-                            addStatement("%N = %N.currentValue(),", paramName, paramName)
-                        }
-                    }
-                    .addStatement(")")
-                    .endControlFlow()
-                    .endControlFlow()
-                    .build()
+                    beginControlFlow("injector {")
+                    functionCall(funPkgName, funSimpleName, parameterSuppliers)
+                    endControlFlow()
+                    endControlFlow()
+                }
             ).build()
-        )
-        .build()
+        ).build()
+
+    private fun CodeBlock.Builder.functionCall(
+        funPkgName: String,
+        funSimpleName: String,
+        parameterSuppliers: List<ParameterSupplier>
+    ) {
+        addStatement("%M(", MemberName(funPkgName, funSimpleName))
+        withIndent {
+            parameterSuppliers.forEach { parameterSupplier ->
+                val paramName = parameterSupplier.parameter.name!!.asString()
+                addStatement("%N = %N.currentValue(),", paramName, paramName)
+            }
+        }
+        addStatement(")")
+    }
 
     private fun supplierImplsClass(
         implsScopeClassName: ClassName,

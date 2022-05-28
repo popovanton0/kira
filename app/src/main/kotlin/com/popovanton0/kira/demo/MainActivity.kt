@@ -143,7 +143,12 @@ public data class TextCardMisses(
 
 fun textCardRoot(misses: KiraScope.() -> TextCardMisses) = kira(TextCardScope()) {
     val misses = misses()
-
+    nullableSingleValue(
+        paramName = "engine",
+        value = Engine("single value"),
+        typeName = "",
+        nullByDefault = true
+    )
     text = string(paramName = "text", defaultValue = "Lorem")
     isRed = boolean(paramName = "isRed", defaultValue = false)
     skill = nullableEnum(paramName = "skill", defaultValue = null)
@@ -285,7 +290,11 @@ class MainActivity : ComponentActivity() {
                     }.modify {
                         generatedSupplierImpls {
                             this.car.modify {
-                                engine = nullableSingleValue("engine", Engine("single value"), nullByDefault = true)
+                                engine = nullableSingleValue(
+                                    "engine",
+                                    Engine("single value"),
+                                    nullByDefault = true
+                                )
                                 generatedSupplierImpls {
                                     this.model.defaultValue = "heavily modified"
                                 }

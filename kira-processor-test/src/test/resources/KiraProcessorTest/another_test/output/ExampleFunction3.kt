@@ -6,19 +6,32 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.compound.CompoundSupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.compound.NullableCompoundSupplierBuilder
 import sdf1.ExampleFunction3
 import sdf1.Quality
 import sdf1.Rock
 
 public class Kira_ExampleFunction3 : KiraProvider<ExampleFunction3Scope> {
   public override val kira: Kira<ExampleFunction3Scope> = kira(ExampleFunction3Scope()) {
-    ds1 = TODO()
-    ds2 = TODO()
-    ds3 = TODO()
-    ds4 = TODO()
+    ds1 = `enum`(paramName = "ds1")
+    ds2 = nullableEnum(paramName = "ds2", defaultValue = null)
+    ds3 = string(paramName = "ds3", defaultValue = "Lorem")
+    ds4 = nullableString(paramName = "ds4", defaultValue = null)
     ds5 = boolean(paramName = "ds5", defaultValue = false)
     ds6 = nullableBoolean(paramName = "ds6", defaultValue = null)
-    ds7 = TODO()
+    ds7 = singleValue(
+      paramName = "ds7",
+      value = Rock,
+      typeName = "sdf1.Rock",
+    )
+
+    ds8 = nullableSingleValue(
+      paramName = "ds8",
+      value = Rock,
+      typeName = "sdf1.Rock",
+      nullByDefault = true
+    )
+
     injector {
       ExampleFunction3(
         ds1 = ds1.currentValue(),
@@ -28,6 +41,7 @@ public class Kira_ExampleFunction3 : KiraProvider<ExampleFunction3Scope> {
         ds5 = ds5.currentValue(),
         ds6 = ds6.currentValue(),
         ds7 = ds7.currentValue(),
+        ds8 = ds8.currentValue(),
       )
     }
   }
@@ -52,8 +66,10 @@ public class ExampleFunction3Scope :
 
   public lateinit var ds7: Supplier<Rock>
 
+  public lateinit var ds8: Supplier<Rock?>
+
   public override fun collectSuppliers(): List<Supplier<*>> = listOf(ds1, ds2, ds3, ds4, ds5, ds6,
-      ds7, )
+      ds7, ds8, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunction3Scope,
@@ -98,6 +114,12 @@ public class ExampleFunction3Scope :
       get() = scope.ds7 as? CompoundSupplierBuilder<Rock, KiraScope> ?: implChanged()
       set(`value`) {
         scope.ds7 = value
+      }
+
+    public var ds8: NullableCompoundSupplierBuilder<Rock, KiraScope>
+      get() = scope.ds8 as? NullableCompoundSupplierBuilder<Rock, KiraScope> ?: implChanged()
+      set(`value`) {
+        scope.ds8 = value
       }
   }
 }
