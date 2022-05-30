@@ -13,6 +13,8 @@ import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.compound.KiraScope
 
+public interface KiraMisses
+
 public interface KiraProvider<Scope : KiraScope> {
     public val kira: Kira<Scope>
 }

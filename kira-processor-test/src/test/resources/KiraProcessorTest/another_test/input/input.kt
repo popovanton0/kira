@@ -1,4 +1,4 @@
-package sdf1
+package another_test
 
 import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.annotations.KiraRoot
@@ -54,10 +54,10 @@ fun ExampleFunction3(
     ds6: Boolean?,
     ds7: Rock,
     ds8: Rock?,
-    //ds8: B?,
+    ds9: B?,
     //ds9: A,
     //ds10: Engine?,
-    //vararg ds10: Engine? = arrayOf(null),
+    vararg ds10: Engine? = arrayOf(null),
 ) {
 
 }

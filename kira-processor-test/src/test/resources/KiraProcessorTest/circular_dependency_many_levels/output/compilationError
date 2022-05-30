@@ -1,5 +1,0 @@
-Circular dependency detected:
-		pkg2.A ->
-		pkg2.B ->
-		pkg2.C ->
-		pkg2.B

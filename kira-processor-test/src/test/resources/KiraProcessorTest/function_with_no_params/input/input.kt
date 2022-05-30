@@ -1,4 +1,4 @@
-package function_with_generics
+package function_with_no_params
 
 import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.annotations.KiraRoot
@@ -7,4 +7,4 @@ import com.popovanton0.kira.annotations.KiraRoot
 object RootModule
 
 @Kira
-fun <T> ExampleFunction() = Unit
+fun ExampleFunction() = Unit

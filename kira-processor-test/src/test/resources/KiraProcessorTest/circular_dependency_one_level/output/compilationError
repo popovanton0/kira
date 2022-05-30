@@ -1,3 +1,0 @@
-Circular dependency detected: 
-		pkg.A -> 
-		pkg.A

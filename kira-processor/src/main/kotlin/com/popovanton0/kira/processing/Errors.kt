@@ -2,6 +2,8 @@ package com.popovanton0.kira.processing
 
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraAnnClass
+import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraRootAnnClass
 import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
 
 internal object Errors {
