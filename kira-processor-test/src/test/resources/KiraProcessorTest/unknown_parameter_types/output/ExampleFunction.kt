@@ -10,6 +10,7 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.nullableBoolean
 import kotlin.Boolean
@@ -48,7 +49,7 @@ public class Kira_ExampleFunction(
 
 public class ExampleFunctionScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionScope.SupplierImplsScope>() {
-  public override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+  protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public lateinit var ds5: Supplier<Boolean>
 

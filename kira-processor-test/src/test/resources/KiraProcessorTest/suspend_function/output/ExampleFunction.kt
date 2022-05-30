@@ -26,7 +26,7 @@ public class Kira_ExampleFunction(
 
 public class ExampleFunctionScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionScope.SupplierImplsScope>() {
-  public override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+  protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public override fun collectSuppliers(): List<Supplier<*>> = listOf()
 

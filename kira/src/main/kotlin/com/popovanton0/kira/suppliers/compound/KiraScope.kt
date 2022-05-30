@@ -16,8 +16,9 @@ public open class KiraScope {
         return suppliers
     }
 
-    public fun <T> injector(block: @Composable () -> T): Injector<T> = Injector(block)
 }
+
+public fun <T> KiraScope.injector(block: @Composable () -> T): Injector<T> = Injector(block)
 
 
 public class Injector<T> internal constructor(internal val injector: @Composable () -> T) {

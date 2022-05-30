@@ -4,6 +4,7 @@ import androidx.compose.material.Text
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.popovanton0.kira.suppliers.boolean
+import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.nullableBoolean
 import org.junit.Rule
@@ -21,7 +22,7 @@ internal class BooleanSupplier {
             injector { Text(text = "car's " + if (isFastCar.currentValue()) "fast" else "slow") }
         }
 
-        setContent { KiraScreen(root = root) }
+        setContent { KiraScreen(root) }
 
         onNodeWithText("car's fast")
             .assertExists("UI was not displayed or default value is wrong")
@@ -48,7 +49,7 @@ internal class BooleanSupplier {
             }
         }
 
-        setContent { KiraScreen(root = root) }
+        setContent { KiraScreen(root) }
 
         onNodeWithText("car's fast")
             .assertExists("UI was not displayed or default value is wrong")

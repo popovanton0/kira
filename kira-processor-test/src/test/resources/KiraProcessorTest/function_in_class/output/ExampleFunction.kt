@@ -7,9 +7,6 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.kira
-import kotlin.Unit
-import kotlin.collections.List
-import kotlin.collections.listOf
 
 /**
  * @param injector wasn't generated because:
@@ -26,7 +23,7 @@ public class Kira_ExampleFunction(
 
 public class ExampleFunctionScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionScope.SupplierImplsScope>() {
-  public override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+  protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public override fun collectSuppliers(): List<Supplier<*>> = listOf()
 

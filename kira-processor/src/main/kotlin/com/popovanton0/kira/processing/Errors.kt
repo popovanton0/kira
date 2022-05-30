@@ -4,7 +4,6 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraAnnClass
 import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraRootAnnClass
-import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
 
 internal object Errors {
     fun manyRootClasses(rootAnns: List<KSAnnotated>): Nothing {
@@ -28,15 +27,10 @@ internal object Errors {
         "One of $fullFunName's params has no name"
     )
 
-    fun suitableProviderNotFound(
-        parameterSuppliers: List<ParameterSupplier>,
-        fullFunName: String
-    ): String {
-        val parasWithNoProviders = parameterSuppliers
-            .filterIsInstance<ParameterSupplier.Empty>()
-            .joinToString { it.parameter.name!!.asString() }
-
-        return "No suitable provider was found for these parameters of the $fullFunName " +
-                "function:\n$parasWithNoProviders"
-    }
+    fun reservedParamName(fullFunName: String, paramName: String): Nothing =
+        error(
+            "Function $fullFunName has a \"$paramName\" param that has reserved name. Please, " +
+                    "rename this param or remove @${kiraAnnClass.simpleName} annotation from " +
+                    fullFunName
+        )
 }

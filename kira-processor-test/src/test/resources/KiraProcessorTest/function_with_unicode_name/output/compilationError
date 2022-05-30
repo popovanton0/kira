@@ -1,0 +1,1 @@
+Function function_with_unicode_name.ExampleFunction😃 has a name that contains unicode characters that require escaping using backticks AND @Kira.name wasn't specified

@@ -5,6 +5,7 @@ import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
+import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
 import function_with_no_params.ExampleFunction
 import kotlin.collections.List
@@ -22,7 +23,7 @@ public class Kira_ExampleFunction() : KiraProvider<ExampleFunctionScope> {
 
 public class ExampleFunctionScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionScope.SupplierImplsScope>() {
-  public override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+  protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public override fun collectSuppliers(): List<Supplier<*>> = listOf()
 

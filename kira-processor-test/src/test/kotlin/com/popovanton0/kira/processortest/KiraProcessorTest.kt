@@ -38,6 +38,14 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = true) {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun functions_with_strange_names() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun functions_with_supplierImplsScope_param_name() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun private_function() =
         compileInputsAndVerifyOutputs()
 

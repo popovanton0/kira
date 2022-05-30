@@ -21,7 +21,7 @@ public class EngineScope : KiraScope() {
 }
 
 public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierImplsScope>() {
-    override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+    override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
     public class SupplierImplsScope(private val scope: TextCardScope) :
         GeneratedKiraScopeWithImpls.SupplierImplsScope() {
@@ -78,7 +78,7 @@ public class TextCardScope : GeneratedKiraScopeWithImpls<TextCardScope.SupplierI
 
     public class CarScope : GeneratedKiraScopeWithImpls<CarScope.SupplierImplsScope>() {
 
-        override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+        override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
         public class SupplierImplsScope(private val scope: CarScope) :
             GeneratedKiraScopeWithImpls.SupplierImplsScope() {

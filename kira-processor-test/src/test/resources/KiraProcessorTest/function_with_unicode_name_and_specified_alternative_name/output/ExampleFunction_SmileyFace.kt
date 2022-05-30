@@ -6,6 +6,7 @@ import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.StringSupplierBuilder
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
+import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.string
 import function_with_unicode_name_and_specified_alternative_name.`ExampleFunction😃`
@@ -28,7 +29,7 @@ public class Kira_ExampleFunction_SmileyFace() : KiraProvider<ExampleFunction_Sm
 
 public class ExampleFunction_SmileyFaceScope :
     GeneratedKiraScopeWithImpls<ExampleFunction_SmileyFaceScope.SupplierImplsScope>() {
-  public override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+  protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public lateinit var param1: Supplier<String>
 

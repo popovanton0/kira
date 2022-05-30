@@ -79,7 +79,7 @@ public class Kira_ExampleFunction3(
 
 public class ExampleFunction3Scope :
     GeneratedKiraScopeWithImpls<ExampleFunction3Scope.SupplierImplsScope>() {
-  public override val supplierImplsScope: SupplierImplsScope = SupplierImplsScope(this)
+  protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public lateinit var ds1: Supplier<Quality>
 

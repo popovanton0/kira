@@ -15,14 +15,16 @@ public abstract class GeneratedKiraScope : KiraScope() {
 public abstract class GeneratedKiraScopeWithImpls
 <R : GeneratedKiraScopeWithImpls.SupplierImplsScope> : KiraScope() {
 
+    protected abstract val `$$$supplierImplsScope$$$`: R
+
+    public fun generatedSupplierImpls(block: R.() -> Unit): Unit =
+        `$$$supplierImplsScope$$$`.block()
+    public abstract override fun collectSuppliers(): List<Supplier<*>>
+
     public abstract class SupplierImplsScope : KiraScope() {
         public fun implChanged(): Nothing = error(
             "Generated supplier implementation has been substituted by a Supplier of a " +
                     "different type"
         )
     }
-
-    protected abstract val supplierImplsScope: R
-    public fun generatedSupplierImpls(block: R.() -> Unit): Unit = supplierImplsScope.block()
-    public abstract override fun collectSuppliers(): List<Supplier<*>>
 }

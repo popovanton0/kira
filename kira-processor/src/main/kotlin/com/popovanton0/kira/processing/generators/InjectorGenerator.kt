@@ -1,4 +1,4 @@
-package com.popovanton0.kira.processing
+package com.popovanton0.kira.processing.generators
 
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.symbol.FunctionKind
@@ -10,7 +10,7 @@ import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.withIndent
 
-internal class InjectorGeneration(function: KSFunctionDeclaration) {
+internal class InjectorGenerator(function: KSFunctionDeclaration) {
     /**
      * @param condition if true, injector cannot be generated
      * @param reasonMsg if [condition] is true, this msg is inserted in the generated code to let
