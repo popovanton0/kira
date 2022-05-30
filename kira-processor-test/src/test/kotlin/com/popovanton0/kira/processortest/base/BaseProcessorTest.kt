@@ -14,6 +14,7 @@ import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Rule
 import java.io.File
 
@@ -35,28 +36,32 @@ abstract class BaseProcessorTest(
      * and compiles them with Kotlin, returning the result.
      */
     protected fun compileInputs(
-        onCompilation: (compilation: KotlinCompilation, result: KotlinCompilation.Result) -> Unit
+        onCompilation: (
+            compilation: KotlinCompilation,
+            result: KotlinCompilation.Result,
+            sources: List<SourceFile>
+        ) -> Unit
     ) {
         val testResourcesDir = getTestResourcesDirectory(getRootResourcesDir())
 
         val inputDir = File(testResourcesDir, "input")
         inputDir.mkdirs()
 
+        val sources = inputDir.listFiles()?.toList().orEmpty().map { SourceFile.fromPath(it) }
         val compilation = KotlinCompilation().apply {
-            sources = inputDir.listFiles()?.toList().orEmpty().map { SourceFile.fromPath(it) }
-
+            this.sources = sources
             symbolProcessorProviders = listOf(KiraProcessorProvider())
-
+            jvmTarget = JvmTarget.JVM_11.description
             inheritClassPath = true
             messageOutputStream = System.out // see diagnostics in real time
         }
 
         val result = compilation.compile()
-        onCompilation(compilation, result)
+        onCompilation(compilation, result, sources)
     }
 
     protected fun assertCompilationFails(errorMessage: String) {
-        compileInputs { _, result ->
+        compileInputs { _, result, _ ->
             assertThat(result.exitCode)
                 .isEqualTo(COMPILATION_ERROR)
 
@@ -66,14 +71,19 @@ abstract class BaseProcessorTest(
     }
 
     protected fun compileInputsAndVerifyOutputs() {
-        compileInputs { compilation, result -> result.assertGeneratedSources(compilation) }
+        compileInputs { compilation, result, sources ->
+            result.assertGeneratedSources(compilation, sources)
+        }
     }
 
     /**
      * Collects the files in the "output" directory of this test's resources directory
      * and validates that they match the generated sources of this compilation result.
      */
-    protected fun KotlinCompilation.Result.assertGeneratedSources(compilation: KotlinCompilation) {
+    protected fun KotlinCompilation.Result.assertGeneratedSources(
+        compilation: KotlinCompilation,
+        sources: List<SourceFile>
+    ) {
         val testResourcesDir = getTestResourcesDirectory(getRootResourcesDir())
         val outputDir = File(testResourcesDir, "output")
 
@@ -86,9 +96,22 @@ abstract class BaseProcessorTest(
 
         if (UPDATE_TEST_OUTPUTS) {
             generatedSources.forEach {
-                println("Generated: ${it.name}")
+                println("⚙️ Generated: ${it.name}")
                 it.copyTo(File(outputDir, it.name))
             }
+
+            // compiling generated sources with original sources to ensure that they are valid
+            val result = KotlinCompilation().apply {
+                this@apply.sources = generatedSources.map { SourceFile.fromPath(it) } + sources
+                inheritClassPath = true
+                messageOutputStream = System.out // see diagnostics in real time
+                verbose = false
+                jvmTarget = JvmTarget.JVM_11.description
+            }.compile()
+
+            assertThat(result.exitCode)
+                .withFailMessage("Generated sources do not compile")
+                .isEqualTo(OK)
         } else {
             val expectedFiles = outputDir.listFiles() ?: emptyArray<File>()
             if (expectedFiles.isEmpty()) {
@@ -110,7 +133,7 @@ abstract class BaseProcessorTest(
             assertThat(generatedSources.size).isEqualTo(expectedFiles.size)
 
             generatedSources.forEach { actualFile ->
-                println("Generated: ${actualFile.name}")
+                println("⚙️ Generated: ${actualFile.name}")
                 val expectedFile = File(outputDir, actualFile.name)
                 assertThat(expectedFile).exists()
                 assertThat(actualFile).hasSameTextualContentAs(expectedFile)
