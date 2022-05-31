@@ -18,9 +18,18 @@ import com.popovanton0.kira.processing.generators.ScopeClassGenerator
 import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor.Companion.SUPPLIERS_PKG_NAME
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.UNIT
+import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
 import com.squareup.kotlinpoet.ksp.writeTo
 import kotlin.contracts.ExperimentalContracts
@@ -67,7 +76,7 @@ class KiraProcessor(
             val funPkgName = function.packageName.asString()
             val funSimpleName = function.simpleName.asString()
             val fullFunName = function.qualifiedName!!.asString()
-            val kiraAnn = function.getAnnotationsByType(Kira::class).first()
+            val kiraAnn = function.getAnnotationsByType(Kira::class).single()
             val fileName = kiraAnn.name.ifEmpty {
                 require(funSimpleName.matches(kotlinSimpleFunNameRegex)) {
                     // todo write a lint rule for that
@@ -145,14 +154,20 @@ class KiraProcessor(
             val missesClassType = kiraProviderName.nestedClass("Misses")
             val missesProviderType = LambdaTypeName
                 .get(receiver = kiraScopeName, returnType = missesClassType)
-            val missesPropertyName = "misses"
-            primaryConstructor.addParameter(missesPropertyName, missesProviderType)
+            val missesProviderName = "missesProvider"
+            primaryConstructor.addParameter(missesProviderName, missesProviderType)
 
-            kiraProvider.addProperty(
-                PropertySpec.builder(missesPropertyName, missesClassType)
-                    .initializer("%T().%L()", kiraScopeName, missesPropertyName)
-                    .build()
-            )
+            kiraProvider
+                .addProperty(
+                    PropertySpec.builder(missesProviderName, missesProviderType, KModifier.PRIVATE)
+                        .initializer(missesProviderName)
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("misses", missesClassType, KModifier.PRIVATE)
+                        .initializer("%T().%N()", kiraScopeName, missesProviderName)
+                        .build()
+                )
         }
         val injectorPropertyName = "injector"
         if (injectorGenerator.skip) {
@@ -164,7 +179,7 @@ class KiraProcessor(
             kiraProvider.addKdoc("@param injector wasn't generated because:\n")
             kiraProvider.addKdoc(injectorGenerator.noInjectorReasonMsg)
             kiraProvider.addProperty(
-                PropertySpec.builder(injectorPropertyName, injectorProviderType)
+                PropertySpec.builder(injectorPropertyName, injectorProviderType, KModifier.PRIVATE)
                     .initializer(injectorPropertyName)
                     .build()
             )

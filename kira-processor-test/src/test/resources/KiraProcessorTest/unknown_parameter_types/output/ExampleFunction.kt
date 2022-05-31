@@ -21,9 +21,9 @@ import unknown_parameter_types.B
 import unknown_parameter_types.ExampleFunction
 
 public class Kira_ExampleFunction(
-  misses: KiraScope.() -> Misses,
+  private val missesProvider: KiraScope.() -> Misses,
 ) : KiraProvider<ExampleFunctionScope> {
-  public val misses: Misses = KiraScope().misses()
+  private val misses: Misses = KiraScope().missesProvider()
 
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
     ds5 = boolean(paramName = "ds5", defaultValue = false)

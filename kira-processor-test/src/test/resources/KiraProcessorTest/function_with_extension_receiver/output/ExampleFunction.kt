@@ -16,7 +16,7 @@ import kotlin.collections.listOf
  *  - Function has an extension receiver, which are not yet supported. Provide it manually
  */
 public class Kira_ExampleFunction(
-  public val injector: ExampleFunctionScope.() -> Injector<Unit>,
+  private val injector: ExampleFunctionScope.() -> Injector<Unit>,
 ) : KiraProvider<ExampleFunctionScope> {
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
     injector()

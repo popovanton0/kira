@@ -16,7 +16,7 @@ import kotlin.collections.listOf
  *  - Function is not top level, thus containing class instance is needed
  */
 public class Kira_ExampleFunction(
-  public val injector: ExampleFunctionScope.() -> Injector<Unit>,
+  private val injector: ExampleFunctionScope.() -> Injector<Unit>,
 ) : KiraProvider<ExampleFunctionScope> {
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
     injector()

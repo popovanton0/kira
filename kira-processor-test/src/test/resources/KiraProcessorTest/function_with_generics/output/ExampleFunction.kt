@@ -16,7 +16,7 @@ import kotlin.collections.listOf
  *  - Functions with generics are not supported. Provide types manually
  */
 public class Kira_ExampleFunction(
-  public val injector: ExampleFunctionScope.() -> Injector<Unit>,
+  private val injector: ExampleFunctionScope.() -> Injector<Unit>,
 ) : KiraProvider<ExampleFunctionScope> {
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
     injector()

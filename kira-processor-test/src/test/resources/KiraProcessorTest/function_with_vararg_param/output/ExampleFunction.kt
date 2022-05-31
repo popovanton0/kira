@@ -19,7 +19,7 @@ import kotlin.collections.listOf
  *  - Functions with vararg params are not supported
  */
 public class Kira_ExampleFunction(
-  public val injector: ExampleFunctionScope.() -> Injector<Unit>,
+  private val injector: ExampleFunctionScope.() -> Injector<Unit>,
 ) : KiraProvider<ExampleFunctionScope> {
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
     param1 = nullableString(paramName = "param1", defaultValue = null)

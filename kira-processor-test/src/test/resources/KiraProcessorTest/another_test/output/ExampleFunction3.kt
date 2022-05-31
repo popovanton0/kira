@@ -40,10 +40,10 @@ import kotlin.collections.listOf
  *  - Functions with vararg params are not supported
  */
 public class Kira_ExampleFunction3(
-  misses: KiraScope.() -> Misses,
-  public val injector: ExampleFunction3Scope.() -> Injector<Unit>,
+  private val missesProvider: KiraScope.() -> Misses,
+  private val injector: ExampleFunction3Scope.() -> Injector<Unit>,
 ) : KiraProvider<ExampleFunction3Scope> {
-  public val misses: Misses = KiraScope().misses()
+  private val misses: Misses = KiraScope().missesProvider()
 
   public override val kira: Kira<ExampleFunction3Scope> = kira(ExampleFunction3Scope()) {
     ds1 = `enum`(paramName = "ds1")
