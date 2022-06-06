@@ -78,6 +78,7 @@ dependencies {
 }
 
 assemble.dependsOn check
+assemble.dependsOn "pixel2api30Check"
 
 afterEvaluate {
     publishing {

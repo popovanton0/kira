@@ -1,25 +1,28 @@
+@file:OptIn(ExperimentalKiraApi::class)
+
 package com.popovanton0.kira.annotations
 
 import org.intellij.lang.annotations.Language
 
-@KiraConfig(
-    KiraTypeRenderer(
-        fullTypeName = "() -> Unit",
-        render = """
+@OptIn(ExperimentalKiraApi::class)
+@KiraRoot(
+    typeRenderers = [
+         KiraTypeRenderer(
+            fullTypeName = "() -> Unit",
+            render = """
             compound(
                 dssd = sdsd,
             ) {
                 
             }
         """
-    )
+        )
+    ]
 )
-public object Config
+private object Config
 
-public annotation class KiraConfig(
-    vararg val typeRenderer: KiraTypeRenderer
-)
-
+@ExperimentalKiraApi
+@Target(allowedTargets = emptyArray())
 public annotation class KiraTypeRenderer(
     val fullTypeName: String,
     @Language("kotlin", prefix = "fun a() {", suffix = "}")

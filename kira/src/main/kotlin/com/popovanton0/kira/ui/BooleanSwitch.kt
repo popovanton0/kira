@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-public fun BooleanSwitch(
+internal fun BooleanSwitch(
     modifier: Modifier = Modifier,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -33,7 +33,7 @@ public fun BooleanSwitch(
 )
 
 @Composable
-public fun NullableBooleanSwitch(
+internal fun NullableBooleanSwitch(
     modifier: Modifier = Modifier,
     checked: Boolean?,
     onCheckedChange: (Boolean?) -> Unit,

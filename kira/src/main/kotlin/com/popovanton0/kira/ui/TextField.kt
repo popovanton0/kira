@@ -7,12 +7,16 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ListItem
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
 
 @Composable
-public fun TextField(
+internal fun TextField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
@@ -27,7 +31,7 @@ public fun TextField(
 }
 
 @Composable
-public fun NullableTextField(
+internal fun NullableTextField(
     modifier: Modifier = Modifier,
     value: String?,
     onValueChange: (String?) -> Unit,

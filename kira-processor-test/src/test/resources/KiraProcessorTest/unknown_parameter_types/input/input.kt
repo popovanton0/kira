@@ -14,5 +14,5 @@ fun ExampleFunction(
 abstract class A(b: B)
 interface B
 
-@KiraRoot
+@KiraRoot(generateRegistry = false)
 object RootModule

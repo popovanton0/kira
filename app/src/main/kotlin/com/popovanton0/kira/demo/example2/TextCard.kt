@@ -1,4 +1,4 @@
-package com.popovanton0.kira.demo
+package com.popovanton0.kira.demo.example2
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+public object Rock
 enum class Skill { LOW, OK, SICK }
 enum class Food { BAD, GOOD, EXCELLENT }
 data class Engine(

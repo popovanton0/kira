@@ -8,15 +8,8 @@ package com.popovanton0.kira.annotations
 @Target(AnnotationTarget.FUNCTION)
 public annotation class Kira(
     val name: String = "",
-    //val customization: Customization = Customization(false, false)
 ) {
     public companion object {
         public const val GENERATED_PACKAGE_PREFIX: String = "com.popovanton0.kira.generated"
     }
 }
-
-public annotation class Customization(
-    val enabled: Boolean = false,
-    val supplierImpls: Boolean = false
-)
-

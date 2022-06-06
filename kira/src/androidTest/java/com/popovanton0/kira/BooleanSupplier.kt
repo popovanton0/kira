@@ -1,8 +1,12 @@
 package com.popovanton0.kira
 
 import androidx.compose.material.Text
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.isNotSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira

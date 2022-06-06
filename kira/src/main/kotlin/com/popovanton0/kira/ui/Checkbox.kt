@@ -7,7 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 
 @Composable
-public fun Checkbox(
+internal fun Checkbox(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,

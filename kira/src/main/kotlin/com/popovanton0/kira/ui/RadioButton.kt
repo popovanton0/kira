@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 
 @Composable
-public fun RadioButton(
+internal fun RadioButton(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,

@@ -62,7 +62,22 @@ fun ExampleFunction3(
 
 }
 
-@KiraRoot
+//@OptIn(ExperimentalKiraApi::class)
+@KiraRoot(
+    generateRegistry = false
+    //typeRenderers = [
+    //    KiraTypeRenderer(
+    //        fullTypeName = "() -> Unit",
+    //        render = """
+    //        compound(
+    //            dssd = sdsd,
+    //        ) {
+    //
+    //        }
+    //    """
+    //    )
+    //]
+)
 object RootModule
 
 abstract class A(b: B, c: C)

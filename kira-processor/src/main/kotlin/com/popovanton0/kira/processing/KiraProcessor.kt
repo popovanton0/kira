@@ -14,6 +14,7 @@ import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.annotations.KiraRoot
 import com.popovanton0.kira.processing.generators.InjectorGenerator
 import com.popovanton0.kira.processing.generators.MissesClassGenerator
+import com.popovanton0.kira.processing.generators.RegistryGenerator
 import com.popovanton0.kira.processing.generators.ScopeClassGenerator
 import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
@@ -45,12 +46,13 @@ class KiraProcessor(
         internal val kiraAnnClass = Kira::class.java
         internal val kiraRootAnnClass = KiraRoot::class.java
 
-        private val kotlinSimpleFunNameRegex = "[a-zA-Z_][a-zA-Z_\\d]*".toRegex()
+        internal val kiraProviderName = ClassName(SUPPLIERS_PKG_NAME, "KiraProvider")
         internal val supplierInterfaceName = ClassName("$SUPPLIERS_PKG_NAME.base", "Supplier")
-        private val kiraScopeName = ClassName("$SUPPLIERS_PKG_NAME.compound", "KiraScope")
         internal val generatedKiraScopeName =
             ClassName("$SUPPLIERS_PKG_NAME.compound", "GeneratedKiraScopeWithImpls")
-        private val kiraProviderName = ClassName(SUPPLIERS_PKG_NAME, "KiraProvider")
+
+        private val kotlinSimpleFunNameRegex = "[a-zA-Z_][a-zA-Z_\\d]*".toRegex()
+        private val kiraScopeName = ClassName("$SUPPLIERS_PKG_NAME.compound", "KiraScope")
         private val kiraSupplierName = ClassName(SUPPLIERS_PKG_NAME, "Kira")
         private val kiraBuilderFunName = MemberName(SUPPLIERS_PKG_NAME, "kira")
         private val injectorClassName = ClassName("$SUPPLIERS_PKG_NAME.compound", "Injector")
@@ -70,6 +72,8 @@ class KiraProcessor(
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val kiraRootAnn = getKiraRootAnn(resolver) ?: return emptyList()
+        val generateRegistry = kiraRootAnn.generateRegistry
+        val registryRecords = mutableListOf<RegistryGenerator.RegistryRecord>()
 
         resolver.getSymbolsWithAnnotation(kiraAnnClass.canonicalName).forEach { function ->
             isValidKiraFunction(function)
@@ -101,10 +105,11 @@ class KiraProcessor(
             }
 
             val generatedPkgName = "${Kira.GENERATED_PACKAGE_PREFIX}.$funPkgName"
+            val kiraProviderName = ClassName(generatedPkgName, "Kira_$fileName")
             val scopeName = ClassName(generatedPkgName, "${fileName}Scope")
             val supplierImplsScopeName = scopeName.nestedClass("SupplierImplsScope")
 
-            val file = FileSpec.builder(
+            FileSpec.builder(
                 packageName = generatedPkgName,
                 fileName = fileName
             )
@@ -112,12 +117,11 @@ class KiraProcessor(
                 .addType(
                     kiraProvider(
                         injectorGenerator,
-                        generatedPkgName,
-                        fileName,
                         scopeName,
                         funPkgName,
                         funSimpleName,
-                        parameterSuppliers
+                        parameterSuppliers,
+                        kiraProviderName
                     )
                 )
                 .addType(
@@ -129,8 +133,19 @@ class KiraProcessor(
                     )
                 )
                 .build()
+                .writeTo(environment.codeGenerator, aggregating = false)
 
-            file.writeTo(environment.codeGenerator, aggregating = false)
+            if (generateRegistry) registryRecords += RegistryGenerator.RegistryRecord(
+                fullFunName = fullFunName,
+                kiraProviderClassName = kiraProviderName,
+                providerWithEmptyConstructor =
+                parameterSuppliers.none { it is ParameterSupplier.Empty }
+            )
+        }
+
+        if (generateRegistry) {
+            val registryFile = RegistryGenerator.generate(registryRecords)
+            registryFile.writeTo(environment.codeGenerator, aggregating = true)
         }
 
         return emptyList()
@@ -138,14 +153,12 @@ class KiraProcessor(
 
     private fun kiraProvider(
         injectorGenerator: InjectorGenerator,
-        generatedPkgName: String,
-        fileName: String,
         scopeName: ClassName,
         funPkgName: String,
         funSimpleName: String,
-        parameterSuppliers: List<ParameterSupplier>
+        parameterSuppliers: List<ParameterSupplier>,
+        kiraProviderName: ClassName
     ): TypeSpec {
-        val kiraProviderName = ClassName(generatedPkgName, "Kira_$fileName")
         val kiraProvider = TypeSpec.classBuilder(kiraProviderName)
         val primaryConstructor = FunSpec.constructorBuilder()
 
