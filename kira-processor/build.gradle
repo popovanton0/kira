@@ -39,8 +39,8 @@ afterEvaluate {
             maven(MavenPublication) {
                 from components.java
                 groupId = 'com.popovanton0.kira'
-                artifactId = 'kira-processing'
-                version = '0.0.1'
+                artifactId = 'kira-processor'
+                version = 'SNAPSHOT'
             }
         }
     }

@@ -87,7 +87,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.popovanton0.kira'
                 artifactId = 'kira'
-                version = '0.0.1'
+                version = 'SNAPSHOT'
             }
         }
     }
