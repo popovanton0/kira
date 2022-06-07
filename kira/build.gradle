@@ -77,38 +77,34 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
 }
 
-assemble.dependsOn check
-assemble.dependsOn "pixel2api30Check"
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.popovanton0.kira'
+                artifactId = 'kira'
+                version = 'SNAPSHOT'
 
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                from components.release
-//                groupId = 'com.popovanton0.kira'
-//                artifactId = 'kira'
-//                version = 'SNAPSHOT'
-//
-//                pom {
-//                    name = "kira"
-//                    description = "Automatically generates UI demos which allow users to call any function with any parameters"
-//                    url = 'https://github.com/popovanton0/kira'
-//                    licenses {
-//                        license {
-//                            name = 'The Apache License, Version 2.0'
-//                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-//                        }
-//                    }
-//                    developers {
-//                        developer {
-//                            id = 'popovanton0'
-//                            name = 'Anton Popov'
-//                            email = 'popovanton0+github@gmail.com'
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-//
+                pom {
+                    name = "kira"
+                    description = "Automatically generates UI demos which allow users to call any function with any parameters"
+                    url = 'https://github.com/popovanton0/kira'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'popovanton0'
+                            name = 'Anton Popov'
+                            email = 'popovanton0+github@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
