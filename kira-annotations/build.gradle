@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
+    id 'maven-publish'
 }
 
 java {
@@ -12,5 +13,18 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = '11'
         freeCompilerArgs += ['-Xexplicit-api=strict', '-opt-in=kotlin.RequiresOptIn']
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+                groupId = 'com.github.popovanton0.kira'
+                artifactId = 'kira-annotations'
+                version = 'SNAPSHOT'
+            }
+        }
     }
 }

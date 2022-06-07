@@ -82,7 +82,7 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.popovanton0.kira'
+                groupId = 'com.github.popovanton0.kira'
                 artifactId = 'kira'
                 version = 'SNAPSHOT'
 
