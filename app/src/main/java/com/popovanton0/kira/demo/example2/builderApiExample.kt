@@ -4,6 +4,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.popovanton0.exampleui.Car
+import com.popovanton0.exampleui.Engine
+import com.popovanton0.exampleui.Food
+import com.popovanton0.exampleui.Rock
+import com.popovanton0.exampleui.Skill
+import com.popovanton0.exampleui.TextCard
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.suppliers.boolean

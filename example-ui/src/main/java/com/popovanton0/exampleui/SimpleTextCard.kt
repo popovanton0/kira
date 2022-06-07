@@ -1,4 +1,4 @@
-package com.popovanton0.kira.demo.example2
+package com.popovanton0.exampleui
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -15,36 +15,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popovanton0.kira.annotations.Kira
 
-public object Rock
-enum class Skill { LOW, OK, SICK }
-enum class Food { BAD, GOOD, EXCELLENT }
-data class Engine(
-    val model: String = "Merlin",
-    val diesel: Boolean = false,
-)
-
-data class Car(
-    val model: String = "Tesla",
-    val lame: Boolean = false,
-    val lameN: Boolean? = null,
-    val cookerQuality: Food? = null,
-    val engine: Engine = Engine(),
-)
-
 @Kira
 @Preview
 @Composable
-fun TextCard(
+fun SimpleTextCard(
     text: String = "Example",
     isRed: Boolean = text.contains(' '),
     skill: Skill? = Skill.LOW,
     food: Food = Food.BAD,
-    car: Car = Car(),
-    carN: Car? = null,
     rock: Rock? = null,
-    //cornerRadius: Dp = 12.dp,
-    autoCar: Car = Car()
 ) {
+    require(skill != Skill.OK) { "Skill is not correct" }
     val shape = RoundedCornerShape(12.dp)
     Card(elevation = 8.dp, shape = shape) {
         Column(
@@ -74,10 +55,7 @@ fun TextCard(
                 },
                 fontSize = 18.sp,
             )
-            Text(text = "car: $car")
-            Text(text = "carN: $carN")
             Text(text = "rock: $rock")
-            //Text(text = "autoCar: $autoCar")
         }
     }
 }

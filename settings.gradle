@@ -10,6 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 rootProject.name = "kira"
@@ -18,3 +19,4 @@ include ':kira'
 include ':kira-processor'
 include ':kira-processor-test'
 include ':kira-annotations'
+include ':example-ui'
