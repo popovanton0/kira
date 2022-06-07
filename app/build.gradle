@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp' version "$kotlin_version-$ksp_subversion"
+    id 'com.google.devtools.ksp'
     id 'idea'
 }
 
@@ -50,7 +50,6 @@ android {
 
 dependencies {
     implementation project(':kira')
-    implementation project(':kira-processor')
     ksp project(':kira-processor')
 
     implementation 'androidx.core:core-ktx:1.8.0'
