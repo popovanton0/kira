@@ -41,8 +41,8 @@ internal object RegistryGenerator {
                 .addProperty(
                     PropertySpec.builder("kiraProviders", kiraProvidersMapType)
                         .addKdoc(buildCodeBlock {
-                            addStatement("key — fully qualified function name")
-                            addStatement("value — [%T] for that key", kiraProviderName)
+                            addStatement("key — fully qualified function name;")
+                            addStatement("value — [%T] for that function", kiraProviderName)
                         })
                         .initializer(providersMap(registryRecords))
                         .build()

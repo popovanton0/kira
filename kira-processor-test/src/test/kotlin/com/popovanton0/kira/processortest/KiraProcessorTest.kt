@@ -62,6 +62,10 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun registry_generation() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun suspend_function() =
         compileInputsAndVerifyOutputs()
 

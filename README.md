@@ -41,3 +41,5 @@ Examples are in the [source code](https://github.com/popovanton0/kira/blob/maste
 TODO()
 ```
 
+<!-- No try-catch https://kotlinlang.slack.com/archives/CJLTWPH7S/p1603748877143100?thread_ts=1603737209.131700&cid=CJLTWPH7S -->
+
