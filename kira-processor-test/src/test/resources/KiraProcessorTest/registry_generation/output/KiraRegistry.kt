@@ -7,6 +7,9 @@ import com.popovanton0.kira.generated.registry_generation.Kira_ExampleFunction3
 import com.popovanton0.kira.generated.registry_generation.Kira_ExampleFunction4
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.TODO
+import java.util.HashMap
+import kotlin.String
+import kotlin.collections.MutableMap
 
 public object KiraRegistry {
   /**
