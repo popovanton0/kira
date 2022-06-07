@@ -1,0 +1,237 @@
+public final class com/popovanton0/kira/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public final class com/popovanton0/kira/ComposableSingletons$KiraScreenKt {
+	public static final field INSTANCE Lcom/popovanton0/kira/ComposableSingletons$KiraScreenKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function3;
+	public static field lambda-2 Lkotlin/jvm/functions/Function3;
+	public fun <init> ()V
+	public final fun getLambda-1$kira_release ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda-2$kira_release ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/popovanton0/kira/KiraScreenKt {
+	public static final fun KiraScreen (Lcom/popovanton0/kira/suppliers/Kira;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun KiraScreen (Lcom/popovanton0/kira/suppliers/KiraProvider;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/popovanton0/kira/suppliers/BooleanSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getDefaultValue ()Z
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun setDefaultValue (Z)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/BooleanSupplierKt {
+	public static final fun boolean (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Z)Lcom/popovanton0/kira/suppliers/BooleanSupplierBuilder;
+	public static final fun nullableBoolean (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/Boolean;)Lcom/popovanton0/kira/suppliers/NullableBooleanSupplierBuilder;
+}
+
+public final class com/popovanton0/kira/suppliers/EnumSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/Enum;Ljava/util/List;)V
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getDefaultValue ()Ljava/lang/Enum;
+	public final fun getEnumConstants ()Ljava/util/List;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun setDefaultValue (Ljava/lang/Enum;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/Kira : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun modify (Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/Kira;
+	public final fun modifyInjector (Lkotlin/jvm/functions/Function2;)Lcom/popovanton0/kira/suppliers/Kira;
+}
+
+public final class com/popovanton0/kira/suppliers/KiraKt {
+	public static final fun kira (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/Kira;
+	public static final fun kira (Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/Kira;
+}
+
+public abstract interface class com/popovanton0/kira/suppliers/KiraMisses {
+}
+
+public abstract interface class com/popovanton0/kira/suppliers/KiraProvider {
+	public abstract fun getKira ()Lcom/popovanton0/kira/suppliers/Kira;
+}
+
+public final class com/popovanton0/kira/suppliers/NotImplementedKiraProvider : com/popovanton0/kira/suppliers/KiraProvider {
+	public static final field $stable I
+	public fun <init> (Lkotlin/reflect/KClass;)V
+	public fun getKira ()Lcom/popovanton0/kira/suppliers/Kira;
+}
+
+public final class com/popovanton0/kira/suppliers/NullableBooleanSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getDefaultValue ()Ljava/lang/Boolean;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun setDefaultValue (Ljava/lang/Boolean;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/NullableEnumSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/Enum;Ljava/util/List;)V
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getDefaultValue ()Ljava/lang/Enum;
+	public final fun getEnumConstants ()Ljava/util/List;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun setDefaultValue (Ljava/lang/Enum;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/NullableStringSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getDefaultValue ()Ljava/lang/String;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun setDefaultValue (Ljava/lang/String;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/SealedClassSupplier : com/popovanton0/kira/suppliers/base/PropertyBasedSupplier {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Lkotlin/reflect/KClass;)V
+	public fun Ui (Landroidx/compose/runtime/Composer;I)V
+	public fun currentValue (Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun getCurrentValue ()Ljava/lang/Object;
+	public fun initialize ()V
+	public fun setCurrentValue (Ljava/lang/Object;)V
+}
+
+public final class com/popovanton0/kira/suppliers/SingleValueSupplierKt {
+	public static final fun nullableSingleValue (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Z)Lcom/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder;
+	public static synthetic fun nullableSingleValue$default (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;ZILjava/lang/Object;)Lcom/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder;
+	public static final fun singleValue (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)Lcom/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder;
+	public static synthetic fun singleValue$default (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lcom/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder;
+}
+
+public final class com/popovanton0/kira/suppliers/StringSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getDefaultValue ()Ljava/lang/String;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun setDefaultValue (Ljava/lang/String;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/StringSupplierKt {
+	public static final fun nullableString (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/String;)Lcom/popovanton0/kira/suppliers/NullableStringSupplierBuilder;
+	public static final fun string (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/String;)Lcom/popovanton0/kira/suppliers/StringSupplierBuilder;
+}
+
+public abstract interface class com/popovanton0/kira/suppliers/base/PropertyBasedSupplier : com/popovanton0/kira/suppliers/base/Supplier {
+	public abstract fun currentValue (Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public abstract fun getCurrentValue ()Ljava/lang/Object;
+	public abstract fun setCurrentValue (Ljava/lang/Object;)V
+}
+
+public final class com/popovanton0/kira/suppliers/base/PropertyBasedSupplier$DefaultImpls {
+	public static fun currentValue (Lcom/popovanton0/kira/suppliers/base/PropertyBasedSupplier;Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public static fun initialize (Lcom/popovanton0/kira/suppliers/base/PropertyBasedSupplier;)V
+}
+
+public abstract interface class com/popovanton0/kira/suppliers/base/Supplier {
+	public abstract fun Ui (Landroidx/compose/runtime/Composer;I)V
+	public abstract fun currentValue (Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public abstract fun initialize ()V
+}
+
+public final class com/popovanton0/kira/suppliers/base/Supplier$DefaultImpls {
+	public static fun initialize (Lcom/popovanton0/kira/suppliers/base/Supplier;)V
+}
+
+public abstract class com/popovanton0/kira/suppliers/base/SupplierBuilder : com/popovanton0/kira/suppliers/base/Supplier {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun Ui (Landroidx/compose/runtime/Composer;I)V
+	public final fun alreadyInitializedError ()Ljava/lang/Void;
+	public abstract fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public fun currentValue (Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+	public fun initialize ()V
+	public final fun isInitialized ()Z
+}
+
+public final class com/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey {
+	public static final field $stable I
+}
+
+public final class com/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun modify (Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder;
+	public final fun modifyInjector (Lkotlin/jvm/functions/Function2;)Lcom/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder;
+	public final fun setLabel (Ljava/lang/String;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/suppliers/compound/CompoundSupplierKt {
+	public static final fun compound (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder;
+	public static final fun compound (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/compound/CompoundSupplierBuilder;
+	public static final fun nullableCompound (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder;
+	public static final fun nullableCompound (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder;
+}
+
+public abstract class com/popovanton0/kira/suppliers/compound/GeneratedKiraScope : com/popovanton0/kira/suppliers/compound/KiraScope {
+	public static final field $stable I
+	public fun <init> ()V
+	public abstract fun collectSuppliers ()Ljava/util/List;
+}
+
+public abstract class com/popovanton0/kira/suppliers/compound/GeneratedKiraScopeWithImpls : com/popovanton0/kira/suppliers/compound/KiraScope {
+	public static final field $stable I
+	public fun <init> ()V
+	public abstract fun collectSuppliers ()Ljava/util/List;
+	public final fun generatedSupplierImpls (Lkotlin/jvm/functions/Function1;)V
+	protected abstract fun get$$$supplierImplsScope$$$ ()Lcom/popovanton0/kira/suppliers/compound/GeneratedKiraScopeWithImpls$SupplierImplsScope;
+}
+
+public abstract class com/popovanton0/kira/suppliers/compound/GeneratedKiraScopeWithImpls$SupplierImplsScope : com/popovanton0/kira/suppliers/compound/KiraScope {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun implChanged ()Ljava/lang/Void;
+}
+
+public final class com/popovanton0/kira/suppliers/compound/Injector {
+	public static final field $stable I
+	public final fun invoke (Landroidx/compose/runtime/Composer;I)Ljava/lang/Object;
+}
+
+public class com/popovanton0/kira/suppliers/compound/KiraScope {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun addSupplier (Lcom/popovanton0/kira/suppliers/base/Supplier;)V
+	public fun collectSuppliers ()Ljava/util/List;
+}
+
+public final class com/popovanton0/kira/suppliers/compound/KiraScopeKt {
+	public static final fun injector (Lcom/popovanton0/kira/suppliers/compound/KiraScope;Lkotlin/jvm/functions/Function2;)Lcom/popovanton0/kira/suppliers/compound/Injector;
+}
+
+public final class com/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder : com/popovanton0/kira/suppliers/base/SupplierBuilder {
+	public static final field $stable I
+	public fun build (Lcom/popovanton0/kira/suppliers/base/SupplierBuilder$BuildKey;)Lcom/popovanton0/kira/suppliers/base/Supplier;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun isNullByDefault ()Z
+	public final fun modify (Lkotlin/jvm/functions/Function1;)Lcom/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder;
+	public final fun modifyInjector (Lkotlin/jvm/functions/Function2;)Lcom/popovanton0/kira/suppliers/compound/NullableCompoundSupplierBuilder;
+	public final fun setLabel (Ljava/lang/String;)V
+	public final fun setNullByDefault (Z)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class com/popovanton0/kira/ui/DefaultHeaderKt {
+	public static final fun DefaultHeader (Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+}
+
