@@ -9,4 +9,4 @@ import com.popovanton0.kira.annotations.Kira
 @Kira
 @Preview
 @Composable
-fun `AsdQ😃∂`(param2: Boolean = false) = Text(text = "SimpleTextCard overload")
+fun `AsdQ😃∂`(param2: Boolean = false) = Text(text = "AsdQ😃∂ function")
