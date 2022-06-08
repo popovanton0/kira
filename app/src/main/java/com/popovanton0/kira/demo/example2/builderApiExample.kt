@@ -1,7 +1,5 @@
 package com.popovanton0.kira.demo.example2
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.exampleui.Car
@@ -11,7 +9,6 @@ import com.popovanton0.exampleui.Rock
 import com.popovanton0.exampleui.Skill
 import com.popovanton0.exampleui.TextCard
 import com.popovanton0.kira.KiraScreen
-import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.suppliers.compound.compound
@@ -26,11 +23,7 @@ import com.popovanton0.kira.suppliers.string
 
 @Preview
 @Composable
-fun KiraBuilderApiExample() = KiraTheme {
-    Surface(color = MaterialTheme.colors.background) {
-        KiraScreen(kiraTextCard)
-    }
-}
+fun KiraBuilderApiExample() = KiraScreen(kiraTextCard)
 
 val kiraTextCard = kira {
     val text = string(paramName = "text", defaultValue = "Lorem")
