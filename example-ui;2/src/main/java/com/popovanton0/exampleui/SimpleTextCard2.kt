@@ -14,21 +14,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.popovanton0.kira.annotations.Kira
 
-@Kira(name = "SimpleTextCardSpecial-example_ui")
+@Kira(name = "SimpleTextCard_Simple_example_ui2")
 @Preview
 @Composable
-fun SimpleTextCard2(param2: Boolean = false) = Text(text = "SimpleTextCard overload")
+fun SimpleTextCard(param2: Boolean = false) =
+    Text(text = "SimpleTextCard from example_ui2: param2 = $param2")
 
-@Suppress("NonAsciiCharacters", "IllegalIdentifier")
-@Kira
+@Kira(name = "SimpleTextCard_example_ui2")
 @Preview
 @Composable
-fun `AsdQ😃∂`(param2: Boolean = false) = Text(text = "SimpleTextCard overload")
-
-@Kira
-@Preview
-@Composable
-fun SimpleTextCard1(
+fun SimpleTextCard(
     isRed: Boolean = false,
     text: String = "Example",
 ) {
@@ -41,7 +36,7 @@ fun SimpleTextCard1(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = text,
+                text = "SimpleTextCard from example;ui2: $text",
                 color = if (isRed) Color.Red else Color.Unspecified
             )
         }

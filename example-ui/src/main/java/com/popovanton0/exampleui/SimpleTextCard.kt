@@ -15,10 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popovanton0.kira.annotations.Kira
 
-@Kira(name = "SimpleTextCardSpecial")
+@Kira(name = "SimpleTextCard_Simple")
 @Preview
 @Composable
-fun SimpleTextCard(param1: Boolean = false) = Text(text = "SimpleTextCard overload")
+fun SimpleTextCard(param1: Boolean = false) = Text(text = "SimpleTextCard: param1 = $param1")
 
 @Kira
 @Preview
@@ -40,7 +40,7 @@ fun SimpleTextCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = text,
+                text = "SimpleTextCard: $text",
                 color = if (isRed) Color.Red else Color.Unspecified
             )
             Text(
