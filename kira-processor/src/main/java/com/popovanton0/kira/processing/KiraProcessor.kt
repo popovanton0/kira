@@ -301,15 +301,20 @@ private fun correctedQualifiedName(kiraFunction: KiraFunction): String {
 private fun Iterable<KiraFunction>.duplicateFunctionsErrorMsg(): String = this
     .map { it.function to correctedQualifiedName(it) }
     .findAllDuplicatesBy { (_, correctedQualifiedName) -> correctedQualifiedName }
-    .distinctBy { it.second }
     .joinToString(prefix = "[\n", postfix = "\n]", separator = ",\n") { (function, _) ->
         buildString {
-            append("\t" + function.kiraAnn().toString().replace('[', '(').replace(']', ')'))
-            append(" " + function.qualifiedName!!.asString())
+            append("\t")
+            append(function.kiraAnn())
+            append(" ")
+            append(function.qualifiedName!!.asString())
         }
     }
 
+/**
+ * @return all duplicates, not de-duplicating them
+ */
 private fun <T, V> Iterable<T>.findAllDuplicatesBy(predicate: (T) -> V): Iterable<T> {
-    val seen = mutableSetOf<V>()
-    return filter { !seen.add(predicate(it)) }.toSet()
+    val seen = mutableMapOf<V, MutableList<T>>()
+    forEach { seen.getOrPut(predicate(it)) { mutableListOf() }.add(it) }
+    return seen.values.filter { it.size >= 2 }.flatten()
 }

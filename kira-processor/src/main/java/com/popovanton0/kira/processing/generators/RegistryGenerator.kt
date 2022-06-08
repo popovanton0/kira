@@ -55,9 +55,9 @@ internal object RegistryGenerator {
 
     private fun providersMap(registryRecords: List<RegistryRecord>) = buildCodeBlock {
         beginControlFlow(
-            "%T((%L + 5 / 0.75f).toInt()).apply {",
+            "%T((%L / 0.75f).toInt()).apply {",
             kiraProvidersHashMapType,
-            registryRecords.size
+            registryRecords.size + 5
         )
         registryRecords.forEach { registryRecord ->
             if (registryRecord.providerWithEmptyConstructor) {

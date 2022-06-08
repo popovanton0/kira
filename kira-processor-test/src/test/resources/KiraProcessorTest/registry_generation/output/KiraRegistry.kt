@@ -7,9 +7,6 @@ import com.popovanton0.kira.generated.registry_generation.Kira_ExampleFunction3
 import com.popovanton0.kira.generated.registry_generation.Kira_ExampleFunction4
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.TODO
-import java.util.HashMap
-import kotlin.String
-import kotlin.collections.MutableMap
 
 public object KiraRegistry {
   /**
@@ -17,7 +14,7 @@ public object KiraRegistry {
    * value — [KiraProvider] for that function
    */
   public val kiraProviders: MutableMap<String, KiraProvider<*>> =
-      HashMap<String, KiraProvider<*>>((4 + 5 / 0.75f).toInt()).apply {
+      HashMap<String, KiraProvider<*>>((9 / 0.75f).toInt()).apply {
     put("registry_generation.ExampleFunction1", Kira_ExampleFunction1())
     put("registry_generation.ExampleFunction2", Kira_ExampleFunction2())
     put("registry_generation.ExampleFunction3", TODO<Kira_ExampleFunction3>())
