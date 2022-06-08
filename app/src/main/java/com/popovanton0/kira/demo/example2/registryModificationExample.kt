@@ -7,8 +7,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.exampleui.Car
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
-import com.popovanton0.kira.generated.com.popovanton0.kira.demo.example2.Kira_TextCard
-import com.popovanton0.kira.generated.registry.KiraRegistry
+import com.popovanton0.kira.generated.com.popovanton0.exampleui.Kira_TextCard
+import com.popovanton0.kira.registry.KiraRegistry
 import com.popovanton0.kira.suppliers.nullableSingleValue
 import com.popovanton0.kira.suppliers.singleValue
 

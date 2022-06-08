@@ -6,8 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
-import com.popovanton0.kira.generated.com.popovanton0.kira.demo.Kira_SimpleTextCard
-import com.popovanton0.kira.generated.registry.KiraRegistry
+import com.popovanton0.kira.generated.com.popovanton0.exampleui.Kira_SimpleTextCard
+import com.popovanton0.kira.registry.KiraRegistry
 
 @Preview
 @Composable

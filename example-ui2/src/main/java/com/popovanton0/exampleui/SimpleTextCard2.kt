@@ -12,25 +12,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.popovanton0.kira.annotations.Kira
 
-@Kira(name = "SimpleTextCardSpecial")
+@Kira(name = "SimpleTextCardSpecial-example_ui2")
 @Preview
 @Composable
-fun SimpleTextCard(param1: Boolean = false) = Text(text = "SimpleTextCard overload")
+fun SimpleTextCard(param2: Boolean = false) = Text(text = "SimpleTextCard overload")
+
+@Suppress("NonAsciiCharacters")
+@Kira
+@Preview
+@Composable
+fun `AsdQ-∂`(param2: Boolean = false) = Text(text = "SimpleTextCard overload")
 
 @Kira
 @Preview
 @Composable
-fun SimpleTextCard(
+fun SimpleTextCard1(
+    isRed: Boolean = false,
     text: String = "Example",
-    isRed: Boolean = text.contains(' '),
-    skill: Skill? = Skill.LOW,
-    food: Food = Food.BAD,
-    rock: Rock? = null,
 ) {
-    require(skill != Skill.OK) { "Skill is not correct" }
     val shape = RoundedCornerShape(12.dp)
     Card(elevation = 8.dp, shape = shape) {
         Column(
@@ -43,24 +44,6 @@ fun SimpleTextCard(
                 text = text,
                 color = if (isRed) Color.Red else Color.Unspecified
             )
-            Text(
-                text = "skill is " + when (skill) {
-                    Skill.LOW -> "😤"
-                    Skill.OK -> "🙂"
-                    Skill.SICK -> "😎"
-                    null -> "missing"
-                },
-                fontSize = 18.sp,
-            )
-            Text(
-                text = "🍔 is " + when (food) {
-                    Food.BAD -> "😤"
-                    Food.GOOD -> "🙂"
-                    Food.EXCELLENT -> "😃"
-                },
-                fontSize = 18.sp,
-            )
-            Text(text = "rock: $rock")
         }
     }
 }
