@@ -51,10 +51,10 @@ kira(TextCardScope()) {
 }
 ```
 
-UI demo screen:
+Screenshot of the UI demo screen:
 
-<img width="300" src="images/light/example-ui.png#gh-light-mode-only" alt="Kira — Early Demo on YouTube">
-<img width="300" src="images/dark/example-ui.png#gh-dark-mode-only" alt="Kira — Early Demo on YouTube">
+<img width="300" src="images/light/example-ui.png#gh-light-mode-only" alt="Horizontal ListItems present for each function argument that allow user to provide any value of the argument's type to the function's arguments">
+<img width="300" src="images/dark/example-ui.png#gh-dark-mode-only" alt="Horizontal ListItems present for each function argument that allow user to provide any value of the argument's type to the function's arguments">
 
 ## Getting Started
 
