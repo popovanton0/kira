@@ -1,6 +1,7 @@
 # Kira  [Work in progress 🚧]
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Compatible with Compose — 1.1.1](https://img.shields.io/badge/Compatible%20with%20Compose-1.1.1-brightgreen)](https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.1.1)
 
 Kira is an Android library that defines a Kotlin DSL (similar to 
 [androidx.preference](https://developer.android.com/guide/topics/ui/settings)) for creating UI that allows users to call
