@@ -38,10 +38,6 @@ android {
     namespace "com.popovanton0.example_ui2"
 }
 
-ksp {
-    arg("moduleName", "example-ui2")
-}
-
 dependencies {
     implementation project(':kira')
     ksp project(':kira-processor')
