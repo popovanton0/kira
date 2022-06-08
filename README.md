@@ -13,12 +13,6 @@ Library is particularly useful for building demo screens in playground apps of v
 
 In active development, __no__ usable version is released
 
-## Demo Video
-
-<a href="https://www.youtube.com/watch?v=FOiUPHJNiYI" target="_blank">
-    <img width="300" src="images/youtube-thumbnail.jpg" alt="Kira — Early Demo on YouTube">
-</a>
-
 ## Example
 
 ```kotlin
@@ -55,6 +49,12 @@ Screenshot of the UI demo screen:
 
 <img width="400" src="images/light/example-ui.gif#gh-light-mode-only" alt="Horizontal ListItems present for each function argument that allow user to provide any value of the argument's type to the function's arguments">
 <img width="400" src="images/dark/example-ui.gif#gh-dark-mode-only" alt="Horizontal ListItems present for each function argument that allow user to provide any value of the argument's type to the function's arguments">
+
+## Demo Video
+
+<a href="https://www.youtube.com/watch?v=FOiUPHJNiYI" target="_blank">
+    <img width="300" src="images/youtube-thumbnail.jpg" alt="Kira — Early Demo on YouTube">
+</a>
 
 ## Getting Started
 
