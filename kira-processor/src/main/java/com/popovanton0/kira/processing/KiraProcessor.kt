@@ -42,7 +42,6 @@ class KiraProcessor(
     private val supplierProcessors: List<SupplierProcessor>,
 ) : SymbolProcessor {
 
-    private val moduleName = environment.options["moduleName"]
     private val codeGenerator = environment.codeGenerator
 
     internal companion object {
@@ -55,7 +54,6 @@ class KiraProcessor(
         internal val generatedKiraScopeName =
             ClassName("$SUPPLIERS_PKG_NAME.compound", "GeneratedKiraScopeWithImpls")
 
-        private val kotlinSimpleFunNameRegex = "[a-zA-Z_][a-zA-Z_\\d]*".toRegex()
         private val kiraScopeName = ClassName("$SUPPLIERS_PKG_NAME.compound", "KiraScope")
         private val kiraSupplierName = ClassName(SUPPLIERS_PKG_NAME, "Kira")
         private val kiraBuilderFunName = MemberName(SUPPLIERS_PKG_NAME, "kira")
@@ -80,7 +78,7 @@ class KiraProcessor(
         if (kiraRootAnn == null) {
             if (kiraDeclarations.names.isNotEmpty()) {
                 DeclarationsAggregator
-                    .aggregatorFile(kiraDeclarations.names, moduleName)
+                    .aggregatorFile(resolver, kiraDeclarations.names)
                     .writeTo(codeGenerator, aggregating = true, kiraDeclarations.originatingKSFiles)
             }
             return emptyList()

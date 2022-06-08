@@ -11,6 +11,7 @@ import com.popovanton0.kira.annotations.KiraDeclarationsAggregator
 import com.popovanton0.kira.processing.KiraProcessor
 import com.popovanton0.kira.processing.KiraProcessor.Companion.KIRA_ROOT_PKG_NAME
 import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraAnnClass
+import com.popovanton0.kira.processing.sha256
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.DelicateKotlinPoetApi
@@ -54,22 +55,18 @@ internal object DeclarationsAggregator {
     }
 
     @OptIn(DelicateKotlinPoetApi::class)
-    internal fun aggregatorFile(funNames: List<String>, moduleName: String?): FileSpec {
-        @Suppress("NAME_SHADOWING")
-        val moduleName = moduleName ?: moduleName(funNames.first())
-        val declarationsAggregatorName = aggregatorName(moduleName)
-        return FileSpec.builder(
-            declarationsAggregatorName.packageName,
-            declarationsAggregatorName.simpleName
-        )
+    internal fun aggregatorFile(resolver: Resolver, funNames: List<String>): FileSpec {
+        val moduleName = uniqueModuleIdentifier(resolver, funNames)
+        val className = aggregatorClassName(moduleName)
+        return FileSpec.builder(className.packageName, className.simpleName)
             .addFileComment(
                 """This file contains qualified names of all functions annotated with 
-                        |@${kiraAnnClass.simpleName}. Its used to find them while processing the
-                        |root module (module that contains class, annotated with 
+                        |@${kiraAnnClass.simpleName} in this module. Its used to find them while 
+                        |processing the root module (module that contains the class, annotated with 
                         |@${KiraProcessor.kiraRootAnnClass.simpleName})""".trimMargin()
             )
             .addType(
-                TypeSpec.classBuilder(declarationsAggregatorName)
+                TypeSpec.classBuilder(className)
                     .addModifiers(KModifier.PRIVATE)
                     .addAnnotation(
                         AnnotationSpec.get(KiraDeclarationsAggregator(funNames.toTypedArray()))
@@ -79,17 +76,28 @@ internal object DeclarationsAggregator {
             .build()
     }
 
-    private fun aggregatorName(moduleName: String) =
-        ClassName(PACKAGE_PREFIX, "DeclarationsAggregator_$moduleName")
+    /**
+     * Hashes [suffix], so that [illegal characters](https://github.com/JetBrains/kotlin/blob/master/compiler/frontend.java/src/org/jetbrains/kotlin/resolve/jvm/checkers/JvmSimpleNameBacktickChecker.kt)
+     * from the [moduleName] don't break the build
+     */
+    private fun aggregatorClassName(suffix: String) =
+        ClassName(PACKAGE_PREFIX, "DeclarationsAggregator_${sha256(suffix)}")
+
+    private fun uniqueModuleIdentifier(resolver: Resolver, funNames: List<String>) =
+        runCatching { moduleName(resolver) }
+            .getOrElse { uniqueModuleIdentifier(funNames) }
+
+    /** assuming that different modules have a unique set of @Kira-annotated function names */
+    private fun uniqueModuleIdentifier(funNames: List<String>): String {
+        val builder = StringBuilder(funNames.size * AVERAGE_FUN_NAME_LENGTH)
+        funNames.joinTo(builder)
+        return sha256(builder.toString())
+    }
 
     /**
      * todo use `resolver.moduleName` when [https://github.com/google/ksp/issues/1015] is done
-     * @param funName name of the any function in the module
+     * @return gradle module name
      */
-    private fun moduleName(funName: String): String =
-        funName.substringBeforeLast('.').replace(".", "_").lowercase()
-
-    /** [https://github.com/google/ksp/issues/1015] */
     private fun moduleName(resolver: Resolver): String {
         val moduleDescriptor = resolver::class.java
             .getDeclaredField("module")
@@ -99,9 +107,8 @@ internal object DeclarationsAggregator {
             .getMethod("getName")
             .invoke(moduleDescriptor)
             .toString()
-        return rawName
-            .removeSurrounding("<", ">")
-            .removeSuffix("_debug")
-            .removeSuffix("_release")
+        return rawName.removeSurrounding("<", ">")
     }
+
+    private const val AVERAGE_FUN_NAME_LENGTH = 80
 }
