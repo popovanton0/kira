@@ -1,17 +1,15 @@
-# Kira
+# Kira  [Work in progress 🚧]
 
-[![Release](https://jitpack.io/v/popovanton0/kira.svg)](https://jitpack.io/#popovanton0/kira)
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
-Kotlin DSL for creating UI demo screens that allow users to call any function (including composable ones).
+Kira is an Android library that defines a Kotlin DSL (similar to 
+[androidx.preference](https://developer.android.com/guide/topics/ui/settings)) for creating UI that allows users to call
+any function (including `@Composable` ones) with any parameter values.
 
-Also includes [ksp](https://github.com/google/ksp) based `kira-processor` that __✨automagically✨__ generates demo
-screens for functions using the DSL.
+Kira also includes annotation-processor `kira-processor` that __✨automagically✨__ generates UI for functions using the 
+DSL.
 
-Library is particularly useful for building demo screens in playground apps of various design systems.
-
-## Development Status
-
-In active development, __no__ usable version is released
+Library is particularly useful for building demo screens for UI components in playground apps of various design systems.
 
 ## Example
 
