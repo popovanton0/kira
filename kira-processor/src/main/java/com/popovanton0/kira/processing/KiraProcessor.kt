@@ -137,8 +137,9 @@ class KiraProcessor(
                 )
                 .build()
                 .writeTo(
-                    codeGenerator, aggregating = false,
-                    originatingKSFiles = listOfNotNull(function.containingFile)
+                    codeGenerator, aggregating = false, originatingKSFiles = listOfNotNull(
+                        function.containingFile, kiraRootClass.containingFile
+                    )
                 )
 
             if (generateRegistry) registryRecords += RegistryGenerator.RegistryRecord(
