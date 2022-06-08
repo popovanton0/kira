@@ -1,6 +1,7 @@
 package com.popovanton0.kira.processing.supplierprocessors
 
-import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.ClassKind
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.popovanton0.kira.processing.FunctionParameter
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierData
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
@@ -29,7 +30,8 @@ object EnumSupplierProcessor : SupplierProcessor {
      */
     override fun provideSupplierFor(param: FunctionParameter): SupplierData? {
         val resolvedType = param.resolvedType
-        if (Modifier.ENUM !in resolvedType.declaration.modifiers) return null
+        if ((resolvedType.declaration as KSClassDeclaration).classKind != ClassKind.ENUM_CLASS)
+            return null
 
         val nullable = resolvedType.isMarkedNullable
 

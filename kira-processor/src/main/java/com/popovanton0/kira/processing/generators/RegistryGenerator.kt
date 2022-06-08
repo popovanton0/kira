@@ -1,6 +1,7 @@
 package com.popovanton0.kira.processing.generators
 
-import com.popovanton0.kira.annotations.Kira
+import com.google.devtools.ksp.symbol.KSFile
+import com.popovanton0.kira.processing.KiraProcessor.Companion.KIRA_ROOT_PKG_NAME
 import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraProviderName
 import com.popovanton0.kira.processing.supplierprocessors.base.SupplierProcessor
 import com.squareup.kotlinpoet.ClassName
@@ -16,7 +17,7 @@ import com.squareup.kotlinpoet.buildCodeBlock
 
 internal object RegistryGenerator {
     private val kiraRegistryName =
-        ClassName("${Kira.GENERATED_PACKAGE_PREFIX}.registry", "KiraRegistry")
+        ClassName("$KIRA_ROOT_PKG_NAME.registry", "KiraRegistry")
     private val kiraProvidersMapType =
         MUTABLE_MAP.parameterizedBy(STRING, kiraProviderName.parameterizedBy(STAR))
     private val kiraProvidersHashMapType = ClassName("java.util", "HashMap")
@@ -26,7 +27,8 @@ internal object RegistryGenerator {
     internal data class RegistryRecord(
         val fullFunName: String,
         val kiraProviderClassName: ClassName,
-        val providerWithEmptyConstructor: Boolean
+        val providerWithEmptyConstructor: Boolean,
+        val originatingKSFile: KSFile?,
     )
 
     fun generate(registryRecords: List<RegistryRecord>) = FileSpec.builder(

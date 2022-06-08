@@ -6,9 +6,7 @@ package com.popovanton0.kira.annotations
  */
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.FUNCTION)
-public annotation class Kira(
-    val name: String = "",
-) {
+public annotation class Kira(val name: String = "") {
     public companion object {
         public const val GENERATED_PACKAGE_PREFIX: String = "com.popovanton0.kira.generated"
     }

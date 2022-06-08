@@ -7,6 +7,7 @@ import kotlin.reflect.KClass
  * Generated [KiraProvider] — [T] doesn't have an empty constructor. Create an instance yourself and
  * add it to the [KiraRegistry].
  */
+@Suppress("FunctionName")
 public inline fun <reified T : KiraProvider<*>> TODO(): KiraProvider<*> =
     NotImplementedKiraProvider(T::class)
 

@@ -3,7 +3,9 @@
 package com.popovanton0.kira.processing
 
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.containingFile
 import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getFunctionDeclarationsByName
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -12,6 +14,7 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.Origin
 import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.annotations.KiraRoot
+import com.popovanton0.kira.processing.generators.DeclarationsAggregator
 import com.popovanton0.kira.processing.generators.InjectorGenerator
 import com.popovanton0.kira.processing.generators.MissesClassGenerator
 import com.popovanton0.kira.processing.generators.RegistryGenerator
@@ -33,13 +36,14 @@ import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
 import com.squareup.kotlinpoet.ksp.writeTo
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 class KiraProcessor(
     private val environment: SymbolProcessorEnvironment,
     private val supplierProcessors: List<SupplierProcessor>,
 ) : SymbolProcessor {
+
+    private val moduleName = environment.options["moduleName"]
+    private val codeGenerator = environment.codeGenerator
 
     internal companion object {
         internal const val KIRA_ROOT_PKG_NAME = "com.popovanton0.kira"
@@ -60,109 +64,133 @@ class KiraProcessor(
     }
 
     @KspExperimental
-    private fun getKiraRootAnn(resolver: Resolver): KiraRoot? {
-        var rootAnns = resolver.getSymbolsWithAnnotation(kiraRootAnnClass.canonicalName)
-        if (rootAnns.none()) return null
-        if (rootAnns.take(2).count() > 1) rootAnns = rootAnns
+    private fun getKiraRootClass(resolver: Resolver): KSAnnotated? {
+        val rootAnns = resolver.getSymbolsWithAnnotation(kiraRootAnnClass.canonicalName)
             .filter { it.origin == Origin.KOTLIN || it.origin == Origin.JAVA }
-        if (rootAnns.take(2).count() > 1) Errors.manyRootClasses(rootAnns.toList())
-        return rootAnns.single().getAnnotationsByType(KiraRoot::class).single()
+        if (rootAnns.none()) return null
+        return rootAnns.singleOrNull() ?: Errors.manyRootClasses(rootAnns.toList())
     }
 
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val kiraRootAnn = getKiraRootAnn(resolver) ?: return emptyList()
+        val kiraRootClass = getKiraRootClass(resolver)
+        val kiraRootAnn = kiraRootClass?.getAnnotationsByType(KiraRoot::class)?.single()
+
+        val kiraDeclarations = DeclarationsAggregator.aggregate(resolver)
+        if (kiraRootAnn == null) {
+            if (kiraDeclarations.names.isNotEmpty()) {
+                DeclarationsAggregator
+                    .aggregatorFile(kiraDeclarations.names, moduleName)
+                    .writeTo(codeGenerator, aggregating = true, kiraDeclarations.originatingKSFiles)
+            }
+            return emptyList()
+        }
+
         val generateRegistry = kiraRootAnn.generateRegistry
         val registryRecords = mutableListOf<RegistryGenerator.RegistryRecord>()
 
-        resolver.getSymbolsWithAnnotation(kiraAnnClass.canonicalName).forEach { function ->
-            isValidKiraFunction(function)
-            val funPkgName = function.packageName.asString()
-            val funSimpleName = function.simpleName.asString()
-            val fullFunName = function.qualifiedName!!.asString()
-            val kiraAnn = function.getAnnotationsByType(Kira::class).single()
-            val fileName = kiraAnn.name.ifEmpty {
-                require(funSimpleName.matches(kotlinSimpleFunNameRegex)) {
-                    // todo write a lint rule for that
-                    Errors.funWithUnicodeCharsInTheName(fullFunName)
-                }
-                funSimpleName
+        val functionsInAllModules: List<KiraFunction> = resolver
+            .getDeclarationsFromPackage(DeclarationsAggregator.PACKAGE_PREFIX)
+            .map(DeclarationsAggregator::extractNamesFromAggregator)
+            // this is the root module, and [kiraDeclarations] are not written into [aggregatorFile]
+            // thus, they need to be added separately
+            .plus(element = kiraDeclarations.names)
+            .flatten() // function names from each module -> names across all modules
+            .toList()
+            .distinct()
+            .flatMap { qualifiedName -> // function names across all modules
+                resolver
+                    .getFunctionDeclarationsByName(qualifiedName, includeTopLevel = true)
+                    .toList()
             }
+            .map { KiraFunction(it, it.kiraAnn()) }
+            .requireUniqueFunctionNames()
+
+        functionsInAllModules.forEach { kiraFunction ->
+            val function = kiraFunction.function
+
+            val funPkgName = function.packageName.asString()
+            val fullFunName = function.qualifiedName!!.asString()
+            val correctedFunSimpleName = correctedQualifiedName(kiraFunction)
+                .substringAfterLast('.')
 
             val injectorGenerator = InjectorGenerator(function)
-
-            val parameterSuppliers: List<ParameterSupplier> = function.parameters.map { param ->
-                param.name ?: Errors.funParamWithNoName(fullFunName)
-                val functionParameter = FunctionParameter(param)
-                val supplierData = supplierProcessors.firstNotNullOfOrNull {
-                    it.provideSupplierFor(functionParameter)
-                }
-
-                if (supplierData != null)
-                    ParameterSupplier.Provided(functionParameter, supplierData)
-                else
-                    ParameterSupplier.Empty(functionParameter)
-            }
+            val paramSuppliers: List<ParameterSupplier> = findSuppliersForFunParams(function)
 
             val generatedPkgName = "${Kira.GENERATED_PACKAGE_PREFIX}.$funPkgName"
-            val kiraProviderName = ClassName(generatedPkgName, "Kira_$fileName")
-            val scopeName = ClassName(generatedPkgName, "${fileName}Scope")
+            val kiraProviderName = ClassName(generatedPkgName, "Kira_$correctedFunSimpleName")
+            val scopeName = ClassName(generatedPkgName, "${correctedFunSimpleName}Scope")
             val supplierImplsScopeName = scopeName.nestedClass("SupplierImplsScope")
 
             FileSpec.builder(
                 packageName = generatedPkgName,
-                fileName = fileName
+                fileName = "${sha256(correctedFunSimpleName).take(4)}_${correctedFunSimpleName}"
             )
                 .addFileComment("This file is autogenerated. Do not edit it")
                 .addType(
                     kiraProvider(
-                        injectorGenerator,
-                        scopeName,
-                        funPkgName,
-                        funSimpleName,
-                        parameterSuppliers,
-                        kiraProviderName
+                        injectorGenerator, scopeName, paramSuppliers, kiraProviderName,
+                        funName = MemberName(funPkgName, function.simpleName.asString())
                     )
                 )
                 .addType(
-                    ScopeClassGenerator.generate(
-                        fullFunName,
-                        scopeName,
-                        supplierImplsScopeName,
-                        parameterSuppliers
-                    )
+                    ScopeClassGenerator
+                        .generate(fullFunName, scopeName, supplierImplsScopeName, paramSuppliers)
                 )
                 .build()
-                .writeTo(environment.codeGenerator, aggregating = false)
+                .writeTo(
+                    codeGenerator, aggregating = false,
+                    originatingKSFiles = listOfNotNull(function.containingFile)
+                )
 
             if (generateRegistry) registryRecords += RegistryGenerator.RegistryRecord(
                 fullFunName = fullFunName,
                 kiraProviderClassName = kiraProviderName,
-                providerWithEmptyConstructor =
-                parameterSuppliers.none { it is ParameterSupplier.Empty }
+                originatingKSFile = function.containingFile,
+                providerWithEmptyConstructor = paramSuppliers.none { it is ParameterSupplier.Empty }
             )
         }
 
         if (generateRegistry) {
             val registryFile = RegistryGenerator.generate(registryRecords)
-            registryFile.writeTo(environment.codeGenerator, aggregating = true)
+            val originatingKSFiles = buildList(
+                capacity = registryRecords.count { it.originatingKSFile != null } + 1
+            ) {
+                kiraRootClass.containingFile?.let(::add)
+                registryRecords.forEach { add(it.originatingKSFile ?: return@forEach) }
+            }
+            registryFile.writeTo(codeGenerator, aggregating = true, originatingKSFiles)
         }
 
         return emptyList()
     }
 
+    private fun findSuppliersForFunParams(function: KSFunctionDeclaration) =
+        function.parameters.map { param ->
+            param.name ?: Errors.funParamWithNoName(function.qualifiedName!!.asString())
+            val functionParameter = FunctionParameter(param)
+            val supplierData = supplierProcessors.firstNotNullOfOrNull {
+                it.provideSupplierFor(functionParameter)
+            }
+
+            if (supplierData != null)
+                ParameterSupplier.Provided(functionParameter, supplierData)
+            else
+                ParameterSupplier.Empty(functionParameter)
+        }
+
     private fun kiraProvider(
         injectorGenerator: InjectorGenerator,
         scopeName: ClassName,
-        funPkgName: String,
-        funSimpleName: String,
         parameterSuppliers: List<ParameterSupplier>,
-        kiraProviderName: ClassName
+        kiraProviderName: ClassName,
+        funName: MemberName
     ): TypeSpec {
         val kiraProvider = TypeSpec.classBuilder(kiraProviderName)
         val primaryConstructor = FunSpec.constructorBuilder()
 
-        if (parameterSuppliers.any { it is ParameterSupplier.Empty }) {
+        val needsMisses = parameterSuppliers.any { it is ParameterSupplier.Empty }
+        if (needsMisses) {
             kiraProvider.addType(MissesClassGenerator.generate(parameterSuppliers))
             val missesClassType = kiraProviderName.nestedClass("Misses")
             val missesProviderType = LambdaTypeName
@@ -189,13 +217,15 @@ class KiraProcessor(
                 returnType = injectorClassName.parameterizedBy(UNIT)
             )
             primaryConstructor.addParameter(injectorPropertyName, injectorProviderType)
-            kiraProvider.addKdoc("@param injector wasn't generated because:\n")
-            kiraProvider.addKdoc(injectorGenerator.noInjectorReasonMsg)
-            kiraProvider.addProperty(
-                PropertySpec.builder(injectorPropertyName, injectorProviderType, KModifier.PRIVATE)
-                    .initializer(injectorPropertyName)
-                    .build()
-            )
+            kiraProvider
+                .addKdoc("@param injector wasn't generated because:\n")
+                .addKdoc(injectorGenerator.noInjectorReasonMsg)
+                .addProperty(
+                    PropertySpec
+                        .builder(injectorPropertyName, injectorProviderType, KModifier.PRIVATE)
+                        .initializer(injectorPropertyName)
+                        .build()
+                )
         }
         kiraProvider
             .primaryConstructor(primaryConstructor.build())
@@ -205,13 +235,8 @@ class KiraProcessor(
                     "kira", kiraSupplierName.parameterizedBy(scopeName), KModifier.OVERRIDE
                 ).initializer(
                     kiraFun(
-                        scopeName,
-                        parameterSuppliers,
-                        kiraProviderName,
-                        injectorGenerator,
-                        injectorPropertyName,
-                        funPkgName,
-                        funSimpleName
+                        scopeName, parameterSuppliers, kiraProviderName, injectorGenerator,
+                        injectorPropertyName, funName
                     )
                 ).build()
             ).build()
@@ -225,8 +250,7 @@ class KiraProcessor(
         kiraProviderName: ClassName,
         injectorGenerator: InjectorGenerator,
         injectorPropertyName: String,
-        funPkgName: String,
-        funSimpleName: String
+        funName: MemberName
     ) = buildCodeBlock {
         beginControlFlow("%M(%T()) {", kiraBuilderFunName, scopeName)
         parameterSuppliers
@@ -245,23 +269,49 @@ class KiraProcessor(
         } else {
             beginControlFlow("%M {", injectorFunName)
             add(
-                injectorGenerator.injectorFunctionCall(
-                    kiraProviderName, funPkgName, funSimpleName, parameterSuppliers
-                )
+                injectorGenerator
+                    .injectorFunctionCall(kiraProviderName, parameterSuppliers, funName)
             )
             endControlFlow()
         }
         endControlFlow()
     }
+}
 
-    @OptIn(ExperimentalContracts::class)
-    private fun isValidKiraFunction(function: KSAnnotated) {
-        contract {
-            returns() implies (function is KSFunctionDeclaration)
-        }
-        require(function is KSFunctionDeclaration) {
-            "Only functions can be annotated with @${kiraAnnClass.simpleName}, but " +
-                    "${function.location} is not a function"
+private data class KiraFunction(
+    val function: KSFunctionDeclaration,
+    val kiraAnn: Kira,
+)
+
+private fun List<KiraFunction>.requireUniqueFunctionNames(): List<KiraFunction> {
+    val uniquelyNamedFunctions = distinctBy(::correctedQualifiedName)
+    if (uniquelyNamedFunctions.size != count())
+        Errors.resolutionAmbiguity(duplicateFunctionsErrorMsg())
+    return this
+}
+
+@OptIn(KspExperimental::class)
+private fun KSFunctionDeclaration.kiraAnn(): Kira = getAnnotationsByType(Kira::class).single()
+
+private fun correctedQualifiedName(kiraFunction: KiraFunction): String {
+    val (function, kiraAnn) = kiraFunction
+    val qualifiedName = function.qualifiedName!!.asString()
+    val correctedSimpleName = kiraAnn.name.ifBlank { function.simpleName.asString() }
+    return qualifiedName.replaceAfterLast('.', correctedSimpleName)
+}
+
+private fun Iterable<KiraFunction>.duplicateFunctionsErrorMsg(): String = this
+    .map { it.function to correctedQualifiedName(it) }
+    .findAllDuplicatesBy { (_, correctedQualifiedName) -> correctedQualifiedName }
+    .distinctBy { it.second }
+    .joinToString(prefix = "[\n", postfix = "\n]", separator = ",\n") { (function, _) ->
+        buildString {
+            append("\t" + function.kiraAnn().toString().replace('[', '(').replace(']', ')'))
+            append(" " + function.qualifiedName!!.asString())
         }
     }
+
+private fun <T, V> Iterable<T>.findAllDuplicatesBy(predicate: (T) -> V): Iterable<T> {
+    val seen = mutableSetOf<V>()
+    return filter { !seen.add(predicate(it)) }.toSet()
 }

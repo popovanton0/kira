@@ -65,11 +65,10 @@ internal class InjectorGenerator(function: KSFunctionDeclaration) {
 
     fun injectorFunctionCall(
         kiraProviderName: ClassName,
-        funPkgName: String,
-        funSimpleName: String,
-        parameterSuppliers: List<ParameterSupplier>
+        parameterSuppliers: List<ParameterSupplier>,
+        funName: MemberName
     ) = buildCodeBlock {
-        addStatement("%M(", MemberName(funPkgName, funSimpleName))
+        addStatement("%M(", funName)
         withIndent {
             parameterSuppliers.forEach { parameterSupplier ->
                 val paramName = parameterSupplier.parameter.name!!.asString()
