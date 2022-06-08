@@ -14,6 +14,18 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun function_overloads_with_identical_specified_kira_name() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun function_overloads_with_specified_kira_name() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun function_overloads() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun function_with_extension_receiver() =
         compileInputsAndVerifyOutputs()
 

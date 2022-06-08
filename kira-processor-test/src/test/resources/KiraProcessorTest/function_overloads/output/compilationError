@@ -1,0 +1,5 @@
+Resolution ambiguity: multiple functions found with the same name: [
+	com.popovanton0.kira.annotations.Kira(name=) function_overloads.ExampleFunction
+]. To fix: 
+1. provide unique @Kira.name values;
+2. rename functions or/and move them to different packages;
