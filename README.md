@@ -1,14 +1,60 @@
 # Kira
-Automatically generates UI demos which allow users to call any function (including composable ones) 
-with any parameters. Useful for building demo screens in playground apps of various design systems.
+
+[![Release](https://jitpack.io/v/popovanton0/kira.svg)](https://jitpack.io/#popovanton0/kira)
+
+Kotlin DSL for creating UI demo screens that allow users to call any function (including composable ones).
+
+Also includes [ksp](https://github.com/google/ksp) based `kira-processor` that __✨automagically✨__ generates demo
+screens for functions using the DSL.
+
+Library is particularly useful for building demo screens in playground apps of various design systems.
 
 ## Development Status
-In active development, no usable version is released
 
-### Demo Video
+In active development, __no__ usable version is released
+
+## Demo Video
+
 <a href="https://www.youtube.com/watch?v=FOiUPHJNiYI" target="_blank">
-    <img width="300" src="https://user-images.githubusercontent.com/15000556/167842393-6916d7a6-446b-4b70-ace8-d2be393255cd.jpg" alt="Kira — Early Demo on YouTube">
+    <img width="300" src="images/youtube-thumbnail.jpg" alt="Kira — Early Demo on YouTube">
 </a>
+
+## Example
+
+```kotlin
+@Kira
+@Composable
+fun TextCard(
+    text: String,
+    isRed: Boolean,
+    skill: Skill?,
+    food: Food,
+) = TODO()
+```
+
+Generated code:
+
+```kotlin
+kira(TextCardScope()) {
+    text = string(paramName = "text", defaultValue = "Lorem")
+    isRed = boolean(paramName = "isRed", defaultValue = false)
+    skill = nullableEnum(paramName = "skill", defaultValue = null)
+    food = enum(paramName = "food")
+    injector {
+        TextCard(
+            text = text.currentValue(),
+            isRed = isRed.currentValue(),
+            skill = skill.currentValue(),
+            food = food.currentValue(),
+        )
+    }
+}
+```
+
+UI demo screen:
+
+<img width="300" src="images/light/example-ui.png#gh-light-mode-only" alt="Kira — Early Demo on YouTube">
+<img width="300" src="images/dark/example-ui.png#gh-dark-mode-only" alt="Kira — Early Demo on YouTube">
 
 ## Getting Started
 
@@ -27,13 +73,15 @@ Next, add the dependency below to your _module_'s `build.gradle` file:
 ```gradle
 dependencies {
     implementation "com.github.popovanton0:kira:LATEST_VERSION"
-    ksp "com.github.popovanton0:kira-processor:LATEST_VERSION"
+    ksp "com.github.popovanton0.kira:kira-processor:LATEST_VERSION"
 }
 ```
 
 ## Usage
 
-Examples are in the [source code](https://github.com/popovanton0/kira/blob/master/app/src/main/java/com/popovanton0/kira/demo/MainActivity.kt).
+Examples are in
+the [source code](https://github.com/popovanton0/kira/blob/master/app/src/main/java/com/popovanton0/kira/demo/MainActivity.kt)
+.
 
 ### Basic
 
