@@ -218,11 +218,10 @@ private class CompoundSupplierImpl<T : Any>(
 
     @OptIn(ExperimentalComposeUiApi::class)
     private fun Modifier.nullOverlayModifier() = composed {
-        if (_currentValue.value == null) {
-            alpha(ContentAlpha.disabled).pointerInteropFilter { true }
-        } else {
-            this
-        }
+        val alpha by animateFloatAsState(
+            targetValue = if (_currentValue.value == null) ContentAlpha.disabled else 1f
+        )
+        alpha(alpha).pointerInteropFilter { _currentValue.value == null }
     }
 
     @Composable
