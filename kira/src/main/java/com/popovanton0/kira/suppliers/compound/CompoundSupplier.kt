@@ -1,6 +1,7 @@
 package com.popovanton0.kira.suppliers.compound
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -164,34 +164,6 @@ private class CompoundSupplierImpl<T : Any>(
     }
 
     @Composable
-    private fun VerticalDividerBox(modifier: Modifier, content: @Composable () -> Unit) {
-        Row(modifier = modifier.height(IntrinsicSize.Min)) {
-            VerticalDivider(modifier = Modifier.padding(top = 8.dp))
-            content()
-        }
-    }
-
-    @OptIn(ExperimentalComposeUiApi::class)
-    private fun Modifier.hide() = alpha(0f).pointerInteropFilter { true }
-
-    /**
-     * @param background if null, overlay won't be shown
-     */
-    @Composable
-    private fun Overlay(background: Background?, content: @Composable () -> Unit) {
-        if (background == null) {
-            content()
-            return
-        }
-        Surface(
-            modifier = Modifier.padding(8.dp),
-            shape = MaterialTheme.shapes.medium,
-            color = overlayColor(background),
-            content = content
-        )
-    }
-
-    @Composable
     override fun Ui(params: Any?) {
         Box(modifier = Modifier.hide()) {
             if (!::_currentValue.isInitialized) {
@@ -203,37 +175,46 @@ private class CompoundSupplierImpl<T : Any>(
             }
         }
         val params = params as CompoundParams?
-        val compressIntoDialog = params != null && params.nestingLevel > 2
+        val compressIntoDialog = params != null && params.nestingLevel > 1
 
         if (compressIntoDialog) {
             Compressed()
             if (openDialog) CompoundDialog(params)
         } else {
-            Overlay(params?.background) {
-                ListItem(
-                    sideSlotsAlignment = Alignment.Top,
-                    overlineText = { Text(text = typeName) },
-                    text = { Text(text = paramName) },
-                    secondaryText = secondaryText@{
-                        if (suppliers.isEmpty()) return@secondaryText
-                        VerticalDividerBox(modifier = Modifier.nullOverlayModifier()) {
-                            // not lazy because kira root is scrollable
-                            // and scrollable in scrollable is prohibited
-                            Column {
-                                suppliers.forEach { supplier ->
-                                    if (!isCompoundSupplier(supplier)) supplier.Ui(params = null)
-                                    else CompoundSupplierUi(params, supplier)
-                                }
+            ListItem(
+                sideSlotsAlignment = Alignment.Top,
+                overlineText = { Text(text = typeName) },
+                text = { Text(text = paramName) },
+                secondaryText = secondaryText@{
+                    if (suppliers.isEmpty()) return@secondaryText
+                    VerticalDividerBox(modifier = Modifier.nullOverlayModifier()) {
+                        // not lazy because kira root places us in the LazyColumn
+                        // and LazyColumn in LazyColumn is prohibited
+                        Column {
+                            suppliers.forEach { supplier ->
+                                if (!isCompoundSupplier(supplier)) supplier.Ui(params = null)
+                                else CompoundSupplierUi(params, supplier)
                             }
                         }
-                    },
-                    end = {
-                        if (nullable) NullCheckbox()
                     }
-                )
-            }
+                },
+                end = {
+                    if (nullable) NullCheckbox()
+                }
+            )
         }
     }
+
+    @Composable
+    private fun VerticalDividerBox(modifier: Modifier, content: @Composable () -> Unit) {
+        Row(modifier = modifier.height(IntrinsicSize.Min)) {
+            VerticalDivider(modifier = Modifier.padding(top = 8.dp))
+            content()
+        }
+    }
+
+    @OptIn(ExperimentalComposeUiApi::class)
+    private fun Modifier.hide() = alpha(0f).pointerInteropFilter { true }
 
     @OptIn(ExperimentalComposeUiApi::class)
     private fun Modifier.nullOverlayModifier() = composed {
@@ -242,13 +223,6 @@ private class CompoundSupplierImpl<T : Any>(
         } else {
             this
         }
-    }
-
-    @Composable
-    @ReadOnlyComposable
-    private fun overlayColor(background: Background) = when (background) {
-        ShowBackground -> MaterialTheme.colors.primaryVariant.copy(0.04f)
-        ShowContrastBackground -> MaterialTheme.colors.secondaryVariant.copy(0.04f)
     }
 
     @Composable
@@ -313,7 +287,7 @@ private class CompoundSupplierImpl<T : Any>(
                 .align(Alignment.CenterEnd),
             onClick = { openDialog = false }
         ) {
-            Text(text = stringResource(id =  android.R.string.ok))
+            Text(text = stringResource(id = android.R.string.ok))
         }
     }
 
@@ -322,26 +296,10 @@ private class CompoundSupplierImpl<T : Any>(
         params: CompoundParams?,
         supplier: Supplier<*>
     ) {
-        val background = if (params != null) {
-            when (params.background) {
-                ShowBackground -> ShowContrastBackground
-                ShowContrastBackground -> ShowBackground
-            }
-        } else ShowBackground
-
-        supplier.Ui(
-            params = CompoundParams(
-                background = background,
-                nestingLevel = (params?.nestingLevel ?: 0) + 1
-            )
-        )
+        supplier.Ui(params = CompoundParams(nestingLevel = (params?.nestingLevel ?: 0) + 1))
     }
 
-    private data class CompoundParams(val background: Background, val nestingLevel: Int)
-
-    private sealed class Background
-    private object ShowBackground : Background()
-    private object ShowContrastBackground : Background()
+    private data class CompoundParams(val nestingLevel: Int)
 }
 
 @Preview(showBackground = true)
