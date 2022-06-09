@@ -70,6 +70,10 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun non_root_module() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun private_function() =
         compileInputsAndVerifyOutputs()
 
