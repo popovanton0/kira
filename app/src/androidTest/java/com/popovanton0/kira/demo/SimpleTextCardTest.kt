@@ -5,7 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import com.popovanton0.kira.KiraScreen
-import com.popovanton0.kira.generated.com.popovanton0.kira.demo.Kira_SimpleTextCard
+import com.popovanton0.kira.generated.com.popovanton0.exampleui.Kira_SimpleTextCard
 import org.junit.Rule
 import org.junit.Test
 
@@ -21,7 +21,7 @@ internal class SimpleTextCardTest {
 
         onNodeWithText("isRed").assertExists()
         onNodeWithText("skill").assertExists()
-        onAllNodesWithText("Lorem").assertCountEquals(2)
+        onAllNodesWithText("Lorem", substring = true).assertCountEquals(2)
         onAllNodesWithText("null").assertCountEquals(2)
     }
 }

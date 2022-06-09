@@ -14,7 +14,7 @@ public abstract class SupplierBuilder<T> : Supplier<T> {
     override fun currentValue(): T = if (isInitialized) supplier.currentValue() else notInitError()
 
     @Composable
-    override fun Ui(): Unit = if (isInitialized) supplier.Ui() else notInitError()
+    override fun Ui(params: Any?): Unit = if (isInitialized) supplier.Ui(params) else notInitError()
 
     public override fun initialize() {
         if (isInitialized) alreadyInitializedError()

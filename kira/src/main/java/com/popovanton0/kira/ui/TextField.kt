@@ -1,10 +1,6 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.popovanton0.kira.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ListItem
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -51,7 +47,7 @@ internal fun NullableTextField(
                 label = { Text(text = label) }
             )
         },
-        trailing = {
+        end = {
             Checkbox(
                 label = "null",
                 checked = value == null,

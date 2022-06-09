@@ -47,7 +47,7 @@ private open class NullableStringSupplierImpl<T : String?>(
     override var currentValue: T by mutableStateOf(defaultValue)
 
     @Composable
-    override fun Ui() {
+    override fun Ui(params: Any?) {
         if (nullable) {
             NullableTextField(
                 value = currentValue,

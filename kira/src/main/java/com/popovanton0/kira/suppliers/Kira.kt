@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.compound.KiraScope
 
@@ -61,7 +62,7 @@ private class RootCompoundSupplierImpl(
     override fun currentValue() = Unit
 
     @Composable
-    override fun Ui() = BoxWithConstraints {
+    override fun Ui(params: Any?) = BoxWithConstraints {
         if (maxWidth / maxHeight < 1) LazyColumn {
             item { injector() }
             items(suppliers) { it.Ui() }

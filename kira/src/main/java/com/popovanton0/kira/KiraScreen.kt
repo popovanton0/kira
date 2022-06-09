@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
+import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.ui.DefaultHeader

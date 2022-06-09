@@ -1,5 +1,6 @@
 package com.popovanton0.kira.demo.example2
 
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.exampleui.Car
@@ -50,7 +51,7 @@ val kiraTextCard = kira {
 
 fun KiraScope.carSupplier() = compound(
     paramName = "car default",
-    label = "Car"
+    typeName = "Car"
 ) {
     val model = string(paramName = "model", defaultValue = "Tesla")
     val lame = boolean(paramName = "lame", defaultValue = false)
@@ -58,22 +59,103 @@ fun KiraScope.carSupplier() = compound(
     val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
     val engine = nullableCompound(
         paramName = "engine",
-        label = "Engine",
+        typeName = "Engine",
         isNullByDefault = true
     ) {
         val model = string(paramName = "model", defaultValue = "Merlin")
+        val car = compound(
+            paramName = "inner car",
+            typeName = "Car"
+        ) {
+            val model = string(paramName = "model", defaultValue = "Tesla")
+            val lame = boolean(paramName = "lame", defaultValue = false)
+            val lameN = nullableBoolean(paramName = "lameN", defaultValue = null)
+            val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
+            val engine = nullableCompound(
+                paramName = "engine",
+                typeName = "Engine",
+                isNullByDefault = true
+            ) {
+                val model = string(paramName = "model", defaultValue = "Merlin")
+                val diesel = boolean(
+                    paramName = "diesel",
+                    defaultValue = false
+                )
+                val carStr = nullableCompound(
+                    paramName = "carStr",
+                    typeName = "Car (String)",
+                    isNullByDefault = true
+                ) {
+                    val model = string(paramName = "model", defaultValue = "Merlin")
+                    val car = compound(
+                        paramName = "inner car",
+                        typeName = "Car"
+                    ) {
+                        val model = string(paramName = "model", defaultValue = "Tesla")
+                        val lame = boolean(paramName = "lame", defaultValue = false)
+                        val lameN = nullableBoolean(paramName = "lameN", defaultValue = null)
+                        val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
+                        val engine = nullableCompound(
+                            paramName = "engine",
+                            typeName = "Engine",
+                            isNullByDefault = true
+                        ) {
+                            val model = string(paramName = "model", defaultValue = "Merlin")
+                            val diesel = boolean(
+                                paramName = "diesel",
+                                defaultValue = false
+                            )
+                            injector {
+                                Engine(
+                                    model = model.currentValue(),
+                                    diesel = diesel.currentValue(),
+                                )
+                            }
+                        }
+                        injector {
+                            Car(
+                                model = model.currentValue(),
+                                lame = lame.currentValue(),
+                                lameN = lameN.currentValue(),
+                                cookerQuality = cookerQuality.currentValue(),
+                                engine = engine.currentValue() ?: Engine("null"),
+                            )
+                        }
+                    }
+                    injector {
+                        car.currentValue().toString()
+                    }
+                }
+                injector {
+                    Engine(
+                        model = model.currentValue() + carStr.currentValue(),
+                        diesel = diesel.currentValue(),
+                    )
+                }
+            }
+            injector {
+                Car(
+                    model = model.currentValue(),
+                    lame = lame.currentValue(),
+                    lameN = lameN.currentValue(),
+                    cookerQuality = cookerQuality.currentValue(),
+                    engine = engine.currentValue() ?: Engine("null"),
+                )
+            }
+        }
         val diesel = boolean(
             paramName = "diesel",
             defaultValue = false
         )
         injector {
             Engine(
-                model = model.currentValue(),
+                model = car.currentValue().toString(),
                 diesel = diesel.currentValue(),
             )
         }
     }
     injector {
+        Text(text = "This text will not be shown")
         Car(
             model = model.currentValue(),
             lame = lame.currentValue(),

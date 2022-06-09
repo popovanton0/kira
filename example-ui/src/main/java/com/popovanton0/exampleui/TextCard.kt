@@ -76,7 +76,7 @@ fun TextCard(
             )
             Text(text = "car: $car")
             Text(text = "carN: $carN")
-            Text(text = "rock: $rock")
+            Text(text = "rock: ${rock.toString().substringAfterLast('.')}")
             //Text(text = "autoCar: $autoCar")
         }
     }

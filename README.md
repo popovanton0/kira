@@ -25,7 +25,7 @@ fun TextCard(
 ) = TODO()
 ```
 
-Generated code:
+Generated code (only a portion):
 
 ```kotlin
 kira(TextCardScope()) {

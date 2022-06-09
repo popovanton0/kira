@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.ui.Dropdown
 
@@ -76,7 +78,7 @@ private class EnumSupplier<T : Enum<*>?>(
     override var currentValue: T by mutableStateOf(defaultValue)
 
     @Composable
-    override fun Ui() {
+    override fun Ui(params: Any?) {
         Dropdown(
             selectedOptionIndex = run {
                 if (enumConstants.first() == null) currentValue?.ordinal?.plus(1) ?: 0
@@ -88,3 +90,14 @@ private class EnumSupplier<T : Enum<*>?>(
         )
     }
 }
+
+@Preview
+@Composable
+private fun Preview() =
+    KiraScope().enum<AnnotationTarget>("param name").apply { initialize() }.Ui()
+
+@Preview
+@Composable
+private fun NullablePreview() =
+    KiraScope().nullableEnum<AnnotationTarget?>("param name", defaultValue = null)
+        .apply { initialize() }.Ui()

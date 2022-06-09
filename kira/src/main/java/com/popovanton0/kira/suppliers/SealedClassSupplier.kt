@@ -56,7 +56,7 @@ internal class SealedClassSupplier<T : Any>(
     }
 
     @Composable
-    override fun Ui() {
+    override fun Ui(params: Any?) {
 
     }
 }

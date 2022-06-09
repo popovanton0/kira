@@ -8,7 +8,7 @@ public interface Supplier<T> {
     public fun currentValue(): T
 
     @Composable
-    public fun Ui()
+    public fun Ui(params: Any?)
 
     public fun initialize(): Unit = Unit
 
@@ -24,3 +24,7 @@ public interface Supplier<T> {
     TODO Double
     */
 }
+
+
+@Composable
+public fun Supplier<*>.Ui(): Unit = Ui(null)

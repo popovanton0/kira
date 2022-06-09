@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.ui.BooleanSwitch
 import com.popovanton0.kira.ui.NullableBooleanSwitch
@@ -46,7 +48,7 @@ private open class NullableBooleanSupplierImpl<T : Boolean?>(
     override var currentValue: T by mutableStateOf(defaultValue)
 
     @Composable
-    override fun Ui() {
+    override fun Ui(params: Any?) {
         if (nullable) {
             NullableBooleanSwitch(
                 checked = currentValue,
@@ -62,3 +64,13 @@ private open class NullableBooleanSupplierImpl<T : Boolean?>(
         }
     }
 }
+
+@Preview
+@Composable
+private fun Preview() =
+    KiraScope().boolean("param name", defaultValue = false).apply { initialize() }.Ui()
+
+@Preview
+@Composable
+private fun NullablePreview() =
+    KiraScope().nullableBoolean("param name", defaultValue = null).apply { initialize() }.Ui()
