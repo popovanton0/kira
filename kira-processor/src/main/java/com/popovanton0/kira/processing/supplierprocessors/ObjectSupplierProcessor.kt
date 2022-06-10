@@ -15,37 +15,29 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.withIndent
 
 object ObjectSupplierProcessor : SupplierProcessor {
-    private val supplierImplType =
-        ClassName("$SUPPLIERS_PKG_NAME.compound", "CompoundSupplierBuilder")
-    private val nullableSupplierImplType =
-        ClassName("$SUPPLIERS_PKG_NAME.compound", "NullableCompoundSupplierBuilder")
-    private val kiraScope =
-        ClassName("$SUPPLIERS_PKG_NAME.compound", "KiraScope")
-    private val builderFunName =
-        MemberName(SUPPLIERS_PKG_NAME, "singleValue")
-    private val nullableBuilderFunName =
-        MemberName(SUPPLIERS_PKG_NAME, "nullableSingleValue")
+    private val supplierImplType = ClassName(SUPPLIERS_PKG_NAME, "OneOfManySupplierBuilder")
+    private val builderFunName = MemberName(SUPPLIERS_PKG_NAME, "object")
+    private val nullableBuilderFunName = MemberName(SUPPLIERS_PKG_NAME, "nullableObject")
 
     /**
      * ```
-     * ds8 = nullableSingleValue(
+     * ds8 = `object`(
      *     paramName = "ds8",
+     *     qualifiedName = "sdf.Rock"
      *     value = Rock,
-     *     typeName = "sdf1.Rock",
-     *     nullByDefault = true
      * )
      * ```
      */
     override fun provideSupplierFor(param: FunctionParameter): SupplierData? {
-        val declaration = param.resolvedType.declaration as? KSClassDeclaration ?: return null
+        val type = param.resolvedType
+        val declaration = type.declaration as? KSClassDeclaration ?: return null
         if (declaration.classKind != ClassKind.OBJECT) return null
 
-        val nullable = param.resolvedType.isMarkedNullable
+        val nullable = type.isMarkedNullable
 
         return SupplierData(
             initializer = initializer(nullable, param.name!!.asString(), declaration.toClassName()),
-            implType = (if (nullable) nullableSupplierImplType else supplierImplType)
-                .parameterizedBy(param.resolvedType.makeNotNullable().toTypeName(), kiraScope)
+            implType = supplierImplType.parameterizedBy(type.makeNotNullable().toTypeName())
         )
     }
 
@@ -58,9 +50,8 @@ object ObjectSupplierProcessor : SupplierProcessor {
         addStatement("%M(", funName)
         withIndent {
             addStatement("paramName = %S,", paramName)
+            addStatement("qualifiedName = %S,", objectName)
             addStatement("value = %T,", objectName)
-            addStatement("typeName = %S,", objectName.canonicalName)
-            if (nullable) addStatement("nullByDefault = true")
         }
         addStatement(")")
     }
