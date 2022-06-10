@@ -37,51 +37,54 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.popovanton0.kira.suppliers.base.ClassType
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.Type
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.ListItem
+import com.popovanton0.kira.ui.TypeUi
 import com.popovanton0.kira.ui.VerticalDivider
 
 public fun <T : Any> KiraScope.compound(
     paramName: String,
-    typeName: String,
+    type: Type,
     block: KiraScope.() -> Injector<T>,
 ): CompoundSupplierBuilder<T, KiraScope> =
-    compound(KiraScope(), paramName, typeName, block)
+    compound(KiraScope(), paramName, type, block)
 
 public fun <T : Any> KiraScope.nullableCompound(
     paramName: String,
-    typeName: String,
+    type: Type,
     isNullByDefault: Boolean = false,
     block: KiraScope.() -> Injector<T>,
 ): NullableCompoundSupplierBuilder<T, KiraScope> =
-    nullableCompound(KiraScope(), paramName, typeName, isNullByDefault, block)
+    nullableCompound(KiraScope(), paramName, type, isNullByDefault, block)
 
 public fun <T : Any, Scope : KiraScope> KiraScope.compound(
     scope: Scope,
     paramName: String,
-    typeName: String,
+    type: Type,
     block: Scope.() -> Injector<T>,
 ): CompoundSupplierBuilder<T, Scope> =
-    CompoundSupplierBuilder(scope, paramName, typeName, block).also(::addSupplier)
+    CompoundSupplierBuilder(scope, paramName, type, block).also(::addSupplier)
 
 public fun <T : Any, Scope : KiraScope> KiraScope.nullableCompound(
     scope: Scope,
     paramName: String,
-    typeName: String,
+    type: Type,
     isNullByDefault: Boolean = false,
     block: Scope.() -> Injector<T>,
 ): NullableCompoundSupplierBuilder<T, Scope> =
-    NullableCompoundSupplierBuilder(scope, paramName, typeName, isNullByDefault, block)
+    NullableCompoundSupplierBuilder(scope, paramName, type, isNullByDefault, block)
         .also(::addSupplier)
 
 public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
     private val scope: Scope,
     public var paramName: String,
-    public var typeName: String,
+    public var type: Type,
     block: Scope.() -> Injector<T>,
 ) : SupplierBuilder<T>() {
     private var injector: Injector<T> = scope.block()
@@ -101,7 +104,7 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
     override fun BuildKey.build(): Supplier<T> = CompoundSupplierImpl(
         paramName = paramName,
         suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
-        typeName = typeName,
+        type = type.notNullable(),
         injector = injector.injector,
         nullable = false,
         isNullByDefault = false,
@@ -111,7 +114,7 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
 public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
     private val scope: Scope,
     public var paramName: String,
-    public var typeName: String,
+    public var type: Type,
     public var isNullByDefault: Boolean,
     block: Scope.() -> Injector<T>
 ) : SupplierBuilder<T?>() {
@@ -132,7 +135,7 @@ public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> interna
     override fun BuildKey.build(): Supplier<T?> = CompoundSupplierImpl(
         paramName = paramName,
         suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
-        typeName = typeName,
+        type = type.nullable(),
         injector = injector.injector,
         nullable = true,
         isNullByDefault = isNullByDefault,
@@ -142,7 +145,7 @@ public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> interna
 private class CompoundSupplierImpl<T : Any>(
     private val paramName: String,
     private val suppliers: List<Supplier<*>>,
-    private val typeName: String,
+    private val type: Type,
     private val injector: @Composable () -> T,
     private val nullable: Boolean,
     private val isNullByDefault: Boolean,
@@ -174,6 +177,7 @@ private class CompoundSupplierImpl<T : Any>(
                 _currentValue.value = value
             }
         }
+        @Suppress("NAME_SHADOWING")
         val params = params as CompoundParams?
         val compressIntoDialog = params != null && params.nestingLevel > 1
 
@@ -182,8 +186,9 @@ private class CompoundSupplierImpl<T : Any>(
             if (openDialog) CompoundDialog(params)
         } else {
             ListItem(
-                sideSlotsAlignment = Alignment.Top,
-                overlineText = { Text(text = typeName) },
+                sideSlotsAlignment = if (suppliers.isNotEmpty()) Alignment.Top
+                else Alignment.CenterVertically,
+                overlineText = { TypeUi(type) },
                 text = { Text(text = paramName) },
                 secondaryText = secondaryText@{
                     if (suppliers.isEmpty()) return@secondaryText
@@ -227,7 +232,7 @@ private class CompoundSupplierImpl<T : Any>(
     @Composable
     private fun Compressed() = ListItem(
         modifier = Modifier.clickable { openDialog = true },
-        overlineText = { Text(text = typeName) },
+        overlineText = { TypeUi(type) },
         text = { Text(text = paramName) },
         end = {
             Icon(
@@ -243,7 +248,7 @@ private class CompoundSupplierImpl<T : Any>(
             Surface(shape = MaterialTheme.shapes.medium) {
                 Column {
                     ListItem(
-                        overlineText = { Text(text = typeName) },
+                        overlineText = { TypeUi(type) },
                         text = { Text(text = paramName) },
                         end = { if (nullable) NullCheckbox() }
                     )
@@ -304,11 +309,11 @@ private class CompoundSupplierImpl<T : Any>(
 @Preview(showBackground = true)
 @Composable
 private fun Preview() =
-    KiraScope().compound("param 1", "String") {
+    KiraScope().compound("param 1", ClassType("String")) {
         boolean("bool param 1", false)
-        nullableCompound("param 2", "String") {
+        nullableCompound("param 2", ClassType("String")) {
             boolean("bool param 1", false)
-            nullableCompound("param 3", "String") {
+            nullableCompound("param 3", ClassType("String")) {
                 boolean("bool param 1", false)
                 injector { }
             }
@@ -319,10 +324,10 @@ private fun Preview() =
         injector { }
     }.apply { initialize() }.Ui()
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun NullablePreview() =
-    KiraScope().nullableCompound("param name", "String") {
+    KiraScope().nullableCompound("param name", ClassType("String")) {
         boolean("bool param 1", false)
         boolean("bool param 2", true)
         injector { }
