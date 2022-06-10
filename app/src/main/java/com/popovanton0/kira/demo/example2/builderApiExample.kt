@@ -10,6 +10,8 @@ import com.popovanton0.exampleui.Rock
 import com.popovanton0.exampleui.Skill
 import com.popovanton0.exampleui.TextCard
 import com.popovanton0.kira.KiraScreen
+import com.popovanton0.kira.suppliers.base.ReflectionUsage
+import com.popovanton0.kira.suppliers.base.toClassType
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.suppliers.compound.compound
@@ -21,21 +23,23 @@ import com.popovanton0.kira.suppliers.nullableBoolean
 import com.popovanton0.kira.suppliers.nullableEnum
 import com.popovanton0.kira.suppliers.singleValue
 import com.popovanton0.kira.suppliers.string
+import com.popovanton0.kira.suppliers.withName
 
 @Preview
 @Composable
 fun KiraBuilderApiExample() = KiraScreen(kiraTextCard)
 
+@OptIn(ReflectionUsage::class)
 val kiraTextCard = kira {
     val text = string(paramName = "text", defaultValue = "Lorem")
-    val isRed = boolean(paramName = "isRed", defaultValue = false)
-    val skill = nullableEnum<Skill?>(paramName = "skill", defaultValue = null)
+    val isRed = boolean(paramName = "isRed")
+    val skill = nullableEnum<Skill>(paramName = "skill")
     val food = enum<Food>(paramName = "food")
     val car = carSupplier()
     val rock = singleValue(
         paramName = "rock",
-        typeName = "Rock",
-        value = Rock,
+        type = Rock::class.toClassType(),
+        value = Rock withName "Rock",
     )
     injector {
         TextCard(
@@ -49,9 +53,10 @@ val kiraTextCard = kira {
     }
 }
 
+@OptIn(ReflectionUsage::class)
 fun KiraScope.carSupplier() = compound(
     paramName = "car default",
-    typeName = "Car"
+    type = Car::class.toClassType()
 ) {
     val model = string(paramName = "model", defaultValue = "Tesla")
     val lame = boolean(paramName = "lame", defaultValue = false)
@@ -59,13 +64,13 @@ fun KiraScope.carSupplier() = compound(
     val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
     val engine = nullableCompound(
         paramName = "engine",
-        typeName = "Engine",
+        type = Engine::class.toClassType(),
         isNullByDefault = true
     ) {
         val model = string(paramName = "model", defaultValue = "Merlin")
         val car = compound(
             paramName = "inner car",
-            typeName = "Car"
+            type = Car::class.toClassType()
         ) {
             val model = string(paramName = "model", defaultValue = "Tesla")
             val lame = boolean(paramName = "lame", defaultValue = false)
@@ -73,7 +78,7 @@ fun KiraScope.carSupplier() = compound(
             val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
             val engine = nullableCompound(
                 paramName = "engine",
-                typeName = "Engine",
+                type = Engine::class.toClassType(),
                 isNullByDefault = true
             ) {
                 val model = string(paramName = "model", defaultValue = "Merlin")
@@ -83,13 +88,13 @@ fun KiraScope.carSupplier() = compound(
                 )
                 val carStr = nullableCompound(
                     paramName = "carStr",
-                    typeName = "Car (String)",
+                    type = Car::class.toClassType(),
                     isNullByDefault = true
                 ) {
                     val model = string(paramName = "model", defaultValue = "Merlin")
                     val car = compound(
                         paramName = "inner car",
-                        typeName = "Car"
+                        type = Car::class.toClassType(),
                     ) {
                         val model = string(paramName = "model", defaultValue = "Tesla")
                         val lame = boolean(paramName = "lame", defaultValue = false)
@@ -97,7 +102,7 @@ fun KiraScope.carSupplier() = compound(
                         val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
                         val engine = nullableCompound(
                             paramName = "engine",
-                            typeName = "Engine",
+                            type = Engine::class.toClassType(),
                             isNullByDefault = true
                         ) {
                             val model = string(paramName = "model", defaultValue = "Merlin")
