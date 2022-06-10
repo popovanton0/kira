@@ -1,103 +1,83 @@
 package com.popovanton0.kira.suppliers
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
-import com.popovanton0.kira.suppliers.base.Supplier
-import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.ClassType
+import com.popovanton0.kira.suppliers.base.ClassType.ClassModifier
+import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
-import com.popovanton0.kira.ui.Dropdown
+
+@ReflectionUsage
+public inline fun <reified T : Enum<T>> KiraScope.enum(
+    paramName: String,
+    defaultValue: T = enumValues<T>().firstOrNull() ?: noEnumInstanceError()
+): OneOfManySupplierBuilder<T> = enum(
+    paramName, T::class.qualifiedName!!, enumValues(), defaultValue
+)
+
+@ReflectionUsage
+public inline fun <reified T : Enum<T>> KiraScope.nullableEnum(
+    paramName: String,
+    defaultValue: T? = null
+): OneOfManySupplierBuilder<T?> = nullableEnum(
+    paramName, T::class.qualifiedName!!, enumValues(), defaultValue
+)
 
 public inline fun <reified T : Enum<T>> KiraScope.enum(
     paramName: String,
-    defaultValue: T
-): EnumSupplierBuilder<T> {
-    val enumConstants = enumValues<T>().toMutableList()
-    return EnumSupplierBuilder(paramName, defaultValue, enumConstants)
-        .also(::addSupplier)
-}
+    qualifiedName: String,
+    defaultValue: T = enumValues<T>().firstOrNull() ?: noEnumInstanceError()
+): OneOfManySupplierBuilder<T> = enum(paramName, qualifiedName, enumValues(), defaultValue)
 
-public inline fun <reified T : Enum<T>> KiraScope.enum(
+public inline fun <reified T : Enum<T>> KiraScope.nullableEnum(
     paramName: String,
-): EnumSupplierBuilder<T> {
-    val enumConstants = enumValues<T>().toMutableList()
-    val defaultValue = enumConstants.firstOrNull() ?: error(
-        "Enum class ${T::class.java.name} cannot be instantiated because it has no entries"
-    )
-    return EnumSupplierBuilder(paramName, defaultValue, enumConstants)
-        .also(::addSupplier)
-}
+    qualifiedName: String,
+    defaultValue: T? = null
+): OneOfManySupplierBuilder<T?> = nullableEnum(paramName, qualifiedName, enumValues(), defaultValue)
 
-public inline fun <reified T : Enum<*>?> KiraScope.nullableEnum(
+@PublishedApi
+internal fun <T : Enum<T>> KiraScope.enum(
     paramName: String,
-    defaultValue: T
-): NullableEnumSupplierBuilder<T> {
-    val enumConstants = T::class.java.enumConstants!!
-        .toMutableList()
-        .apply { add(0, null) }
-    return NullableEnumSupplierBuilder(
-        paramName = paramName,
-        defaultValue = defaultValue,
-        enumConstants = enumConstants
-    ).also(::addSupplier)
-}
+    qualifiedName: String,
+    values: Array<out T>,
+    defaultValue: T = values.firstOrNull() ?: noEnumInstanceError()
+): OneOfManySupplierBuilder<T> = oneOfMany(
+    paramName = paramName,
+    type = enumType(qualifiedName),
+    values = values.ifEmpty(::noEnumInstanceError).map { it withName it.name },
+    defaultOptionIndex = defaultValue.ordinal
+).also(::addSupplier)
 
-public class EnumSupplierBuilder<T : Enum<*>> @PublishedApi internal constructor(
-    public var paramName: String,
-    public var defaultValue: T,
-    public val enumConstants: MutableList<T>,
-) : SupplierBuilder<T>() {
-    override fun BuildKey.build(): Supplier<T> =
-        EnumSupplier(paramName, defaultValue, enumConstants.toList())
-}
+@PublishedApi
+internal fun <T : Enum<T>> KiraScope.nullableEnum(
+    paramName: String,
+    qualifiedName: String,
+    values: Array<out T>,
+    defaultValue: T? = null,
+): OneOfManySupplierBuilder<T?> = nullableOneOfMany(
+    paramName = paramName,
+    type = enumType(qualifiedName),
+    values = values.ifEmpty(::noEnumInstanceError).map { it withName it.name },
+    defaultOptionIndex = defaultValue?.ordinal
+).also(::addSupplier)
 
-public class NullableEnumSupplierBuilder<T : Enum<*>?> @PublishedApi internal constructor(
-    public var paramName: String,
-    public var defaultValue: T?,
-    public val enumConstants: MutableList<T?>,
-) : SupplierBuilder<T?>() {
-    override fun BuildKey.build(): Supplier<T?> =
-        EnumSupplier(paramName, defaultValue, enumConstants.toList())
-}
+@PublishedApi
+internal fun noEnumInstanceError(): Nothing = error("Enum class has no instances")
 
-private class EnumSupplier<T : Enum<*>?>(
-    private val paramName: String,
-    defaultValue: T,
-    /**
-     * Sorted by ordinal
-     * @see java.lang.Class.getEnumConstants
-     * @see Enum.ordinal
-     */
-    private val enumConstants: List<T>,
-) : PropertyBasedSupplier<T> {
-    private val enumConstantNames: List<String> = enumConstants.map { it?.name ?: "null" }
-    override var currentValue: T by mutableStateOf(defaultValue)
-
-    @Composable
-    override fun Ui(params: Any?) {
-        Dropdown(
-            selectedOptionIndex = run {
-                if (enumConstants.first() == null) currentValue?.ordinal?.plus(1) ?: 0
-                else currentValue!!.ordinal
-            },
-            onSelect = { currentValue = enumConstants[it] },
-            options = enumConstantNames,
-            label = paramName,
-        )
-    }
-}
+private fun enumType(qualifiedName: String): ClassType = ClassType(
+    qualifiedName = qualifiedName,
+    variant = ClassType.Variant.CLASS,
+    modifiers = setOf(ClassModifier.ENUM),
+)
 
 @Preview
 @Composable
 private fun Preview() =
-    KiraScope().enum<AnnotationTarget>("param name").apply { initialize() }.Ui()
+    KiraScope().enum<AnnotationTarget>("param name", "AnnotationTarget").apply { initialize() }.Ui()
 
 @Preview
 @Composable
 private fun NullablePreview() =
-    KiraScope().nullableEnum<AnnotationTarget?>("param name", defaultValue = null)
+    KiraScope().nullableEnum<AnnotationTarget>("param name", "AnnotationTarget")
         .apply { initialize() }.Ui()
