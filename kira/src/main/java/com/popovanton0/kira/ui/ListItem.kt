@@ -1,6 +1,7 @@
 package com.popovanton0.kira.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -37,7 +38,7 @@ internal fun ListItem(
     val overlineText = applyTextStyle(typography.overline, ContentAlpha.high, overlineText)
     val text = applyTextStyle(typography.subtitle1, ContentAlpha.high, text)!!
     val secondaryText = applyTextStyle(typography.body2, ContentAlpha.medium, secondaryText)
-    val end = applyTextStyle(typography.caption, ContentAlpha.high, end)
+    val end = applyTextStyle(typography.caption, ContentAlpha.medium, end)
 
     Row(
         modifier = modifier.padding(16.dp),
@@ -45,16 +46,14 @@ internal fun ListItem(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-            start?.invoke()
+            start?.let { Box { it.invoke() } }
         }
         Column(modifier = Modifier.weight(1f)) {
             overlineText?.invoke()
             text.invoke()
             secondaryText?.invoke()
         }
-        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-            end?.invoke()
-        }
+        end?.let { Box { it.invoke() } }
     }
 }
 
