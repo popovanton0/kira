@@ -48,7 +48,7 @@ internal fun <T : Enum<T>> KiraScope.enum(
     type = enumType(qualifiedName),
     values = values.ifEmpty(::noEnumInstanceError).map { it withName it.name },
     defaultOptionIndex = defaultValue.ordinal
-).also(::addSupplierBuilder)
+)
 
 @PublishedApi
 internal fun <T : Enum<T>> KiraScope.nullableEnum(
@@ -61,7 +61,7 @@ internal fun <T : Enum<T>> KiraScope.nullableEnum(
     type = enumType(qualifiedName),
     values = values.ifEmpty(::noEnumInstanceError).map { it withName it.name },
     defaultOptionIndex = defaultValue?.ordinal
-).also(::addSupplierBuilder)
+)
 
 @PublishedApi
 internal fun noEnumInstanceError(): Nothing = error("Enum class has no instances")
