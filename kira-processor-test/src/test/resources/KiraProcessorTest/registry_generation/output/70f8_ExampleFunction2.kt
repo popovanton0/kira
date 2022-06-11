@@ -19,7 +19,7 @@ import registry_generation.ExampleFunction2
 
 public class Kira_ExampleFunction2() : KiraProvider<ExampleFunction2Scope> {
   public override val kira: Kira<ExampleFunction2Scope> = kira(ExampleFunction2Scope()) {
-    sdf = string(paramName = "sdf", defaultValue = "Lorem")
+    sdf = string(paramName = "sdf")
     asd = boolean(paramName = "asd")
     injector {
       ExampleFunction2(

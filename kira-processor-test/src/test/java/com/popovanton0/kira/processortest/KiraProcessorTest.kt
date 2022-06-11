@@ -3,7 +3,7 @@ package com.popovanton0.kira.processortest
 import com.popovanton0.kira.processortest.base.BaseProcessorTest
 import org.junit.Test
 
-class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = true) {
+class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
 
     @Test
     fun another_test() =

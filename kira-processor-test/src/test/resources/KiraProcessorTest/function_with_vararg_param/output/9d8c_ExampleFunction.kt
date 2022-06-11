@@ -22,7 +22,7 @@ public class Kira_ExampleFunction(
   private val injector: ExampleFunctionScope.() -> Injector<Unit>,
 ) : KiraProvider<ExampleFunctionScope> {
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
-    param1 = nullableString(paramName = "param1", defaultValue = null)
+    param1 = nullableString(paramName = "param1")
     injector()
   }
 

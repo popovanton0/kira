@@ -16,7 +16,7 @@ import kotlin.collections.listOf
 
 public class Kira_ExampleFunction2() : KiraProvider<ExampleFunction2Scope> {
   public override val kira: Kira<ExampleFunction2Scope> = kira(ExampleFunction2Scope()) {
-    `scope$` = string(paramName = "scope${'$'}", defaultValue = "Lorem")
+    `scope$` = string(paramName = "scope${'$'}")
     injector {
       ExampleFunction2(
         `scope$` = `scope$`.build().currentValue(),

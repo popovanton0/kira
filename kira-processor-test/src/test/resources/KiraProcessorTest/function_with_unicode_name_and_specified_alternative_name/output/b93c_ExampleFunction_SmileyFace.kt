@@ -17,7 +17,7 @@ import kotlin.collections.listOf
 public class Kira_ExampleFunction_SmileyFace() : KiraProvider<ExampleFunction_SmileyFaceScope> {
   public override val kira: Kira<ExampleFunction_SmileyFaceScope> =
       kira(ExampleFunction_SmileyFaceScope()) {
-    param1 = string(paramName = "param1", defaultValue = "Lorem")
+    param1 = string(paramName = "param1")
     injector {
       `ExampleFunction😃`(
         param1 = param1.build().currentValue(),

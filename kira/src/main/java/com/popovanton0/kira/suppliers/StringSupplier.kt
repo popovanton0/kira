@@ -9,22 +9,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
+import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.ListItem
 
 public fun KiraScope.string(
     paramName: String,
-    defaultValue: String,
+    defaultValue: String = "Lorem",
 ): StringSupplierBuilder =
     StringSupplierBuilder(paramName, defaultValue).also(::addSupplierBuilder)
 
 public fun KiraScope.nullableString(
     paramName: String,
-    defaultValue: String?,
+    defaultValue: String? = null,
 ): NullableStringSupplierBuilder =
     NullableStringSupplierBuilder(paramName, defaultValue).also(::addSupplierBuilder)
 
@@ -114,3 +116,12 @@ private open class NullableStringSupplierImpl<T : String?>(
         )
     }
 }
+
+
+@Preview
+@Composable
+private fun Preview() = KiraScope().string("param name").build().Ui()
+
+@Preview
+@Composable
+private fun NullablePreview() = KiraScope().nullableString("param name").build().Ui()

@@ -55,8 +55,8 @@ public class Kira_ExampleFunction3(
       qualifiedName = "another_test.Quality",
     )
 
-    ds3 = string(paramName = "ds3", defaultValue = "Lorem")
-    ds4 = nullableString(paramName = "ds4", defaultValue = null)
+    ds3 = string(paramName = "ds3")
+    ds4 = nullableString(paramName = "ds4")
     ds5 = boolean(paramName = "ds5")
     ds6 = nullableBoolean(paramName = "ds6")
     ds7 = `object`(

@@ -23,7 +23,7 @@ public class Kira_ExampleFunction3(
   private val misses: Misses = KiraScope().missesProvider()
 
   public override val kira: Kira<ExampleFunction3Scope> = kira(ExampleFunction3Scope()) {
-    param1 = string(paramName = "param1", defaultValue = "Lorem")
+    param1 = string(paramName = "param1")
     param2 = this@Kira_ExampleFunction3.misses.param2
     injector {
       ExampleFunction3(
