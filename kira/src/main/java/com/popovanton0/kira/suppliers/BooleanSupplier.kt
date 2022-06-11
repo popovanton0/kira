@@ -31,7 +31,7 @@ public fun KiraScope.boolean(
 
 public fun KiraScope.nullableBoolean(
     paramName: String,
-    defaultValue: Boolean? = false,
+    defaultValue: Boolean? = null,
 ): NullableBooleanSupplierBuilder =
     NullableBooleanSupplierBuilder(paramName, defaultValue).also(::addSupplier)
 

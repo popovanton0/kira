@@ -98,7 +98,7 @@ fun KiraScope.carSupplier() = compound(
                     ) {
                         val model = string(paramName = "model", defaultValue = "Tesla")
                         val lame = boolean(paramName = "lame", defaultValue = false)
-                        val lameN = nullableBoolean(paramName = "lameN", defaultValue = null)
+                        val lameN = nullableBoolean(paramName = "lameN")
                         val cookerQuality = nullableEnum(paramName = "cookerQuality", defaultValue = Food.EXCELLENT)
                         val engine = nullableCompound(
                             paramName = "engine",

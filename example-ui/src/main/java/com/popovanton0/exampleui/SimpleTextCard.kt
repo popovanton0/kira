@@ -30,7 +30,6 @@ fun SimpleTextCard(
     food: Food = Food.BAD,
     rock: Rock? = null,
 ) {
-    require(skill != Skill.OK) { "Skill is not correct" }
     val shape = RoundedCornerShape(12.dp)
     Card(elevation = 8.dp, shape = shape) {
         Column(

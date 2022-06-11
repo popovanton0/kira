@@ -12,12 +12,10 @@ import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.withIndent
 
 object EnumSupplierProcessor : SupplierProcessor {
-    private val supplierImplType =
-        ClassName(SUPPLIERS_PKG_NAME, "EnumSupplierBuilder")
-    private val nullableSupplierImplType =
-        ClassName(SUPPLIERS_PKG_NAME, "NullableEnumSupplierBuilder")
+    private val supplierImplType = ClassName(SUPPLIERS_PKG_NAME, "OneOfManySupplierBuilder")
     private val builderFunName =
         MemberName(SUPPLIERS_PKG_NAME, "enum")
     private val nullableBuilderFunName =
@@ -25,29 +23,35 @@ object EnumSupplierProcessor : SupplierProcessor {
 
     /**
      * ```
-     * text = enum(paramName = "text")
+     * text = enum(paramName = "text", qualifiedName = "sdf.Food")
      * ```
      */
     override fun provideSupplierFor(param: FunctionParameter): SupplierData? {
-        val resolvedType = param.resolvedType
-        if ((resolvedType.declaration as KSClassDeclaration).classKind != ClassKind.ENUM_CLASS)
+        val type = param.resolvedType
+        if ((type.declaration as KSClassDeclaration).classKind != ClassKind.ENUM_CLASS)
             return null
 
-        val nullable = resolvedType.isMarkedNullable
+        val nullable = type.isMarkedNullable
 
         return SupplierData(
-            initializer = initializer(nullable, param.name!!.asString()),
-            implType = (if (nullable) nullableSupplierImplType else supplierImplType)
-                .parameterizedBy(resolvedType.toTypeName())
+            initializer = initializer(
+                nullable, param.name!!.asString(), type.declaration.qualifiedName!!.asString()
+            ),
+            implType = supplierImplType.parameterizedBy(type.toTypeName())
         )
     }
 
-    private fun initializer(nullable: Boolean, paramName: String): CodeBlock {
+    private fun initializer(
+        nullable: Boolean,
+        paramName: String,
+        qualifiedName: String
+    ): CodeBlock = buildCodeBlock {
         val funName = if (nullable) nullableBuilderFunName else builderFunName
-        return buildCodeBlock {
-            add("%M(paramName = %S", funName, paramName)
-            if (nullable) add(", defaultValue = null")
-            add(")")
+        addStatement("%M(", funName)
+        withIndent {
+            addStatement("paramName = %S,", paramName)
+            addStatement("qualifiedName = %S,", qualifiedName)
         }
+        addStatement(")")
     }
 }

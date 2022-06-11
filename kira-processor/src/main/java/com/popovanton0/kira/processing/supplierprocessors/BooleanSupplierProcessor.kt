@@ -38,10 +38,7 @@ object BooleanSupplierProcessor : SupplierProcessor {
 
     private fun initializer(nullable: Boolean, paramName: String): CodeBlock {
         val funName = if (nullable) nullableBuilderFunName else builderFunName
-        val defaultValue = if (nullable) "null" else "false"
-        return CodeBlock.of(
-            "%M(paramName = %S, defaultValue = %L)", funName, paramName, defaultValue
-        )
+        return CodeBlock.of("%M(paramName = %S)", funName, paramName)
     }
 }
 

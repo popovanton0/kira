@@ -15,7 +15,9 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.withIndent
 
 object ObjectSupplierProcessor : SupplierProcessor {
-    private val supplierImplType = ClassName(SUPPLIERS_PKG_NAME, "OneOfManySupplierBuilder")
+    private val supplierImplType = ClassName(SUPPLIERS_PKG_NAME, "ObjectSupplierBuilder")
+    private val nullableSupplierImplType =
+        ClassName(SUPPLIERS_PKG_NAME, "NullableObjectSupplierBuilder")
     private val builderFunName = MemberName(SUPPLIERS_PKG_NAME, "object")
     private val nullableBuilderFunName = MemberName(SUPPLIERS_PKG_NAME, "nullableObject")
 
@@ -37,7 +39,8 @@ object ObjectSupplierProcessor : SupplierProcessor {
 
         return SupplierData(
             initializer = initializer(nullable, param.name!!.asString(), declaration.toClassName()),
-            implType = supplierImplType.parameterizedBy(type.makeNotNullable().toTypeName())
+            implType = (if (nullable) nullableSupplierImplType else supplierImplType)
+                .parameterizedBy(type.makeNotNullable().toTypeName())
         )
     }
 
