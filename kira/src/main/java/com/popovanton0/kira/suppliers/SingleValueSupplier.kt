@@ -15,7 +15,7 @@ public fun <T : Any> KiraScope.singleValue(
     paramName: String,
     value: NamedValue<T>,
 ): OneOfManySupplierBuilder<T> =
-    singleValue(paramName, value, value::class.toClassType(nullable = false))
+    singleValue(paramName, value, value.value::class.toClassType(nullable = false))
 
 @ReflectionUsage
 public fun <T : Any> KiraScope.nullableSingleValue(
@@ -23,7 +23,7 @@ public fun <T : Any> KiraScope.nullableSingleValue(
     value: NamedValue<T>,
     isNullByDefault: Boolean = true,
 ): OneOfManySupplierBuilder<T?> = nullableSingleValue(
-    paramName, value, value::class.toClassType(nullable = true), isNullByDefault,
+    paramName, value, value.value::class.toClassType(nullable = true), isNullByDefault,
 )
 
 public fun <T : Any> KiraScope.singleValue(
