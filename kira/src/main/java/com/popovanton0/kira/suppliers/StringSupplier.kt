@@ -1,15 +1,20 @@
 package com.popovanton0.kira.suppliers
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.KiraScope
-import com.popovanton0.kira.ui.NullableTextField
-import com.popovanton0.kira.ui.TextField
+import com.popovanton0.kira.ui.Checkbox
+import com.popovanton0.kira.ui.ListItem
 
 public fun KiraScope.string(
     paramName: String,
@@ -61,5 +66,51 @@ private open class NullableStringSupplierImpl<T : String?>(
                 label = paramName
             )
         }
+    }
+
+    @Composable
+    fun TextField(
+        modifier: Modifier = Modifier,
+        value: String,
+        onValueChange: (String) -> Unit,
+        label: String,
+    ): Unit = ListItem {
+        OutlinedTextField(
+            modifier = modifier.fillMaxWidth(),
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(text = label) }
+        )
+    }
+
+    @Composable
+    fun NullableTextField(
+        modifier: Modifier = Modifier,
+        value: String?,
+        onValueChange: (String?) -> Unit,
+        label: String,
+    ) {
+        var latestNonNullValue by remember { mutableStateOf("") }
+        ListItem(
+            text = {
+                OutlinedTextField(
+                    modifier = modifier.fillMaxWidth(),
+                    value = value ?: latestNonNullValue,
+                    onValueChange = {
+                        latestNonNullValue = it
+                        onValueChange(it)
+                    },
+                    enabled = value != null,
+                    label = { Text(text = label) }
+                )
+            },
+            end = {
+                Checkbox(
+                    label = "null",
+                    checked = value == null,
+                    onCheckedChange = { onValueChange(if (value == null) latestNonNullValue else null) }
+                )
+            }
+        )
     }
 }
