@@ -37,7 +37,7 @@ fun SimpleTextCard(
         ) {
             Text(text)
             Text(
-                text = "SimpleTextCard from example;ui2 is: ${if (isFast) "🏎" else "🐢"}",
+                text = "SimpleTextCard from example;ui2 is ${if (isFast) "🏎" else "🐢"}",
                 color = if (isFast) Color.Red else Color.Unspecified
             )
         }

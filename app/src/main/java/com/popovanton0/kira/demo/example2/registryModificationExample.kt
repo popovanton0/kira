@@ -6,10 +6,10 @@ import com.popovanton0.exampleui.Car
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.generated.com.popovanton0.exampleui.Kira_TextCard
 import com.popovanton0.kira.registry.KiraRegistry
+import com.popovanton0.kira.suppliers.base.NamedValue.Companion.withName
 import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.nullableSingleValue
 import com.popovanton0.kira.suppliers.singleValue
-import com.popovanton0.kira.suppliers.withName
 
 @OptIn(ReflectionUsage::class)
 @Preview

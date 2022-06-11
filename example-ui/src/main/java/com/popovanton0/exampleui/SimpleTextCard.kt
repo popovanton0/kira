@@ -23,7 +23,7 @@ fun SimpleTextCard(param1: Boolean = false) = Text(text = "SimpleTextCard: param
 @Preview
 @Composable
 fun SimpleTextCard(
-    text: String? = "Example",
+    text: String = "Example",
     isFast: Boolean = true,
     skill: Skill? = Skill.LOW,
     food: Food = Food.BAD,
@@ -39,7 +39,7 @@ fun SimpleTextCard(
         ) {
             Text(text.toString())
             Text(
-                text = "SimpleTextCard is: ${if (isFast) "🏎" else "🐢"}",
+                text = "SimpleTextCard is ${if (isFast) "🏎" else "🐢"}",
             )
             Text(
                 text = "skill is " + when (skill) {

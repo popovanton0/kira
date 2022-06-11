@@ -31,7 +31,7 @@ fun KiraBuilderApiExample() = KiraScreen(kiraTextCard)
 
 @OptIn(ReflectionUsage::class)
 val kiraTextCard = kira {
-    val text = string(paramName = "text", defaultValue = "Lorem")
+    val text = string(paramName = "text")
     val isRed = boolean(paramName = "isRed")
     val skill = nullableEnum<Skill>(paramName = "skill")
     val food = enum<Food>(paramName = "food")
