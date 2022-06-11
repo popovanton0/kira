@@ -69,7 +69,7 @@ public fun <T : Any, Scope : KiraScope> KiraScope.compound(
     type: Type,
     block: Scope.() -> Injector<T>,
 ): CompoundSupplierBuilder<T, Scope> =
-    CompoundSupplierBuilder(scope, paramName, type, block).also(::addSupplier)
+    CompoundSupplierBuilder(scope, paramName, type, block).also(::addSupplierBuilder)
 
 public fun <T : Any, Scope : KiraScope> KiraScope.nullableCompound(
     scope: Scope,
@@ -79,7 +79,7 @@ public fun <T : Any, Scope : KiraScope> KiraScope.nullableCompound(
     block: Scope.() -> Injector<T>,
 ): NullableCompoundSupplierBuilder<T, Scope> =
     NullableCompoundSupplierBuilder(scope, paramName, type, isNullByDefault, block)
-        .also(::addSupplier)
+        .also(::addSupplierBuilder)
 
 public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constructor(
     private val scope: Scope,
@@ -90,20 +90,20 @@ public class CompoundSupplierBuilder<T : Any, Scope : KiraScope> internal constr
     private var injector: Injector<T> = scope.block()
 
     public fun modify(block: Scope.() -> Unit): CompoundSupplierBuilder<T, Scope> {
-        if (!isInitialized) scope.block() else alreadyInitializedError()
+        if (!isBuilt) scope.block() else alreadyBuiltError()
         return this
     }
 
     public fun modifyInjector(
         block: Scope.(previousInjector: Injector<T>) -> Injector<T>
     ): CompoundSupplierBuilder<T, Scope> {
-        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
+        if (!isBuilt) injector = scope.block(injector) else alreadyBuiltError()
         return this
     }
 
-    override fun BuildKey.build(): Supplier<T> = CompoundSupplierImpl(
+    override fun provideSupplier(): Supplier<T> = CompoundSupplierImpl(
         paramName = paramName,
-        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
+        suppliers = scope.collectSupplierBuilders().map { it.build() },
         type = type.notNullable(),
         injector = injector.injector,
         nullable = false,
@@ -121,26 +121,29 @@ public class NullableCompoundSupplierBuilder<T : Any, Scope : KiraScope> interna
     private var injector: Injector<T> = scope.block()
 
     public fun modify(block: Scope.() -> Unit): NullableCompoundSupplierBuilder<T, Scope> {
-        if (!isInitialized) scope.block() else alreadyInitializedError()
+        if (!isBuilt) scope.block() else alreadyBuiltError()
         return this
     }
 
     public fun modifyInjector(
         block: Scope.(previousInjector: Injector<T>) -> Injector<T>
     ): NullableCompoundSupplierBuilder<T, Scope> {
-        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
+        if (!isBuilt) injector = scope.block(injector) else alreadyBuiltError()
         return this
     }
 
-    override fun BuildKey.build(): Supplier<T?> = CompoundSupplierImpl(
+    override fun provideSupplier(): Supplier<T?> = CompoundSupplierImpl(
         paramName = paramName,
-        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
+        suppliers = scope.collectSupplierBuilders().map { it.build() },
         type = type.nullable(),
         injector = injector.injector,
         nullable = true,
         isNullByDefault = isNullByDefault,
     )
 }
+
+private fun alreadyBuiltError(): Nothing =
+    error("SupplierBuilder was already built, modification is prohibited")
 
 private class CompoundSupplierImpl<T : Any>(
     private val paramName: String,
@@ -322,7 +325,7 @@ private fun Preview() =
         }
         boolean("bool param 2", true)
         injector { }
-    }.apply { initialize() }.Ui()
+    }.build().Ui()
 
 @Preview(showBackground = true)
 @Composable
@@ -331,4 +334,4 @@ private fun NullablePreview() =
         boolean("bool param 1", false)
         boolean("bool param 2", true)
         injector { }
-    }.apply { initialize() }.Ui()
+    }.build().Ui()

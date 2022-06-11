@@ -20,19 +20,19 @@ public fun KiraScope.string(
     paramName: String,
     defaultValue: String,
 ): StringSupplierBuilder =
-    StringSupplierBuilder(paramName, defaultValue).also(::addSupplier)
+    StringSupplierBuilder(paramName, defaultValue).also(::addSupplierBuilder)
 
 public fun KiraScope.nullableString(
     paramName: String,
     defaultValue: String?,
 ): NullableStringSupplierBuilder =
-    NullableStringSupplierBuilder(paramName, defaultValue).also(::addSupplier)
+    NullableStringSupplierBuilder(paramName, defaultValue).also(::addSupplierBuilder)
 
 public class StringSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: String,
 ) : SupplierBuilder<String>() {
-    override fun BuildKey.build(): Supplier<String> =
+    override fun provideSupplier(): Supplier<String> =
         NullableStringSupplierImpl(paramName, defaultValue, nullable = false)
 }
 
@@ -40,7 +40,7 @@ public class NullableStringSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: String?,
 ) : SupplierBuilder<String?>() {
-    override fun BuildKey.build(): Supplier<String?> =
+    override fun provideSupplier(): Supplier<String?> =
         NullableStringSupplierImpl(paramName, defaultValue, nullable = true)
 }
 

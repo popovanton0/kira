@@ -27,19 +27,20 @@ import com.popovanton0.kira.ui.RadioButton
 public fun KiraScope.boolean(
     paramName: String,
     defaultValue: Boolean = false,
-): BooleanSupplierBuilder = BooleanSupplierBuilder(paramName, defaultValue).also(::addSupplier)
+): BooleanSupplierBuilder =
+    BooleanSupplierBuilder(paramName, defaultValue).also(::addSupplierBuilder)
 
 public fun KiraScope.nullableBoolean(
     paramName: String,
     defaultValue: Boolean? = null,
 ): NullableBooleanSupplierBuilder =
-    NullableBooleanSupplierBuilder(paramName, defaultValue).also(::addSupplier)
+    NullableBooleanSupplierBuilder(paramName, defaultValue).also(::addSupplierBuilder)
 
 public class BooleanSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: Boolean,
 ) : SupplierBuilder<Boolean>() {
-    override fun BuildKey.build(): Supplier<Boolean> =
+    override fun provideSupplier(): Supplier<Boolean> =
         NullableBooleanSupplierImpl(paramName, defaultValue, nullable = false)
 }
 
@@ -47,7 +48,7 @@ public class NullableBooleanSupplierBuilder internal constructor(
     public var paramName: String,
     public var defaultValue: Boolean?,
 ) : SupplierBuilder<Boolean?>() {
-    override fun BuildKey.build(): Supplier<Boolean?> =
+    override fun provideSupplier(): Supplier<Boolean?> =
         NullableBooleanSupplierImpl(paramName, defaultValue, nullable = true)
 }
 
@@ -119,10 +120,8 @@ private open class NullableBooleanSupplierImpl<T : Boolean?>(
 
 @Preview
 @Composable
-private fun Preview() =
-    KiraScope().boolean("param name", defaultValue = false).apply { initialize() }.Ui()
+private fun Preview() = KiraScope().boolean("param name").build().Ui()
 
 @Preview
 @Composable
-private fun NullablePreview() =
-    KiraScope().nullableBoolean("param name", defaultValue = null).apply { initialize() }.Ui()
+private fun NullablePreview() = KiraScope().nullableBoolean("param name").build().Ui()

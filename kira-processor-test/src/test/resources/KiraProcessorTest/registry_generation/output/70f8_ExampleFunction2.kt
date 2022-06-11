@@ -5,7 +5,7 @@ import com.popovanton0.kira.suppliers.BooleanSupplierBuilder
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.StringSupplierBuilder
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.injector
@@ -20,11 +20,11 @@ import registry_generation.ExampleFunction2
 public class Kira_ExampleFunction2() : KiraProvider<ExampleFunction2Scope> {
   public override val kira: Kira<ExampleFunction2Scope> = kira(ExampleFunction2Scope()) {
     sdf = string(paramName = "sdf", defaultValue = "Lorem")
-    asd = boolean(paramName = "asd", defaultValue = false)
+    asd = boolean(paramName = "asd")
     injector {
       ExampleFunction2(
-        sdf = sdf.currentValue(),
-        asd = asd.currentValue(),
+        sdf = sdf.build().currentValue(),
+        asd = asd.build().currentValue(),
       )
     }
   }
@@ -35,11 +35,11 @@ public class ExampleFunction2Scope :
     GeneratedKiraScopeWithImpls<ExampleFunction2Scope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var sdf: Supplier<String>
+  public lateinit var sdf: SupplierBuilder<String>
 
-  public lateinit var asd: Supplier<Boolean>
+  public lateinit var asd: SupplierBuilder<Boolean>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(sdf, asd, )
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(sdf, asd, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunction2Scope,

@@ -3,7 +3,7 @@ package com.popovanton0.kira.generated.function_in_class
 
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.kira
@@ -28,7 +28,7 @@ public class ExampleFunctionScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionScope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf()
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf()
 
   public class SupplierImplsScope(
     private val scope: ExampleFunctionScope,

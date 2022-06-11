@@ -50,7 +50,8 @@ class KiraProcessor(
         internal val kiraRootAnnClass = KiraRoot::class.java
 
         internal val kiraProviderName = ClassName(SUPPLIERS_PKG_NAME, "KiraProvider")
-        internal val supplierInterfaceName = ClassName("$SUPPLIERS_PKG_NAME.base", "Supplier")
+        internal val supplierBuilderInterfaceName =
+            ClassName("$SUPPLIERS_PKG_NAME.base", "SupplierBuilder")
         internal val generatedKiraScopeName =
             ClassName("$SUPPLIERS_PKG_NAME.compound", "GeneratedKiraScopeWithImpls")
 

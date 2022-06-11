@@ -5,7 +5,7 @@ import com.popovanton0.kira.suppliers.BooleanSupplierBuilder
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraMisses
 import com.popovanton0.kira.suppliers.KiraProvider
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.Injector
@@ -28,30 +28,30 @@ public class Kira_ExampleFunction(
   private val misses: Misses = KiraScope().missesProvider()
 
   public override val kira: Kira<ExampleFunctionScope> = kira(ExampleFunctionScope()) {
-    misses = boolean(paramName = "misses", defaultValue = false)
-    missesProvider = boolean(paramName = "missesProvider", defaultValue = false)
-    kira = boolean(paramName = "kira", defaultValue = false)
-    injector = boolean(paramName = "injector", defaultValue = false)
-    string = boolean(paramName = "string", defaultValue = false)
-    Supplier = boolean(paramName = "Supplier", defaultValue = false)
-    ExampleFunction = boolean(paramName = "ExampleFunction", defaultValue = false)
-    functions_with_strange_names = boolean(paramName = "functions_with_strange_names", defaultValue
-        = false)
-    BooleanSupplierBuilder = boolean(paramName = "BooleanSupplierBuilder", defaultValue = false)
-    scope = boolean(paramName = "scope", defaultValue = false)
-    `scope$` = boolean(paramName = "scope${'$'}", defaultValue = false)
-    Throwable = boolean(paramName = "Throwable", defaultValue = false)
-    supplierImplsScope = boolean(paramName = "supplierImplsScope", defaultValue = false)
-    collectSuppliers = boolean(paramName = "collectSuppliers", defaultValue = false)
-    suppliers = boolean(paramName = "suppliers", defaultValue = false)
-    `value` = boolean(paramName = "value", defaultValue = false)
+    misses = boolean(paramName = "misses")
+    missesProvider = boolean(paramName = "missesProvider")
+    kira = boolean(paramName = "kira")
+    injector = boolean(paramName = "injector")
+    string = boolean(paramName = "string")
+    Supplier = boolean(paramName = "Supplier")
+    ExampleFunction = boolean(paramName = "ExampleFunction")
+    functions_with_strange_names = boolean(paramName = "functions_with_strange_names")
+    BooleanSupplierBuilder = boolean(paramName = "BooleanSupplierBuilder")
+    scope = boolean(paramName = "scope")
+    `scope$` = boolean(paramName = "scope${'$'}")
+    Throwable = boolean(paramName = "Throwable")
+    supplierImplsScope = boolean(paramName = "supplierImplsScope")
+    collectSuppliers = boolean(paramName = "collectSuppliers")
+    suppliers = boolean(paramName = "suppliers")
+    `value` = boolean(paramName = "value")
+    implChanged = boolean(paramName = "implChanged")
     sdf = this@Kira_ExampleFunction.misses.sdf
     injector()
   }
 
 
   public data class Misses(
-    public val sdf: Supplier<Throwable>,
+    public val sdf: SupplierBuilder<Throwable>,
   ) : KiraMisses
 }
 
@@ -59,44 +59,46 @@ public class ExampleFunctionScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionScope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var misses: Supplier<Boolean>
+  public lateinit var misses: SupplierBuilder<Boolean>
 
-  public lateinit var missesProvider: Supplier<Boolean>
+  public lateinit var missesProvider: SupplierBuilder<Boolean>
 
-  public lateinit var kira: Supplier<Boolean>
+  public lateinit var kira: SupplierBuilder<Boolean>
 
-  public lateinit var injector: Supplier<Boolean>
+  public lateinit var injector: SupplierBuilder<Boolean>
 
-  public lateinit var string: Supplier<Boolean>
+  public lateinit var string: SupplierBuilder<Boolean>
 
-  public lateinit var Supplier: Supplier<Boolean>
+  public lateinit var Supplier: SupplierBuilder<Boolean>
 
-  public lateinit var ExampleFunction: Supplier<Boolean>
+  public lateinit var ExampleFunction: SupplierBuilder<Boolean>
 
-  public lateinit var functions_with_strange_names: Supplier<Boolean>
+  public lateinit var functions_with_strange_names: SupplierBuilder<Boolean>
 
-  public lateinit var BooleanSupplierBuilder: Supplier<Boolean>
+  public lateinit var BooleanSupplierBuilder: SupplierBuilder<Boolean>
 
-  public lateinit var scope: Supplier<Boolean>
+  public lateinit var scope: SupplierBuilder<Boolean>
 
-  public lateinit var `scope$`: Supplier<Boolean>
+  public lateinit var `scope$`: SupplierBuilder<Boolean>
 
-  public lateinit var Throwable: Supplier<Boolean>
+  public lateinit var Throwable: SupplierBuilder<Boolean>
 
-  public lateinit var supplierImplsScope: Supplier<Boolean>
+  public lateinit var supplierImplsScope: SupplierBuilder<Boolean>
 
-  public lateinit var collectSuppliers: Supplier<Boolean>
+  public lateinit var collectSuppliers: SupplierBuilder<Boolean>
 
-  public lateinit var suppliers: Supplier<Boolean>
+  public lateinit var suppliers: SupplierBuilder<Boolean>
 
-  public lateinit var `value`: Supplier<Boolean>
+  public lateinit var `value`: SupplierBuilder<Boolean>
 
-  public lateinit var sdf: Supplier<Throwable>
+  public lateinit var implChanged: SupplierBuilder<Boolean>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(misses, missesProvider, kira,
-      injector, string, Supplier, ExampleFunction, functions_with_strange_names,
-      BooleanSupplierBuilder, scope, `scope$`, Throwable, supplierImplsScope, collectSuppliers,
-      suppliers, `value`, sdf, )
+  public lateinit var sdf: SupplierBuilder<Throwable>
+
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(misses,
+      missesProvider, kira, injector, string, Supplier, ExampleFunction,
+      functions_with_strange_names, BooleanSupplierBuilder, scope, `scope$`, Throwable,
+      supplierImplsScope, collectSuppliers, suppliers, `value`, implChanged, sdf, )
 
   public class SupplierImplsScope(
     private val `scope$$`: ExampleFunctionScope,
@@ -195,6 +197,12 @@ public class ExampleFunctionScope :
       get() = `scope$$`.`value` as? BooleanSupplierBuilder ?: implChanged()
       set(`value`) {
         `scope$$`.`value` = value
+      }
+
+    public var implChanged: BooleanSupplierBuilder
+      get() = `scope$$`.implChanged as? BooleanSupplierBuilder ?: implChanged()
+      set(`value`) {
+        `scope$$`.implChanged = value
       }
   }
 }

@@ -23,7 +23,9 @@ internal class BooleanSupplier {
     fun booleanSupplier(): Unit = with(composeTestRule) {
         val root = kira {
             val isFastCar = boolean("paramName:isFastCar", true)
-            injector { Text(text = "car's " + if (isFastCar.currentValue()) "fast" else "slow") }
+            injector {
+                Text(text = "car's " + if (isFastCar.build().currentValue()) "fast" else "slow")
+            }
         }
 
         setContent { KiraScreen(root) }
@@ -44,7 +46,7 @@ internal class BooleanSupplier {
         val root = kira {
             val isFastCar = nullableBoolean("paramName:isFastCar", true)
             injector {
-                val value = when (isFastCar.currentValue()) {
+                val value = when (isFastCar.build().currentValue()) {
                     true -> "fast"
                     false -> "slow"
                     null -> "speed is unknown"

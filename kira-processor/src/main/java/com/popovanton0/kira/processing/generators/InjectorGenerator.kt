@@ -73,9 +73,9 @@ internal class InjectorGenerator(function: KSFunctionDeclaration) {
             parameterSuppliers.forEach { parameterSupplier ->
                 val paramName = parameterSupplier.parameter.name!!.asString()
                 val provided = parameterSupplier is ParameterSupplier.Provided
-                if (provided) addStatement("%N = %N.currentValue(),", paramName, paramName)
+                if (provided) addStatement("%N = %N.build().currentValue(),", paramName, paramName)
                 else addStatement(
-                    "%N = this@%T.misses.%N.currentValue(),",
+                    "%N = this@%T.misses.%N.build().currentValue(),",
                     paramName,
                     kiraProviderName,
                     paramName

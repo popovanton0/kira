@@ -4,7 +4,7 @@ package com.popovanton0.kira.generated.functions_with_strange_names
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraMisses
 import com.popovanton0.kira.suppliers.KiraProvider
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.KiraScope
 import com.popovanton0.kira.suppliers.compound.injector
@@ -23,23 +23,23 @@ public class Kira_misses(
     sdf = this@Kira_misses.misses.sdf
     injector {
       misses(
-        sdf = this@Kira_misses.misses.sdf.currentValue(),
+        sdf = this@Kira_misses.misses.sdf.build().currentValue(),
       )
     }
   }
 
 
   public data class Misses(
-    public val sdf: Supplier<Throwable>,
+    public val sdf: SupplierBuilder<Throwable>,
   ) : KiraMisses
 }
 
 public class missesScope : GeneratedKiraScopeWithImpls<missesScope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var sdf: Supplier<Throwable>
+  public lateinit var sdf: SupplierBuilder<Throwable>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(sdf, )
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(sdf, )
 
   public class SupplierImplsScope(
     private val scope: missesScope,

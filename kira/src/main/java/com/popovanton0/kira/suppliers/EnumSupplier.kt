@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.ClassType
 import com.popovanton0.kira.suppliers.base.ClassType.ClassModifier
+import com.popovanton0.kira.suppliers.base.NamedValue.Companion.withName
 import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
@@ -47,7 +48,7 @@ internal fun <T : Enum<T>> KiraScope.enum(
     type = enumType(qualifiedName),
     values = values.ifEmpty(::noEnumInstanceError).map { it withName it.name },
     defaultOptionIndex = defaultValue.ordinal
-).also(::addSupplier)
+).also(::addSupplierBuilder)
 
 @PublishedApi
 internal fun <T : Enum<T>> KiraScope.nullableEnum(
@@ -60,7 +61,7 @@ internal fun <T : Enum<T>> KiraScope.nullableEnum(
     type = enumType(qualifiedName),
     values = values.ifEmpty(::noEnumInstanceError).map { it withName it.name },
     defaultOptionIndex = defaultValue?.ordinal
-).also(::addSupplier)
+).also(::addSupplierBuilder)
 
 @PublishedApi
 internal fun noEnumInstanceError(): Nothing = error("Enum class has no instances")
@@ -74,10 +75,9 @@ private fun enumType(qualifiedName: String): ClassType = ClassType(
 @Preview
 @Composable
 private fun Preview() =
-    KiraScope().enum<AnnotationTarget>("param name", "AnnotationTarget").apply { initialize() }.Ui()
+    KiraScope().enum<AnnotationTarget>("param name", "AnnotationTarget").build().Ui()
 
 @Preview
 @Composable
 private fun NullablePreview() =
-    KiraScope().nullableEnum<AnnotationTarget>("param name", "AnnotationTarget")
-        .apply { initialize() }.Ui()
+    KiraScope().nullableEnum<AnnotationTarget>("param name", "AnnotationTarget").build().Ui()

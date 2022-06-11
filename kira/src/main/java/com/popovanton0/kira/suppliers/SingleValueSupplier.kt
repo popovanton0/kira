@@ -3,6 +3,7 @@ package com.popovanton0.kira.suppliers
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.ClassType
+import com.popovanton0.kira.suppliers.base.NamedValue
 import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.base.Type
 import com.popovanton0.kira.suppliers.base.Ui
@@ -44,10 +45,10 @@ public fun <T : Any> KiraScope.nullableSingleValue(
 @Composable
 private fun Preview() = KiraScope().singleValue(
     "param name", NamedValue("string value"), ClassType("String", ClassType.Variant.CLASS)
-).apply { initialize() }.Ui()
+).build().Ui()
 
 @Preview
 @Composable
 private fun NullablePreview() = KiraScope().nullableSingleValue(
     "param name", NamedValue("string value"), ClassType("String", ClassType.Variant.CLASS)
-).apply { initialize() }.Ui()
+).build().Ui()

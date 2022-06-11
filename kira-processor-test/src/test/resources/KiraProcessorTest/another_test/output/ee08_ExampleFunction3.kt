@@ -6,28 +6,27 @@ import another_test.Engine
 import another_test.Quality
 import another_test.Rock
 import com.popovanton0.kira.suppliers.BooleanSupplierBuilder
-import com.popovanton0.kira.suppliers.EnumSupplierBuilder
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraMisses
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.NullableBooleanSupplierBuilder
-import com.popovanton0.kira.suppliers.NullableEnumSupplierBuilder
+import com.popovanton0.kira.suppliers.NullableObjectSupplierBuilder
 import com.popovanton0.kira.suppliers.NullableStringSupplierBuilder
+import com.popovanton0.kira.suppliers.ObjectSupplierBuilder
+import com.popovanton0.kira.suppliers.OneOfManySupplierBuilder
 import com.popovanton0.kira.suppliers.StringSupplierBuilder
 import com.popovanton0.kira.suppliers.`enum`
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.`object`
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.boolean
-import com.popovanton0.kira.suppliers.compound.CompoundSupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.compound.KiraScope
-import com.popovanton0.kira.suppliers.compound.NullableCompoundSupplierBuilder
 import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.nullableBoolean
 import com.popovanton0.kira.suppliers.nullableEnum
-import com.popovanton0.kira.suppliers.nullableSingleValue
+import com.popovanton0.kira.suppliers.nullableObject
 import com.popovanton0.kira.suppliers.nullableString
-import com.popovanton0.kira.suppliers.singleValue
 import com.popovanton0.kira.suppliers.string
 import kotlin.Boolean
 import kotlin.String
@@ -46,23 +45,30 @@ public class Kira_ExampleFunction3(
   private val misses: Misses = KiraScope().missesProvider()
 
   public override val kira: Kira<ExampleFunction3Scope> = kira(ExampleFunction3Scope()) {
-    ds1 = `enum`(paramName = "ds1")
-    ds2 = nullableEnum(paramName = "ds2", defaultValue = null)
-    ds3 = string(paramName = "ds3", defaultValue = "Lorem")
-    ds4 = nullableString(paramName = "ds4", defaultValue = null)
-    ds5 = boolean(paramName = "ds5", defaultValue = false)
-    ds6 = nullableBoolean(paramName = "ds6", defaultValue = null)
-    ds7 = singleValue(
-      paramName = "ds7",
-      value = Rock,
-      typeName = "another_test.Rock",
+    ds1 = `enum`(
+      paramName = "ds1",
+      qualifiedName = "another_test.Quality",
     )
 
-    ds8 = nullableSingleValue(
-      paramName = "ds8",
+    ds2 = nullableEnum(
+      paramName = "ds2",
+      qualifiedName = "another_test.Quality",
+    )
+
+    ds3 = string(paramName = "ds3", defaultValue = "Lorem")
+    ds4 = nullableString(paramName = "ds4", defaultValue = null)
+    ds5 = boolean(paramName = "ds5")
+    ds6 = nullableBoolean(paramName = "ds6")
+    ds7 = `object`(
+      paramName = "ds7",
+      qualifiedName = "another_test.Rock",
       value = Rock,
-      typeName = "another_test.Rock",
-      nullByDefault = true
+    )
+
+    ds8 = nullableObject(
+      paramName = "ds8",
+      qualifiedName = "another_test.Rock",
+      value = Rock,
     )
 
     ds9 = this@Kira_ExampleFunction3.misses.ds9
@@ -72,8 +78,8 @@ public class Kira_ExampleFunction3(
 
 
   public data class Misses(
-    public val ds9: Supplier<B?>,
-    public val ds10: Supplier<Engine?>,
+    public val ds9: SupplierBuilder<B?>,
+    public val ds10: SupplierBuilder<Engine?>,
   ) : KiraMisses
 }
 
@@ -81,40 +87,40 @@ public class ExampleFunction3Scope :
     GeneratedKiraScopeWithImpls<ExampleFunction3Scope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var ds1: Supplier<Quality>
+  public lateinit var ds1: SupplierBuilder<Quality>
 
-  public lateinit var ds2: Supplier<Quality?>
+  public lateinit var ds2: SupplierBuilder<Quality?>
 
-  public lateinit var ds3: Supplier<String>
+  public lateinit var ds3: SupplierBuilder<String>
 
-  public lateinit var ds4: Supplier<String?>
+  public lateinit var ds4: SupplierBuilder<String?>
 
-  public lateinit var ds5: Supplier<Boolean>
+  public lateinit var ds5: SupplierBuilder<Boolean>
 
-  public lateinit var ds6: Supplier<Boolean?>
+  public lateinit var ds6: SupplierBuilder<Boolean?>
 
-  public lateinit var ds7: Supplier<Rock>
+  public lateinit var ds7: SupplierBuilder<Rock>
 
-  public lateinit var ds8: Supplier<Rock?>
+  public lateinit var ds8: SupplierBuilder<Rock?>
 
-  public lateinit var ds9: Supplier<B?>
+  public lateinit var ds9: SupplierBuilder<B?>
 
-  public lateinit var ds10: Supplier<Engine?>
+  public lateinit var ds10: SupplierBuilder<Engine?>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(ds1, ds2, ds3, ds4, ds5, ds6,
-      ds7, ds8, ds9, ds10, )
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(ds1, ds2, ds3,
+      ds4, ds5, ds6, ds7, ds8, ds9, ds10, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunction3Scope,
   ) : GeneratedKiraScopeWithImpls.SupplierImplsScope() {
-    public var ds1: EnumSupplierBuilder<Quality>
-      get() = scope.ds1 as? EnumSupplierBuilder<Quality> ?: implChanged()
+    public var ds1: OneOfManySupplierBuilder<Quality>
+      get() = scope.ds1 as? OneOfManySupplierBuilder<Quality> ?: implChanged()
       set(`value`) {
         scope.ds1 = value
       }
 
-    public var ds2: NullableEnumSupplierBuilder<Quality?>
-      get() = scope.ds2 as? NullableEnumSupplierBuilder<Quality?> ?: implChanged()
+    public var ds2: OneOfManySupplierBuilder<Quality?>
+      get() = scope.ds2 as? OneOfManySupplierBuilder<Quality?> ?: implChanged()
       set(`value`) {
         scope.ds2 = value
       }
@@ -143,14 +149,14 @@ public class ExampleFunction3Scope :
         scope.ds6 = value
       }
 
-    public var ds7: CompoundSupplierBuilder<Rock, KiraScope>
-      get() = scope.ds7 as? CompoundSupplierBuilder<Rock, KiraScope> ?: implChanged()
+    public var ds7: ObjectSupplierBuilder<Rock>
+      get() = scope.ds7 as? ObjectSupplierBuilder<Rock> ?: implChanged()
       set(`value`) {
         scope.ds7 = value
       }
 
-    public var ds8: NullableCompoundSupplierBuilder<Rock, KiraScope>
-      get() = scope.ds8 as? NullableCompoundSupplierBuilder<Rock, KiraScope> ?: implChanged()
+    public var ds8: NullableObjectSupplierBuilder<Rock>
+      get() = scope.ds8 as? NullableObjectSupplierBuilder<Rock> ?: implChanged()
       set(`value`) {
         scope.ds8 = value
       }

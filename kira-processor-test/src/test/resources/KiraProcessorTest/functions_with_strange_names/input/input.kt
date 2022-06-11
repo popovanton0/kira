@@ -11,3 +11,4 @@ object RootModule
 @Kira fun injector() = Unit
 @Kira fun string() = Unit
 @Kira fun Supplier() = Unit
+@Kira fun implChanged() = Unit

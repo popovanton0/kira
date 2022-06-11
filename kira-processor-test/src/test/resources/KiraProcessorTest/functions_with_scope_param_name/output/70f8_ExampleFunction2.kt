@@ -4,7 +4,7 @@ package com.popovanton0.kira.generated.functions_with_scope_param_name
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.StringSupplierBuilder
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
@@ -19,7 +19,7 @@ public class Kira_ExampleFunction2() : KiraProvider<ExampleFunction2Scope> {
     `scope$` = string(paramName = "scope${'$'}", defaultValue = "Lorem")
     injector {
       ExampleFunction2(
-        `scope$` = `scope$`.currentValue(),
+        `scope$` = `scope$`.build().currentValue(),
       )
     }
   }
@@ -30,9 +30,9 @@ public class ExampleFunction2Scope :
     GeneratedKiraScopeWithImpls<ExampleFunction2Scope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var `scope$`: Supplier<String>
+  public lateinit var `scope$`: SupplierBuilder<String>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(`scope$`, )
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(`scope$`, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunction2Scope,

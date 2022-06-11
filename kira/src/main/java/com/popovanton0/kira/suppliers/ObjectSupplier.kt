@@ -3,6 +3,7 @@ package com.popovanton0.kira.suppliers
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.ClassType
+import com.popovanton0.kira.suppliers.base.NamedValue.Companion.withName
 import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
@@ -39,7 +40,7 @@ public fun <T : Any> KiraScope.`object`(
     qualifiedName: String,
     value: T,
 ): ObjectSupplierBuilder<T> =
-    ObjectSupplierBuilder(paramName, qualifiedName, value).also(::addSupplier)
+    ObjectSupplierBuilder(paramName, qualifiedName, value).also(::addSupplierBuilder)
 
 public fun <T : Any> KiraScope.nullableObject(
     paramName: String,
@@ -48,18 +49,17 @@ public fun <T : Any> KiraScope.nullableObject(
     isNullByDefault: Boolean = true,
 ): NullableObjectSupplierBuilder<T> =
     NullableObjectSupplierBuilder(paramName, qualifiedName, value, isNullByDefault)
-        .also(::addSupplier)
+        .also(::addSupplierBuilder)
 
 public class ObjectSupplierBuilder<T : Any> internal constructor(
     public var paramName: String,
     public var qualifiedName: String,
     public val value: T,
 ) : SupplierBuilder<T>() {
-    override fun BuildKey.build(): Supplier<T> {
+    override fun provideSupplier(): Supplier<T> {
         val type = ClassType(qualifiedName, ClassType.Variant.OBJECT)
         val objectValueName = qualifiedName.substringAfterLast('.')
-        return KiraScope().singleValue(paramName, value withName objectValueName, type)
-            .apply { initialize() }
+        return KiraScope().singleValue(paramName, value withName objectValueName, type).build()
     }
 }
 
@@ -69,12 +69,12 @@ public class NullableObjectSupplierBuilder<T : Any> internal constructor(
     public val value: T,
     public var isNullByDefault: Boolean,
 ) : SupplierBuilder<T?>() {
-    override fun BuildKey.build(): Supplier<T?> {
+    override fun provideSupplier(): Supplier<T?> {
         val type = ClassType(qualifiedName, ClassType.Variant.OBJECT)
         val objectValueName = qualifiedName.substringAfterLast('.')
         return KiraScope().nullableSingleValue(
             paramName, value withName objectValueName, type, isNullByDefault
-        ).apply { initialize() }
+        ).build()
     }
 }
 
@@ -82,9 +82,8 @@ private object Asd
 
 @Preview
 @Composable
-private fun Preview() = KiraScope().`object`("param name", "Asd", Asd).apply { initialize() }.Ui()
+private fun Preview() = KiraScope().`object`("param name", "Asd", Asd).build().Ui()
 
 @Preview
 @Composable
-private fun NullablePreview() = KiraScope().nullableObject("param name", "Asd", Asd)
-    .apply { initialize() }.Ui()
+private fun NullablePreview() = KiraScope().nullableObject("param name", "Asd", Asd).build().Ui()

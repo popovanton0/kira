@@ -4,7 +4,7 @@ package com.popovanton0.kira.generated.function_overloads_with_specified_kira_na
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.StringSupplierBuilder
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
@@ -20,7 +20,7 @@ public class Kira_ExampleFunctionWithParams() : KiraProvider<ExampleFunctionWith
     param1 = string(paramName = "param1", defaultValue = "Lorem")
     injector {
       ExampleFunction(
-        param1 = param1.currentValue(),
+        param1 = param1.build().currentValue(),
       )
     }
   }
@@ -31,9 +31,9 @@ public class ExampleFunctionWithParamsScope :
     GeneratedKiraScopeWithImpls<ExampleFunctionWithParamsScope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var param1: Supplier<String>
+  public lateinit var param1: SupplierBuilder<String>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(param1, )
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(param1, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunctionWithParamsScope,

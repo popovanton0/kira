@@ -10,8 +10,6 @@ public interface Supplier<T> {
     @Composable
     public fun Ui(params: Any?)
 
-    public fun initialize(): Unit = Unit
-
     /*
     TODO Char
 

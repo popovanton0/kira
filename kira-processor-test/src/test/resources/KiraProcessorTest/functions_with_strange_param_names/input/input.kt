@@ -24,6 +24,7 @@ fun <T> ExampleFunction(
     collectSuppliers: Boolean,
     suppliers: Boolean,
     value: Boolean,
+    implChanged: Boolean,
     sdf: Throwable,
 ) = Unit
 
@@ -45,5 +46,6 @@ fun ExampleFunction2(
     collectSuppliers: Boolean,
     suppliers: Boolean,
     value: Boolean,
+    implChanged: Boolean,
     sdf: Throwable,
 ) = Unit

@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.popovanton0.kira.suppliers.base.ClassType
+import com.popovanton0.kira.suppliers.base.NamedValue.Companion.withName
+import com.popovanton0.kira.suppliers.base.NamedValue
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.base.Supplier
@@ -42,7 +44,7 @@ public fun <T : Any> KiraScope.oneOfMany(
 ): OneOfManySupplierBuilder<T> {
     require(defaultOptionIndex < values.size) { "Index should be less that values.size" }
     return OneOfManySupplierBuilder(paramName, type.notNullable(), values, defaultOptionIndex)
-        .also(::addSupplier)
+        .also(::addSupplierBuilder)
 }
 
 public fun <T : Any> KiraScope.nullableOneOfMany(
@@ -61,7 +63,7 @@ public fun <T : Any> KiraScope.nullableOneOfMany(
             addAll(values)
         },
         defaultOptionIndex = defaultOptionIndex?.plus(1) ?: 0,
-    ).also(::addSupplier)
+    ).also(::addSupplierBuilder)
 }
 
 public class OneOfManySupplierBuilder<T> internal constructor(
@@ -70,7 +72,7 @@ public class OneOfManySupplierBuilder<T> internal constructor(
     public var values: Collection<NamedValue<T>>,
     public var defaultOptionIndex: Int,
 ) : SupplierBuilder<T>() {
-    override fun BuildKey.build(): Supplier<T> =
+    override fun provideSupplier(): Supplier<T> =
         OneOfManySupplier(paramName, type, values.toList(), defaultOptionIndex)
 }
 
@@ -105,7 +107,7 @@ private fun Preview() = KiraScope().oneOfMany(
     paramName = "param name",
     type = ClassType("String", ClassType.Variant.CLASS),
     values = AnnotationTarget.values().map { it withName it.name }
-).apply { initialize() }.Ui()
+).build().Ui()
 
 @Preview
 @Composable
@@ -113,4 +115,4 @@ private fun NullablePreview() = KiraScope().nullableOneOfMany(
     paramName = "param name",
     type = ClassType("String", ClassType.Variant.CLASS),
     values = AnnotationTarget.values().map { it withName it.name }
-).apply { initialize() }.Ui()
+).build().Ui()

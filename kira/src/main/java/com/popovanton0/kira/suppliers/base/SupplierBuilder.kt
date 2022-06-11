@@ -1,30 +1,18 @@
 package com.popovanton0.kira.suppliers.base
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 
-public abstract class SupplierBuilder<T> : Supplier<T> {
-    public class BuildKey internal constructor()
-
-    public abstract fun BuildKey.build(): Supplier<T>
+public abstract class SupplierBuilder<T> {
 
     private lateinit var supplier: Supplier<T>
-    public val isInitialized: Boolean get() = ::supplier.isInitialized
+    public val isBuilt: Boolean get() = ::supplier.isInitialized
 
-    @Composable
-    override fun currentValue(): T = if (isInitialized) supplier.currentValue() else notInitError()
+    protected abstract fun provideSupplier(): Supplier<T>
 
-    @Composable
-    override fun Ui(params: Any?): Unit = if (isInitialized) supplier.Ui(params) else notInitError()
-
-    public override fun initialize() {
-        if (isInitialized) alreadyInitializedError()
-        supplier = buildKey.build()
-    }
-
-    public fun alreadyInitializedError(): Nothing = error("Supplier is already initialized")
-
-    private companion object {
-        private val buildKey = BuildKey()
-        private fun notInitError(): Nothing = error("Supplier is not initialized yet")
+    @Stable
+    public fun build(): Supplier<T> {
+        if (::supplier.isInitialized) return supplier
+        supplier = provideSupplier()
+        return supplier
     }
 }

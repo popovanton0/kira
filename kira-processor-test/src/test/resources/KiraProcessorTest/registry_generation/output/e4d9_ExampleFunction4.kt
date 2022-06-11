@@ -5,7 +5,7 @@ import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraMisses
 import com.popovanton0.kira.suppliers.KiraProvider
 import com.popovanton0.kira.suppliers.StringSupplierBuilder
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.compound.KiraScope
@@ -35,7 +35,7 @@ public class Kira_ExampleFunction4(
 
 
   public data class Misses(
-    public val param2: Supplier<Throwable>,
+    public val param2: SupplierBuilder<Throwable>,
   ) : KiraMisses
 }
 
@@ -43,11 +43,11 @@ public class ExampleFunction4Scope :
     GeneratedKiraScopeWithImpls<ExampleFunction4Scope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public lateinit var param1: Supplier<String>
+  public lateinit var param1: SupplierBuilder<String>
 
-  public lateinit var param2: Supplier<Throwable>
+  public lateinit var param2: SupplierBuilder<Throwable>
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf(param1, param2, )
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf(param1, param2, )
 
   public class SupplierImplsScope(
     private val scope: ExampleFunction4Scope,

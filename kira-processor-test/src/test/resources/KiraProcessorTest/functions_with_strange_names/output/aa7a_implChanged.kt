@@ -7,26 +7,26 @@ import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
-import functions_with_strange_names.string
+import functions_with_strange_names.implChanged
 import kotlin.collections.List
 import kotlin.collections.listOf
 
-public class Kira_string() : KiraProvider<stringScope> {
-  public override val kira: Kira<stringScope> = kira(stringScope()) {
+public class Kira_implChanged() : KiraProvider<implChangedScope> {
+  public override val kira: Kira<implChangedScope> = kira(implChangedScope()) {
     injector {
-      string(
+      implChanged(
       )
     }
   }
 
 }
 
-public class stringScope : GeneratedKiraScopeWithImpls<stringScope.SupplierImplsScope>() {
+public class implChangedScope : GeneratedKiraScopeWithImpls<implChangedScope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
   public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf()
 
   public class SupplierImplsScope(
-    private val scope: stringScope,
+    private val scope: implChangedScope,
   ) : GeneratedKiraScopeWithImpls.SupplierImplsScope()
 }

@@ -36,21 +36,24 @@ public class Kira<Scope : KiraScope> internal constructor(
     private var injector: Injector<Unit> = scope.block()
 
     public fun modify(block: Scope.() -> Unit): Kira<Scope> {
-        if (!isInitialized) scope.block() else alreadyInitializedError()
+        if (!isBuilt) scope.block() else alreadyBuiltError()
         return this
     }
 
     public fun modifyInjector(
         block: Scope.(previousInjector: Injector<Unit>) -> Injector<Unit>
     ): Kira<Scope> {
-        if (!isInitialized) injector = scope.block(injector) else alreadyInitializedError()
+        if (!isBuilt) injector = scope.block(injector) else alreadyBuiltError()
         return this
     }
 
-    override fun BuildKey.build(): Supplier<Unit> = RootCompoundSupplierImpl(
-        suppliers = scope.collectSuppliers().toList().onEach { it.initialize() },
+    override fun provideSupplier(): Supplier<Unit> = RootCompoundSupplierImpl(
+        suppliers = scope.collectSupplierBuilders().map { it.build() },
         injector = injector,
     )
+
+    private fun alreadyBuiltError(): Nothing =
+        error("SupplierBuilder was already built, modification is prohibited")
 }
 
 private class RootCompoundSupplierImpl(

@@ -3,7 +3,7 @@ package com.popovanton0.kira.generated.functions_with_strange_names
 
 import com.popovanton0.kira.suppliers.Kira
 import com.popovanton0.kira.suppliers.KiraProvider
-import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
@@ -23,7 +23,7 @@ public class Kira_kira() : KiraProvider<kiraScope> {
 public class kiraScope : GeneratedKiraScopeWithImpls<kiraScope.SupplierImplsScope>() {
   protected override val `$$$supplierImplsScope$$$`: SupplierImplsScope = SupplierImplsScope(this)
 
-  public override fun collectSuppliers(): List<Supplier<*>> = listOf()
+  public override fun collectSupplierBuilders(): List<SupplierBuilder<*>> = listOf()
 
   public class SupplierImplsScope(
     private val scope: kiraScope,
