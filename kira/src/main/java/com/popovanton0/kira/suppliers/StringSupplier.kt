@@ -92,7 +92,7 @@ private open class NullableStringSupplierImpl<T : String?>(
         onValueChange: (String?) -> Unit,
         label: String,
     ) {
-        var latestNonNullValue by remember { mutableStateOf("") }
+        var latestNonNullValue by remember { mutableStateOf(value ?: "") }
         ListItem(
             text = {
                 OutlinedTextField(
@@ -110,7 +110,9 @@ private open class NullableStringSupplierImpl<T : String?>(
                 Checkbox(
                     label = "null",
                     checked = value == null,
-                    onCheckedChange = { onValueChange(if (value == null) latestNonNullValue else null) }
+                    onCheckedChange = {
+                        onValueChange(if (value == null) latestNonNullValue else null)
+                    }
                 )
             }
         )
