@@ -15,16 +15,17 @@ public fun TypeUi(type: Type) {
 
 private fun renderTypeString(
     type: Type,
-    omitModifiers: Boolean = false
+    typeArg: Boolean = false
 ): AnnotatedString = buildAnnotatedString {
     when (type) {
         is ClassType -> {
-            if (!omitModifiers) {
+            if (!typeArg) {
                 renderModifiers(type)
                 if (type.modifiers.isNotEmpty()) append(' ')
+
+                append(type.variant.name.lowercase())
+                append(' ')
             }
-            append(type.variant.name.lowercase())
-            append(' ')
             append(type.qualifiedName.substringAfterLast('.'))
             renderTypeArgs(type)
         }
@@ -44,7 +45,7 @@ private fun AnnotatedString.Builder.renderTypeArgs(classType: ClassType) {
     if (typeArgs.isEmpty()) return
     append('<')
     typeArgs.forEachIndexed { index, type ->
-        append(renderTypeString(type, omitModifiers = true))
+        append(renderTypeString(type, typeArg = true))
         if (index != typeArgs.lastIndex) append(',')
     }
     append('>')
