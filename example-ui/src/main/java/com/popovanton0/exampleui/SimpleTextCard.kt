@@ -9,7 +9,6 @@ import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,8 +23,8 @@ fun SimpleTextCard(param1: Boolean = false) = Text(text = "SimpleTextCard: param
 @Preview
 @Composable
 fun SimpleTextCard(
-    text: String = "Example",
-    isRed: Boolean = text.contains(' '),
+    text: String? = "Example",
+    isFast: Boolean = true,
     skill: Skill? = Skill.LOW,
     food: Food = Food.BAD,
     rock: Rock? = null,
@@ -38,9 +37,9 @@ fun SimpleTextCard(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Text(text.toString())
             Text(
-                text = "SimpleTextCard: $text",
-                color = if (isRed) Color.Red else Color.Unspecified
+                text = "SimpleTextCard is: ${if (isFast) "🏎" else "🐢"}",
             )
             Text(
                 text = "skill is " + when (skill) {
@@ -59,7 +58,7 @@ fun SimpleTextCard(
                 },
                 fontSize = 18.sp,
             )
-            Text(text = "rock: $rock")
+            Text(text = "rock: ${if (rock != null) "🪨" else null}")
         }
     }
 }

@@ -24,8 +24,8 @@ fun SimpleTextCard(param2: Boolean = false) =
 @Preview
 @Composable
 fun SimpleTextCard(
-    isRed: Boolean = false,
     text: String = "Example",
+    isFast: Boolean = false,
 ) {
     val shape = RoundedCornerShape(12.dp)
     Card(elevation = 8.dp, shape = shape) {
@@ -35,9 +35,10 @@ fun SimpleTextCard(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Text(text)
             Text(
-                text = "SimpleTextCard from example;ui2: $text",
-                color = if (isRed) Color.Red else Color.Unspecified
+                text = "SimpleTextCard from example;ui2 is: ${if (isFast) "🏎" else "🐢"}",
+                color = if (isFast) Color.Red else Color.Unspecified
             )
         }
     }

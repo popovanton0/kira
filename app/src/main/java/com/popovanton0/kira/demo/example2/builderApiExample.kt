@@ -10,6 +10,7 @@ import com.popovanton0.exampleui.Rock
 import com.popovanton0.exampleui.Skill
 import com.popovanton0.exampleui.TextCard
 import com.popovanton0.kira.KiraScreen
+import com.popovanton0.kira.suppliers.base.NamedValue.Companion.withName
 import com.popovanton0.kira.suppliers.base.ReflectionUsage
 import com.popovanton0.kira.suppliers.base.toClassType
 import com.popovanton0.kira.suppliers.boolean
@@ -23,7 +24,6 @@ import com.popovanton0.kira.suppliers.nullableBoolean
 import com.popovanton0.kira.suppliers.nullableEnum
 import com.popovanton0.kira.suppliers.singleValue
 import com.popovanton0.kira.suppliers.string
-import com.popovanton0.kira.suppliers.withName
 
 @Preview
 @Composable
@@ -43,12 +43,12 @@ val kiraTextCard = kira {
     )
     injector {
         TextCard(
-            text = text.currentValue(),
-            isRed = isRed.currentValue(),
-            skill = skill.currentValue(),
-            food = food.currentValue(),
-            car = car.currentValue(),
-            rock = rock.currentValue(),
+            text = text.build().currentValue(),
+            isRed = isRed.build().currentValue(),
+            skill = skill.build().currentValue(),
+            food = food.build().currentValue(),
+            car = car.build().currentValue(),
+            rock = rock.build().currentValue(),
         )
     }
 }
@@ -112,39 +112,39 @@ fun KiraScope.carSupplier() = compound(
                             )
                             injector {
                                 Engine(
-                                    model = model.currentValue(),
-                                    diesel = diesel.currentValue(),
+                                    model = model.build().currentValue(),
+                                    diesel = diesel.build().currentValue(),
                                 )
                             }
                         }
                         injector {
                             Car(
-                                model = model.currentValue(),
-                                lame = lame.currentValue(),
-                                lameN = lameN.currentValue(),
-                                cookerQuality = cookerQuality.currentValue(),
-                                engine = engine.currentValue() ?: Engine("null"),
+                                model = model.build().currentValue(),
+                                lame = lame.build().currentValue(),
+                                lameN = lameN.build().currentValue(),
+                                cookerQuality = cookerQuality.build().currentValue(),
+                                engine = engine.build().currentValue() ?: Engine("null"),
                             )
                         }
                     }
                     injector {
-                        car.currentValue().toString()
+                        car.build().currentValue().toString()
                     }
                 }
                 injector {
                     Engine(
-                        model = model.currentValue() + carStr.currentValue(),
-                        diesel = diesel.currentValue(),
+                        model = model.build().currentValue() + carStr.build().currentValue(),
+                        diesel = diesel.build().currentValue(),
                     )
                 }
             }
             injector {
                 Car(
-                    model = model.currentValue(),
-                    lame = lame.currentValue(),
-                    lameN = lameN.currentValue(),
-                    cookerQuality = cookerQuality.currentValue(),
-                    engine = engine.currentValue() ?: Engine("null"),
+                    model = model.build().currentValue(),
+                    lame = lame.build().currentValue(),
+                    lameN = lameN.build().currentValue(),
+                    cookerQuality = cookerQuality.build().currentValue(),
+                    engine = engine.build().currentValue() ?: Engine("null"),
                 )
             }
         }
@@ -154,19 +154,19 @@ fun KiraScope.carSupplier() = compound(
         )
         injector {
             Engine(
-                model = car.currentValue().toString(),
-                diesel = diesel.currentValue(),
+                model = car.build().currentValue().toString(),
+                diesel = diesel.build().currentValue(),
             )
         }
     }
     injector {
         Text(text = "This text will not be shown")
         Car(
-            model = model.currentValue(),
-            lame = lame.currentValue(),
-            lameN = lameN.currentValue(),
-            cookerQuality = cookerQuality.currentValue(),
-            engine = engine.currentValue() ?: Engine("null"),
+            model = model.build().currentValue(),
+            lame = lame.build().currentValue(),
+            lameN = lameN.build().currentValue(),
+            cookerQuality = cookerQuality.build().currentValue(),
+            engine = engine.build().currentValue() ?: Engine("null"),
         )
     }
 }

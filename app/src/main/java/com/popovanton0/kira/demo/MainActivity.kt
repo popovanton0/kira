@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
                     //KiraScreen(KiraRegistry.kiraProviders.filterKeys { it.contains("asd") }.values.first())
                     //KiraScreen(`Kira_AsdQ😃∂`())
                     KiraScreen(Kira_SimpleTextCard().kira.modify {
-                        generatedSupplierImpls {
+                        generated {
                             this.rock.isNullByDefault = false
                             this.food.values
                         }
