@@ -19,11 +19,11 @@ private fun renderTypeString(
 ): AnnotatedString = buildAnnotatedString {
     when (type) {
         is ClassType -> {
-            append(type.variant.name.lowercase())
             if (!omitModifiers) {
-                if (type.modifiers.isNotEmpty()) append(' ')
                 renderModifiers(type)
+                if (type.modifiers.isNotEmpty()) append(' ')
             }
+            append(type.variant.name.lowercase())
             append(' ')
             append(type.qualifiedName.substringAfterLast('.'))
             renderTypeArgs(type)
