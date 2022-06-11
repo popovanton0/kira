@@ -16,6 +16,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -33,6 +34,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -171,7 +173,7 @@ private class CompoundSupplierImpl<T : Any>(
 
     @Composable
     override fun Ui(params: Any?) {
-        Box(modifier = Modifier.hide()) {
+        Layout({
             if (!::_currentValue.isInitialized) {
                 currentValue()
             } else if (_currentValue.value != null) {
@@ -179,22 +181,29 @@ private class CompoundSupplierImpl<T : Any>(
                 latestNonNullValue = value
                 _currentValue.value = value
             }
+        }) { measurables, _ ->
+            if (measurables.isNotEmpty()) System.err.println(uiFromInjectorMsg)
+            layout(0, 0) {}
         }
+
         @Suppress("NAME_SHADOWING")
         val params = params as CompoundParams?
-        val compressIntoDialog = params != null && params.nestingLevel > 1
+        val compressIntoDialog =
+            params != null && params.nestingLevel >= COMPRESS_INTO_DIALOG_NESTING
 
         if (compressIntoDialog) {
             Compressed()
             if (openDialog) CompoundDialog(params)
         } else {
-            ListItem(
-                sideSlotsAlignment = if (suppliers.isNotEmpty()) Alignment.Top
-                else Alignment.CenterVertically,
-                overlineText = { TypeUi(type) },
-                text = { Text(text = paramName) },
-                secondaryText = secondaryText@{
-                    if (suppliers.isEmpty()) return@secondaryText
+            val padding = 16.dp
+            Column(Modifier.padding(start = padding, top = padding, bottom = padding)) {
+                Header(
+                    Modifier.padding(end = padding),
+                    overlineText = { TypeUi(type) },
+                    text = { Text(text = paramName) },
+                    end = { if (nullable) NullCheckbox() }
+                )
+                if (suppliers.isNotEmpty()) {
                     VerticalDividerBox(modifier = Modifier.nullOverlayModifier()) {
                         // not lazy because kira root places us in the LazyColumn
                         // and LazyColumn in LazyColumn is prohibited
@@ -205,12 +214,23 @@ private class CompoundSupplierImpl<T : Any>(
                             }
                         }
                     }
-                },
-                end = {
-                    if (nullable) NullCheckbox()
                 }
-            )
+            }
         }
+    }
+
+    @Composable
+    private fun Header(
+        modifier: Modifier = Modifier,
+        overlineText: @Composable () -> Unit,
+        text: @Composable () -> Unit,
+        end: @Composable () -> Unit,
+    ) = Row(modifier) {
+        Column(Modifier.weight(1f)) {
+            ProvideTextStyle(MaterialTheme.typography.overline) { overlineText() }
+            ProvideTextStyle(MaterialTheme.typography.subtitle1) { text() }
+        }
+        Box(modifier = Modifier.padding(start = 16.dp)) { end() }
     }
 
     @Composable
@@ -222,15 +242,12 @@ private class CompoundSupplierImpl<T : Any>(
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
-    private fun Modifier.hide() = alpha(0f).pointerInteropFilter { true }
-
-    @OptIn(ExperimentalComposeUiApi::class)
     private fun Modifier.nullOverlayModifier() = composed {
         val alpha by animateFloatAsState(
             targetValue = if (_currentValue.value == null) ContentAlpha.disabled else 1f
         )
-        alpha(alpha).pointerInteropFilter { _currentValue.value == null }
-    }
+        alpha(alpha)
+    }.pointerInteropFilter { _currentValue.value == null }
 
     @Composable
     private fun Compressed() = ListItem(
@@ -255,9 +272,10 @@ private class CompoundSupplierImpl<T : Any>(
                         text = { Text(text = paramName) },
                         end = { if (nullable) NullCheckbox() }
                     )
-                    Divider(Modifier.padding(horizontal = 16.dp))
+                    if (suppliers.isNotEmpty()) Divider(Modifier.padding(horizontal = 16.dp))
                     LazyColumn(
                         modifier = Modifier
+                            .weight(1f, fill = false)
                             .fillMaxWidth()
                             .nullOverlayModifier()
                     ) {
@@ -281,10 +299,8 @@ private class CompoundSupplierImpl<T : Any>(
         }
     )
 
-    @Composable
-    private fun isCompoundSupplier(supplier: Supplier<*>) =
-        supplier is NullableCompoundSupplierBuilder<*, *> ||
-                supplier is CompoundSupplierBuilder<*, *>
+    private fun isCompoundSupplier(supplier: Supplier<*>): Boolean =
+        supplier is CompoundSupplierImpl<*>
 
     @Composable
     private fun CloseDialogButton() = Box(modifier = Modifier.fillMaxWidth()) {
@@ -303,11 +319,23 @@ private class CompoundSupplierImpl<T : Any>(
         params: CompoundParams?,
         supplier: Supplier<*>
     ) {
-        supplier.Ui(params = CompoundParams(nestingLevel = (params?.nestingLevel ?: 0) + 1))
+        val previousNestingLevel = params?.nestingLevel ?: 0
+        supplier.Ui(params = CompoundParams(nestingLevel = previousNestingLevel + 1))
     }
 
     private data class CompoundParams(val nestingLevel: Int)
 }
+
+private const val COMPRESS_INTO_DIALOG_NESTING = 2
+private val uiFromInjectorMsg = """
+    ================================================================================================
+    ================================================================================================
+    =======                                                                                  =======
+    =======   Emitting UI from injector of CompoundSupplier is is prohibited, it was HIDDEN  =======
+    =======                                                                                  =======
+    ================================================================================================
+    ================================================================================================
+    """.trimIndent()
 
 @Preview(showBackground = true)
 @Composable
