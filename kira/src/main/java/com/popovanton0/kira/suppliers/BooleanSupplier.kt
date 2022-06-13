@@ -21,8 +21,12 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.dataclass.DataClassSupplierSupport
 import com.popovanton0.kira.ui.ListItem
 import com.popovanton0.kira.ui.RadioButton
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.isSuperclassOf
 
 public fun KiraScope.boolean(
     paramName: String,
@@ -116,6 +120,17 @@ private open class NullableBooleanSupplierImpl<T : Boolean?>(
             }
         }
     )
+}
+
+internal object BooleanInDataClass : DataClassSupplierSupport {
+    override fun KiraScope.provideSupplierBuilderForParam(
+        param: KParameter, paramClass: KClass<Any>, nullable: Boolean, defaultValue: Any?
+    ): SupplierBuilder<*>? = when {
+        !paramClass.isSuperclassOf(Boolean::class) -> null
+        nullable -> nullableBoolean(param.name!!, defaultValue as Boolean?)
+        defaultValue != null -> boolean(param.name!!, defaultValue as Boolean)
+        else -> boolean(param.name!!)
+    }
 }
 
 @Preview

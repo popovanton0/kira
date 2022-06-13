@@ -22,6 +22,8 @@ import com.popovanton0.kira.suppliers.boolean
 import com.popovanton0.kira.suppliers.compound.GeneratedKiraScopeWithImpls
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.dataclass.NullableDataClassSupplierBuilder
+import com.popovanton0.kira.suppliers.dataclass.nullableDataClass
 import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.nullableBoolean
 import com.popovanton0.kira.suppliers.nullableEnum
@@ -72,14 +74,13 @@ public class Kira_ExampleFunction3(
     )
 
     ds9 = this@Kira_ExampleFunction3.misses.ds9
-    ds10 = this@Kira_ExampleFunction3.misses.ds10
+    ds10 = nullableDataClass(paramName = "ds10", dataClass = Engine::class)
     injector()
   }
 
 
   public data class Misses(
     public val ds9: SupplierBuilder<B?>,
-    public val ds10: SupplierBuilder<Engine?>,
   ) : KiraMisses
 }
 
@@ -159,6 +160,12 @@ public class ExampleFunction3Scope :
       get() = scope.ds8 as? NullableObjectSupplierBuilder<Rock> ?: implChanged()
       set(`value`) {
         scope.ds8 = value
+      }
+
+    public var ds10: NullableDataClassSupplierBuilder<Engine>
+      get() = scope.ds10 as? NullableDataClassSupplierBuilder<Engine> ?: implChanged()
+      set(`value`) {
+        scope.ds10 = value
       }
   }
 }

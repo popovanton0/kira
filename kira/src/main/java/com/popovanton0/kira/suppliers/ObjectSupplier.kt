@@ -9,6 +9,9 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.dataclass.DataClassSupplierSupport
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
 
 @ReflectionUsage
 public inline fun <reified T : Any> KiraScope.`object`(
@@ -75,6 +78,22 @@ public class NullableObjectSupplierBuilder<T : Any> internal constructor(
         return KiraScope().nullableSingleValue(
             paramName, value withName objectValueName, type, isNullByDefault
         ).build()
+    }
+}
+
+internal object ObjectInDataClass : DataClassSupplierSupport {
+    override fun KiraScope.provideSupplierBuilderForParam(
+        param: KParameter, paramClass: KClass<Any>, nullable: Boolean, defaultValue: Any?
+    ): SupplierBuilder<*>? {
+        if (paramClass.objectInstance == null) return null
+        val paramClassName = paramClass.qualifiedName!!
+        val objectInstance = paramClass.objectInstance!!
+        return if (nullable) nullableObject(
+            param.name!!, paramClassName, objectInstance, defaultValue == null
+        )
+        else `object`(
+            param.name!!, paramClassName, objectInstance,
+        )
     }
 }
 

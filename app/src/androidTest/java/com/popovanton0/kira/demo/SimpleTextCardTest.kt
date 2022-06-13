@@ -19,7 +19,7 @@ internal class SimpleTextCardTest {
         val kiraProvider = Kira_SimpleTextCard()
         setContent { KiraScreen(kiraProvider) }
 
-        onNodeWithText("isRed").assertExists()
+        onNodeWithText("isFast").assertExists()
         onNodeWithText("skill").assertExists()
         onAllNodesWithText("Lorem", substring = true).assertCountEquals(2)
         onAllNodesWithText("null").assertCountEquals(2)

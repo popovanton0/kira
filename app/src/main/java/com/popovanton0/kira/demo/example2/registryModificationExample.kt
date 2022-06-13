@@ -16,15 +16,7 @@ import com.popovanton0.kira.suppliers.singleValue
 @Composable
 fun KiraRegistryModificationExample() {
     val kiraProviders = KiraRegistry.kiraProviders
-    kiraProviders["com.popovanton0.kira.demo.example2.TextCard"] = Kira_TextCard(
-        missesProvider = {
-            Kira_TextCard.Misses(
-                car = carSupplier(),
-                carN = nullableSingleValue("carN", Car() withName "Car"),
-                autoCar = singleValue("autoCar", Car() withName "Car"),
-            )
-        }
-    )
+    kiraProviders["com.popovanton0.kira.demo.example2.TextCard"] = Kira_TextCard()
 
     // in the browser UI logic, in other file
     val kiraProvider = kiraProviders["com.popovanton0.kira.demo.example2.TextCard"]!!

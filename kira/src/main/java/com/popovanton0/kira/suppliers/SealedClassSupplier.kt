@@ -6,28 +6,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.popovanton0.kira.suppliers.base.PropertyBasedSupplier
 import com.popovanton0.kira.suppliers.base.Supplier
+import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.`object`
 import kotlin.reflect.KClass
 
-public inline fun <reified T : Any> sealedClass(defaultValue: T): Supplier<T> {
-    return SealedClassSupplier(error(""), defaultValue, T::class)
-}
-
-/*public inline fun <reified T : SealedClass<*>?> ParameterDetails.nullableSealedClass(
-    defaultValue: T?
-): Supplier<T?> = NullableSealedClassSupplier(
-    defaultValue = defaultValue,
-    parameterDetails = this,
-    sealedClassConstants = T::class.java.sealedClassConstants!!
-        .toMutableList()
-        .apply { add(0, null) }
-        .toTypedArray()
-)*/
-
-@PublishedApi
-internal class SealedClassSupplier<T : Any>(
-    private val paramName: String,
+public fun <T : Any> KiraScope.sealedClass(
+    paramName: String,
+    sealedClass: KClass<T>,
     defaultValue: T,
+): Supplier<T> =
+    SealedClassSupplier(paramName, sealedClass, defaultValue)//.also(::addSupplierBuilder)
+
+
+private class SealedClassSupplier<T : Any>(
+    private val paramName: String,
     private val sealedClass: KClass<T>,
+    private val defaultValue: T,
 ) : PropertyBasedSupplier<T> {
     override var currentValue: T by mutableStateOf(defaultValue)
 
@@ -35,17 +29,19 @@ internal class SealedClassSupplier<T : Any>(
     }
 
 
-    private fun <N : Any> map(sealedClass: KClass<N>): Unit {
-        sealedClass.sealedSubclasses.map {
-            val objectInstance = it.objectInstance
+    private fun <N : Any> map(sealedClass: KClass<N>) {
+        require(sealedClass.isSealed)
+        val sealedSubclasses = sealedClass.sealedSubclasses
+        sealedSubclasses.map { subclass ->
+            val objectInstance = subclass.objectInstance
             when {
                 objectInstance != null -> {
-                    objectInstance
+                    KiraScope().`object`(paramName,"zdf", objectInstance)
                 }
-                it.isSealed -> {
-
+                subclass.isSealed -> {
+                    map(subclass)
                 }
-                it.isData -> {
+                subclass.isData -> {
 
                 }
                 else -> {

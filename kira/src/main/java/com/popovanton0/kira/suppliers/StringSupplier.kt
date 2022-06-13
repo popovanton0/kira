@@ -15,8 +15,12 @@ import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.suppliers.dataclass.DataClassSupplierSupport
 import com.popovanton0.kira.ui.Checkbox
 import com.popovanton0.kira.ui.ListItem
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.isSuperclassOf
 
 public fun KiraScope.string(
     paramName: String,
@@ -119,6 +123,16 @@ private open class NullableStringSupplierImpl<T : String?>(
     }
 }
 
+internal object StringInDataClass : DataClassSupplierSupport {
+    override fun KiraScope.provideSupplierBuilderForParam(
+        param: KParameter, paramClass: KClass<Any>, nullable: Boolean, defaultValue: Any?
+    ): SupplierBuilder<*>? = when {
+        !paramClass.isSuperclassOf(String::class) -> null
+        nullable -> nullableString(param.name!!, defaultValue as String?)
+        defaultValue != null -> string(param.name!!, defaultValue as String)
+        else -> string(param.name!!)
+    }
+}
 
 @Preview
 @Composable

@@ -10,6 +10,10 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun data_class_processor() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun function_in_class() =
         compileInputsAndVerifyOutputs()
 
