@@ -92,4 +92,8 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
     @Test
     fun unknown_parameter_types() =
         compileInputsAndVerifyOutputs()
+
+    @Test
+    fun whole_number_processor() =
+        compileInputsAndVerifyOutputs()
 }

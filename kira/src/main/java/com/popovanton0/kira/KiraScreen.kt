@@ -55,7 +55,7 @@ public fun KiraScreen(
 
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.TopCenter
     ) {
         var supplier by remember { mutableStateOf<Supplier<Unit>?>(null) }
             /** building can be slow, especially if [ReflectionUsage] APIs were used */
@@ -63,7 +63,11 @@ public fun KiraScreen(
         LaunchedEffect(true) {
             withContext(Dispatchers.IO) { supplier = vm.kiraProvider.kira.build() }
         }
-        if (supplier == null) CircularProgressIndicator() else supplier!!.Ui()
+        if (supplier == null) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        } else {
+            supplier!!.Ui()
+        }
         EarlyPreview()
     }
 }

@@ -8,11 +8,13 @@ import com.popovanton0.kira.processing.supplierprocessors.DataClassSupplierProce
 import com.popovanton0.kira.processing.supplierprocessors.EnumSupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.ObjectSupplierProcessor
 import com.popovanton0.kira.processing.supplierprocessors.StringSupplierProcessor
+import com.popovanton0.kira.processing.supplierprocessors.WholeNumberSupplierProcessor
 
 class KiraProcessorProvider : SymbolProcessorProvider {
     public val supplierProcessors = listOf(
-        StringSupplierProcessor,
+        WholeNumberSupplierProcessor,
         BooleanSupplierProcessor,
+        StringSupplierProcessor,
         EnumSupplierProcessor,
         ObjectSupplierProcessor,
         DataClassSupplierProcessor,

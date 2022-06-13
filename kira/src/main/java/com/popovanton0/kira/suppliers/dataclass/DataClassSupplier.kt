@@ -38,7 +38,7 @@ public fun <T : Any> KiraScope.nullableDataClass(
 public class DataClassSupplierBuilder<T : Any> internal constructor(
     public var paramName: String,
     public val dataClass: KClass<T>,
-    public val defaultValue: T?,
+    public var defaultValue: T?,
     private val nestingLevel: Int = 0,
 ) : SupplierBuilder<T>() {
     override fun provideSupplier(): Supplier<T> = KiraScope().compound(
@@ -49,7 +49,7 @@ public class DataClassSupplierBuilder<T : Any> internal constructor(
 public class NullableDataClassSupplierBuilder<T : Any> internal constructor(
     public var paramName: String,
     public val dataClass: KClass<T>,
-    public val defaultValue: T?,
+    public var defaultValue: T?,
     private val nestingLevel: Int = 0,
 ) : SupplierBuilder<T?>() {
     override fun provideSupplier(): Supplier<T?> = KiraScope().nullableCompound(

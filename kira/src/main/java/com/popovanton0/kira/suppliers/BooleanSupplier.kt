@@ -56,7 +56,7 @@ public class NullableBooleanSupplierBuilder internal constructor(
         NullableBooleanSupplierImpl(paramName, defaultValue, nullable = true)
 }
 
-private open class NullableBooleanSupplierImpl<T : Boolean?>(
+private class NullableBooleanSupplierImpl<T : Boolean?>(
     private val paramName: String,
     defaultValue: T,
     private val nullable: Boolean,

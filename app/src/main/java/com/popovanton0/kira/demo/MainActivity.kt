@@ -11,10 +11,16 @@ import com.popovanton0.exampleui.Engine
 import com.popovanton0.exampleui.Food
 import com.popovanton0.exampleui.Rock
 import com.popovanton0.kira.KiraScreen
+import com.popovanton0.kira.demo.example1.WholeNumbers
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
+import com.popovanton0.kira.generated.com.popovanton0.kira.demo.example1.Kira_WholeNumbersFun
+import com.popovanton0.kira.generated.com.popovanton0.kira.demo.example1.Kira_WholeNumbersInDataClass
+import com.popovanton0.kira.suppliers.byte
 import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
 import com.popovanton0.kira.suppliers.dataclass.nullableDataClass
+import com.popovanton0.kira.suppliers.nullableByte
+import com.popovanton0.kira.suppliers.nullableString
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,8 +31,9 @@ class MainActivity : ComponentActivity() {
                     //KiraRegistryModificationExample()
                     //KiraScreen(KiraRegistry.kiraProviders.filterKeys { it.contains("asd") }.values.first())
                     //KiraScreen(`Kira_AsdQ😃∂`())
-                    KiraScreen(kira {
-                        val supp = nullableDataClass("my car", Car::class, Car(cookerQuality = Food.EXCELLENT))
+                    KiraScreen(Kira_WholeNumbersInDataClass().kira.modify { generated{ wholeNumbers.defaultValue = WholeNumbers() } })
+                    /*KiraScreen(kira {
+                        val supp = byte("dsf")//nullableDataClass("my car", Car::class, Car(cookerQuality = Food.EXCELLENT))
                         injector {
                             Text(
                                 text = supp.build().currentValue().toString()
@@ -35,7 +42,7 @@ class MainActivity : ComponentActivity() {
                                     .replace(")", ")\n")
                             )
                         }
-                    })
+                    })*/
                 }
             }
         }
