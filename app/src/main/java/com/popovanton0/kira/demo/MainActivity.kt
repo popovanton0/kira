@@ -6,21 +6,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.popovanton0.exampleui.Engine
 import com.popovanton0.exampleui.Food
 import com.popovanton0.exampleui.Rock
 import com.popovanton0.kira.KiraScreen
-import com.popovanton0.kira.demo.example1.WholeNumbers
+import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
-import com.popovanton0.kira.generated.com.popovanton0.kira.demo.example1.Kira_WholeNumbersFun
-import com.popovanton0.kira.generated.com.popovanton0.kira.demo.example1.Kira_WholeNumbersInDataClass
-import com.popovanton0.kira.suppliers.byte
-import com.popovanton0.kira.suppliers.compound.injector
-import com.popovanton0.kira.suppliers.kira
-import com.popovanton0.kira.suppliers.dataclass.nullableDataClass
-import com.popovanton0.kira.suppliers.nullableByte
-import com.popovanton0.kira.suppliers.nullableString
+import com.popovanton0.kira.generated.androidx.compose.material.Kira_Checkbox
+import com.popovanton0.kira.suppliers.value
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +30,12 @@ class MainActivity : ComponentActivity() {
                     //KiraRegistryModificationExample()
                     //KiraScreen(KiraRegistry.kiraProviders.filterKeys { it.contains("asd") }.values.first())
                     //KiraScreen(`Kira_AsdQ😃∂`())
-                    KiraScreen(Kira_WholeNumbersInDataClass().kira.modify { generated{ wholeNumbers.defaultValue = WholeNumbers() } })
+                    //KiraBuilderApiExample()
+                    //KiraScreen(Kira_WholeNumbersInDataClass().kira.modify {
+                    //    generated {
+                    //        wholeNumbers.defaultValue = WholeNumbers()
+                    //    }
+                    //})
                     /*KiraScreen(kira {
                         val supp = byte("dsf")//nullableDataClass("my car", Car::class, Car(cookerQuality = Food.EXCELLENT))
                         injector {
@@ -43,10 +47,31 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     })*/
+                    //var state by remember { mutableStateOf("") }
+                    //KiraScreen(Kira_S {
+                    //    Kira_S.Misses(onChanged = value("onChanged") { { state = it } })
+                    //}.kira.modify { value = value("value") { state } })
+                    var checked by remember { mutableStateOf(false) }
+                    KiraScreen(
+                        Kira_Checkbox {
+                            Kira_Checkbox.Misses(
+                                onCheckedChange = value("onCheckedChange") { { checked = it } }
+                            )
+                        }.kira.modify {
+                            this.checked = value("checked") { checked }
+                            generated { enabled.defaultValue = true }
+                        }
+                    )
                 }
             }
         }
     }
+}
+
+@Kira
+@Composable
+public fun S(value: String, onChanged: (String) -> Unit) {
+    TextField(value = value, onValueChange = onChanged)
 }
 
 data class Car(
