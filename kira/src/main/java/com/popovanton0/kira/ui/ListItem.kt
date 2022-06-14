@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
@@ -41,19 +42,21 @@ internal fun ListItem(
     val end = applyTextStyle(typography.caption, ContentAlpha.medium, end)
 
     Row(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
         verticalAlignment = sideSlotsAlignment,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
             start?.let { Box { it.invoke() } }
         }
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1.5f)) {
             overlineText?.invoke()
             text.invoke()
             secondaryText?.invoke()
         }
-        end?.let { Box { it.invoke() } }
+        end?.let { Box(modifier = Modifier.weight(1f), Alignment.CenterEnd) { it.invoke() } }
     }
 }
 
@@ -99,4 +102,22 @@ private fun Preview3Lines() = ListItem(
     end = { Text(text = "End text") },
 ) {
     Text(text = "Title")
+}
+
+
+@Preview
+@Composable
+private fun Preview3MultiLines() = ListItem(
+    sideSlotsAlignment = Alignment.Top,
+    start = {
+        Icon(
+            painter = rememberVectorPainter(Icons.Default.Star),
+            contentDescription = null
+        )
+    },
+    overlineText = { Text(text = "Overline") },
+    secondaryText = { Text(text = "Secondary text") },
+    end = { Text(text = "End text") },
+) {
+    Text(text = "TitleTitleTitleTitleTitleTitleTitleTitleTitleTitleTitleTitleTitle")
 }
