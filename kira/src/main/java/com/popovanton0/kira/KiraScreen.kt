@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,10 +59,13 @@ public fun KiraScreen(
         contentAlignment = Alignment.TopCenter
     ) {
         var supplier by remember { mutableStateOf<Supplier<Unit>?>(null) }
-            /** building can be slow, especially if [ReflectionUsage] APIs were used */
-            /** thus building is performed on the background thread */
+        /** building can be slow, especially if [ReflectionUsage] APIs were used */
+        /** thus building is performed on the background thread */
         LaunchedEffect(true) {
             withContext(Dispatchers.IO) { supplier = vm.kiraProvider.kira.build() }
+        }
+        if (LocalInspectionMode.current) {
+            supplier = vm.kiraProvider.kira.build()
         }
         if (supplier == null) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))

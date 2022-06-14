@@ -9,7 +9,7 @@ import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.generated.com.popovanton0.exampleui.Kira_SimpleTextCard
 import com.popovanton0.kira.registry.KiraRegistry
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun KiraProviderExample() = KiraScreen(Kira_SimpleTextCard())
 
