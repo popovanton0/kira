@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -208,9 +209,10 @@ private class CompoundSupplierImpl<T : Any>(
                         // not lazy because kira root places us in the LazyColumn
                         // and LazyColumn in LazyColumn is prohibited
                         Column {
-                            suppliers.forEach { supplier ->
+                            suppliers.forEachIndexed { index, supplier ->
                                 if (!isCompoundSupplier(supplier)) supplier.Ui(params = null)
                                 else CompoundSupplierUi(params, supplier)
+                                if (index != suppliers.lastIndex) Divider()
                             }
                         }
                     }
@@ -272,16 +274,17 @@ private class CompoundSupplierImpl<T : Any>(
                         text = { Text(text = paramName) },
                         end = { if (nullable) NullCheckbox() }
                     )
-                    if (suppliers.isNotEmpty()) Divider(Modifier.padding(horizontal = 16.dp))
+                    if (suppliers.isNotEmpty()) Divider()
                     LazyColumn(
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .fillMaxWidth()
                             .nullOverlayModifier()
                     ) {
-                        items(suppliers) { supplier ->
+                        itemsIndexed(suppliers) { index, supplier ->
                             if (!isCompoundSupplier(supplier)) supplier.Ui(params = null)
                             else CompoundSupplierUi(params, supplier)
+                            if (index != suppliers.lastIndex) Divider()
                         }
                     }
                     CloseDialogButton()

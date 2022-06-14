@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,9 +67,11 @@ private class RootCompoundSupplierImpl(
 
     @Composable
     override fun Ui(params: Any?) = BoxWithConstraints {
-        if (maxWidth / maxHeight < 1) LazyColumn {
+        if (maxWidth / maxHeight < 1) LazyColumn(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             item { injector() }
-            items(suppliers) { it.Ui() }
+            items(suppliers) { it.Ui(); Divider() }
         }
         else Row {
             Box(
@@ -76,8 +79,11 @@ private class RootCompoundSupplierImpl(
                     .weight(1f)
                     .align(Alignment.CenterVertically)
             ) { injector() }
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(suppliers) { it.Ui() }
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(suppliers) { it.Ui(); Divider() }
             }
         }
     }
