@@ -15,7 +15,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.popovanton0.kira'
                 artifactId = 'kira'
-                version = 'SNAPSHOT2'
+                version = kira_version
 
 //                pom {
 //                    name = "kira"

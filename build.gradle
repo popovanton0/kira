@@ -4,6 +4,7 @@ buildscript {
         kotlin_version = '1.6.10'
         ksp_subversion = '1.0.4'
         kotlin_poet_version = '1.11.0'
+        kira_version = 'SNAPSHOT3'
     }
 }
 
