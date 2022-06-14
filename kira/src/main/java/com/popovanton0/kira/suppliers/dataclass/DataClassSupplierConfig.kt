@@ -6,12 +6,15 @@ import com.popovanton0.kira.suppliers.ObjectInDataClass
 import com.popovanton0.kira.suppliers.StringInDataClass
 import com.popovanton0.kira.suppliers.WholeNumberInDataClass
 
-internal object DataClassSupplierConfig {
-    val paramSupplierProviders: MutableList<DataClassSupplierSupport> = mutableListOf(
+public object DataClassSupplierConfig {
+    internal val paramSupplierProviders: MutableList<DataClassSupplierSupport> = mutableListOf(
         BooleanInDataClass,
         WholeNumberInDataClass,
         StringInDataClass,
         EnumInDataClass,
         ObjectInDataClass,
     )
+
+    public fun addParamSupplierProvider(provider: DataClassSupplierSupport): Unit =
+        paramSupplierProviders.add(0, provider)
 }

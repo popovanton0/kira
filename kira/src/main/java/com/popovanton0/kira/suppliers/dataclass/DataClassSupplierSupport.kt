@@ -9,7 +9,7 @@ import kotlin.reflect.KParameter
 /**
  * This API provides an ability to add the support for extra types into the [dataClass] supplier.
  */
-internal interface DataClassSupplierSupport {
+public interface DataClassSupplierSupport {
     /**
      * Implementation of this method must:
      * 1. validate, whether the particular supplier can supply [param];
@@ -18,7 +18,7 @@ internal interface DataClassSupplierSupport {
      * like [string])
      * 4. return the SupplierBuilder
      */
-    fun KiraScope.provideSupplierBuilderForParam(
+    public fun KiraScope.provideSupplierBuilderForParam(
         param: KParameter,
         paramClass: KClass<Any>,
         nullable: Boolean,
