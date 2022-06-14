@@ -14,6 +14,14 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
         compileInputsAndVerifyOutputs()
 
     @Test
+    fun external_functions() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun external_functions_collide_with_declared_ones() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
     fun function_in_class() =
         compileInputsAndVerifyOutputs()
 
@@ -23,6 +31,14 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
 
     @Test
     fun function_overloads_with_specified_kira_name() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun function_with_composable_lambda_params() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun function_with_default_vararg_params() =
         compileInputsAndVerifyOutputs()
 
     @Test
@@ -51,6 +67,10 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
 
     @Test
     fun function_with_vararg_param() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun functions_with_identical_specified_kira_name() =
         compileInputsAndVerifyOutputs()
 
     @Test
@@ -83,6 +103,10 @@ class KiraProcessorTest : BaseProcessorTest(UPDATE_TEST_OUTPUTS = false) {
 
     @Test
     fun registry_generation() =
+        compileInputsAndVerifyOutputs()
+
+    @Test
+    fun skip_params_processing() =
         compileInputsAndVerifyOutputs()
 
     @Test

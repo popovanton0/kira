@@ -2,15 +2,16 @@ package com.popovanton0.kira.processing.generators
 
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.symbol.FunctionKind
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.Modifier
+import com.popovanton0.kira.processing.KiraFunction
 import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.withIndent
 
-internal class InjectorGenerator(function: KSFunctionDeclaration) {
+internal class InjectorGenerator(kiraFunction: KiraFunction) {
+    private val function = kiraFunction.function
     /**
      * @param condition if true, injector cannot be generated
      * @param reasonMsg if [condition] is true, this msg is inserted in the generated code to let
@@ -22,7 +23,9 @@ internal class InjectorGenerator(function: KSFunctionDeclaration) {
         val reasonMsg: String,
     )
 
-    private val varargParams = function.parameters.filter { it.isVararg }
+    private val varargParams = kiraFunction.function.parameters
+        .filterNot { kiraFunction.kiraAnn.useDefaultValueForParams.contains(it.name!!.asString()) }
+        .filter { it.isVararg }
 
     private val reasons = listOf(
         Reason(

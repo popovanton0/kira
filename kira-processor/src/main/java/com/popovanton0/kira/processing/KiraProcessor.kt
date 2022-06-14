@@ -11,9 +11,11 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Origin
 import com.popovanton0.kira.annotations.Kira
 import com.popovanton0.kira.annotations.KiraRoot
+import com.popovanton0.kira.processing.KiraProcessor.Companion.kiraAnnClass
 import com.popovanton0.kira.processing.generators.DeclarationsAggregator
 import com.popovanton0.kira.processing.generators.InjectorGenerator
 import com.popovanton0.kira.processing.generators.MissesClassGenerator
@@ -31,10 +33,13 @@ import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
+import com.squareup.kotlinpoet.ksp.toAnnotationSpec
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 
 class KiraProcessor(
@@ -75,25 +80,31 @@ class KiraProcessor(
         val kiraRootClass = getKiraRootClass(resolver)
         val kiraRootAnn = kiraRootClass?.getAnnotationsByType(KiraRoot::class)?.single()
 
-        val kiraDeclarations = DeclarationsAggregator.aggregate(resolver)
+        val kiraDeclarationsFromThisModule = DeclarationsAggregator.aggregate(resolver)
         if (kiraRootAnn == null) {
-            if (kiraDeclarations.names.isNotEmpty()) {
+            if (kiraDeclarationsFromThisModule.names.isNotEmpty()) {
                 DeclarationsAggregator
-                    .aggregatorFile(resolver, kiraDeclarations.names)
-                    .writeTo(codeGenerator, aggregating = true, kiraDeclarations.originatingKSFiles)
+                    .aggregatorFile(resolver, kiraDeclarationsFromThisModule.names)
+                    .writeTo(
+                        codeGenerator, aggregating = true,
+                        kiraDeclarationsFromThisModule.originatingKSFiles
+                    )
             }
             return emptyList()
         }
 
         val generateRegistry = kiraRootAnn.generateRegistry
+        val externalFunctionsToProcess = kiraRootAnn.externalFunctionsToProcess.toList()
+        val externalFunctionNamesToProcess = externalFunctionsToProcess.map { it.name }
         val registryRecords = mutableListOf<RegistryGenerator.RegistryRecord>()
 
         val functionsInAllModules: List<KiraFunction> = resolver
             .getDeclarationsFromPackage(DeclarationsAggregator.PACKAGE_PREFIX)
             .map(DeclarationsAggregator::extractNamesFromAggregator)
-            // this is the root module, and [kiraDeclarations] are not written into [aggregatorFile]
-            // thus, they need to be added separately
-            .plus(element = kiraDeclarations.names)
+            // this is the root module, and [kiraDeclarationsFromThisModule] are not written into
+            // [aggregatorFile]. Thus, they need to be added separately
+            .plus(element = kiraDeclarationsFromThisModule.names)
+            .plus(element = externalFunctionNamesToProcess)
             .flatten() // function names from each module -> names across all modules
             .toList()
             .distinct()
@@ -102,7 +113,16 @@ class KiraProcessor(
                     .getFunctionDeclarationsByName(qualifiedName, includeTopLevel = true)
                     .toList()
             }
-            .map { KiraFunction(it, it.kiraAnn()) }
+            .map {
+                val funName = it.qualifiedName?.asString()
+                val isExternal = externalFunctionNamesToProcess.contains(funName)
+                val kiraAnn = if (isExternal) {
+                    externalFunctionsToProcess.find { it.name == funName }!!
+                } else {
+                    it.kiraAnn()
+                }
+                KiraFunction(it, kiraAnn)
+            }
             .requireUniqueFunctionNames()
 
         functionsInAllModules.forEach { kiraFunction ->
@@ -113,8 +133,8 @@ class KiraProcessor(
             val correctedFunSimpleName = correctedQualifiedName(kiraFunction)
                 .substringAfterLast('.')
 
-            val injectorGenerator = InjectorGenerator(function)
-            val paramSuppliers: List<ParameterSupplier> = findSuppliersForFunParams(function)
+            val paramSuppliers: List<ParameterSupplier> = findSuppliersForFunParams(kiraFunction)
+            val injectorGenerator = InjectorGenerator(kiraFunction)
 
             val generatedPkgName = "${Kira.GENERATED_PACKAGE_PREFIX}.$funPkgName"
             val kiraProviderName = ClassName(generatedPkgName, "Kira_$correctedFunSimpleName")
@@ -165,9 +185,13 @@ class KiraProcessor(
         return emptyList()
     }
 
-    private fun findSuppliersForFunParams(function: KSFunctionDeclaration) =
-        function.parameters.map { param ->
-            param.name ?: Errors.funParamWithNoName(function.qualifiedName!!.asString())
+    private fun findSuppliersForFunParams(kiraFunction: KiraFunction): List<ParameterSupplier> {
+        val (function, kiraAnn) = kiraFunction
+        val useDefaultValueForParams = kiraAnn.useDefaultValueForParams.toList()
+        return function.parameters.mapNotNull { param ->
+            val paramName = param.name?.asString()
+            paramName ?: Errors.funParamWithNoName(function.qualifiedName!!.asString())
+            if (useDefaultValueForParams.contains(paramName)) return@mapNotNull null
             val functionParameter = FunctionParameter(param)
             val supplierData = supplierProcessors.firstNotNullOfOrNull {
                 it.provideSupplierFor(functionParameter)
@@ -178,6 +202,7 @@ class KiraProcessor(
             else
                 ParameterSupplier.Empty(functionParameter)
         }
+    }
 
     private fun kiraProvider(
         injectorGenerator: InjectorGenerator,
@@ -278,10 +303,8 @@ class KiraProcessor(
     }
 }
 
-private data class KiraFunction(
-    val function: KSFunctionDeclaration,
-    val kiraAnn: Kira,
-)
+internal fun KSType.toTypeNameWithAnnotations(): TypeName =
+    toTypeName().copy(annotations = annotations.map { it.toAnnotationSpec() }.toList())
 
 private fun List<KiraFunction>.requireUniqueFunctionNames(): List<KiraFunction> {
     val uniquelyNamedFunctions = distinctBy(::correctedQualifiedName)
@@ -296,7 +319,8 @@ private fun KSFunctionDeclaration.kiraAnn(): Kira = getAnnotationsByType(Kira::c
 private fun correctedQualifiedName(kiraFunction: KiraFunction): String {
     val (function, kiraAnn) = kiraFunction
     val qualifiedName = function.qualifiedName!!.asString()
-    val correctedSimpleName = kiraAnn.name.ifBlank { function.simpleName.asString() }
+    val correctedSimpleName = kiraAnn.name.substringAfterLast('.')
+        .ifBlank { function.simpleName.asString() }
     return qualifiedName.replaceAfterLast('.', correctedSimpleName)
 }
 
@@ -306,11 +330,22 @@ private fun Iterable<KiraFunction>.duplicateFunctionsErrorMsg(): String = this
     .joinToString(prefix = "[\n", postfix = "\n]", separator = ",\n") { (function, _) ->
         buildString {
             append("\t")
-            append(function.kiraAnn())
-            append(" ")
+            runCatching { function.kiraAnn() }.getOrNull()?.also {
+                append(it.toPrettyString())
+                append(" ")
+            }
             append(function.qualifiedName!!.asString())
         }
     }
+
+private fun Kira.toPrettyString(): String = buildString {
+    append("@${kiraAnnClass.simpleName}(")
+    append("name = \"$name\", ")
+    val useDefaultValueForParamsString =
+        useDefaultValueForParams.joinToString(prefix = "[", postfix = "]")
+    append("useDefaultValueForParams = $useDefaultValueForParamsString")
+    append(")")
+}
 
 /**
  * @return all duplicates, not de-duplicating them

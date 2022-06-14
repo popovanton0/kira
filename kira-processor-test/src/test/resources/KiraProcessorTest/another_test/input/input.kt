@@ -5,12 +5,12 @@ import com.popovanton0.kira.annotations.KiraRoot
 import java.util.function.Supplier
 
 @Target(AnnotationTarget.TYPE)
-private annotation class Composable
+public annotation class Composable
 
 
-//@Kira
+@Kira
 fun ExampleFunction2(
-    ds: () -> Unit,
+    ds: @Composable () -> Unit,
     ds2: suspend () -> Unit,
     ds3: @Composable (@Composable Char.() -> Unit).(Int) -> Unit,
     ds4: List<MutableList<in () -> Map<Any?, (suspend () -> Float?)?>>>
@@ -44,7 +44,7 @@ public data class ExampleFunction3Misses(
 }
 
 
-@Kira
+//@Kira
 fun ExampleFunction3(
     ds1: Quality = Quality.GOOD,
     ds2: Quality? = Quality.GOOD,

@@ -1,0 +1,6 @@
+Resolution ambiguity: multiple functions found with the same name: [
+	@Kira(name = "ExampleFunction2", useDefaultValueForParams = [param2]) external_functions_collide_with_declared_ones.ExampleFunction1,
+	external_functions_collide_with_declared_ones.ExampleFunction2
+]. To fix:
+1. provide unique @Kira.name values;
+2. rename functions or/and move them to different packages;

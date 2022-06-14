@@ -4,6 +4,7 @@ import com.popovanton0.kira.processing.Errors
 import com.popovanton0.kira.processing.KiraProcessor.Companion.generatedKiraScopeName
 import com.popovanton0.kira.processing.KiraProcessor.Companion.supplierBuilderInterfaceName
 import com.popovanton0.kira.processing.supplierprocessors.base.ParameterSupplier
+import com.popovanton0.kira.processing.toTypeNameWithAnnotations
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -54,7 +55,7 @@ internal object ScopeClassGenerator {
         parameterSuppliers: List<ParameterSupplier>
     ): List<PropertySpec> = parameterSuppliers.map { parameterSupplier ->
         val propName = parameterSupplier.parameter.name!!.asString()
-        val supplierTypeArg = parameterSupplier.parameter.resolvedType.toTypeName()
+        val supplierTypeArg = parameterSupplier.parameter.resolvedType.toTypeNameWithAnnotations()
         PropertySpec
             .builder(
                 name = propName,

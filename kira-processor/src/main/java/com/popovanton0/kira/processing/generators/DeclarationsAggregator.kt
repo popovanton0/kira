@@ -43,7 +43,7 @@ internal object DeclarationsAggregator {
     }
 
     /**
-     * @property names list of qualified names of all @[Kira]-annotated functions
+     * @param names list of qualified names of all @[Kira]-annotated functions
      */
     internal data class KiraDeclarations(
         val names: List<String>,
