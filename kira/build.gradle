@@ -4,7 +4,47 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlinx.binary-compatibility-validator'
-    //id 'maven-publish'
+    id 'maven-publish'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                // ./gradlew apiCheck clean testReleaseUnitTest lintRelease pixel2api30Check
+                from components.release
+                groupId = 'com.github.popovanton0.kira'
+                artifactId = 'kira'
+                version = 'SNAPSHOT2'
+
+//                pom {
+//                    name = "kira"
+//                    description = "Automatically generates UI demos which allow users to call any function with any parameters"
+//                    url = 'https://github.com/popovanton0/kira'
+//                    licenses {
+//                        license {
+//                            name = 'The Apache License, Version 2.0'
+//                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                        }
+//                    }
+//                    developers {
+//                        developer {
+//                            id = 'popovanton0'
+//                            name = 'Anton Popov'
+//                            email = 'popovanton0+github@gmail.com'
+//                        }
+//                    }
+//                }
+            }
+        }
+
+        repositories {
+            def mavenDeployDir = System.env.DEPLOY_DIR ?: "${rootProject.buildDir}/repo"
+            maven {
+                url mavenDeployDir
+            }
+        }
+    }
 }
 
 android {
@@ -43,7 +83,7 @@ android {
     testOptions {
         managedDevices {
             devices {
-                pixel2api30 (ManagedVirtualDevice) {
+                pixel2api30(ManagedVirtualDevice) {
                     device = "Pixel 2"
                     // Use only API levels 27 and higher.
                     apiLevel = 30
@@ -76,36 +116,3 @@ dependencies {
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
 }
-
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                // ./gradlew apiCheck clean testReleaseUnitTest lintRelease pixel2api30Check
-//                from components.release
-//                groupId = 'com.github.popovanton0.kira'
-//                artifactId = 'kira'
-//                version = 'SNAPSHOT'
-//
-//                pom {
-//                    name = "kira"
-//                    description = "Automatically generates UI demos which allow users to call any function with any parameters"
-//                    url = 'https://github.com/popovanton0/kira'
-//                    licenses {
-//                        license {
-//                            name = 'The Apache License, Version 2.0'
-//                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-//                        }
-//                    }
-//                    developers {
-//                        developer {
-//                            id = 'popovanton0'
-//                            name = 'Anton Popov'
-//                            email = 'popovanton0+github@gmail.com'
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}

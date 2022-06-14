@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
-    //id 'maven-publish'
+    id 'maven-publish'
 }
 
 java {
@@ -16,15 +16,22 @@ compileKotlin {
     }
 }
 
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            maven(MavenPublication) {
-//                from components.java
-//                groupId = 'com.github.popovanton0.kira'
-//                artifactId = 'kira-annotations'
-//                version = 'SNAPSHOT'
-//            }
-//        }
-//    }
-//}
+afterEvaluate {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+                groupId = 'com.github.popovanton0.kira'
+                artifactId = 'kira-annotations'
+                version = 'SNAPSHOT2'
+            }
+        }
+
+        repositories {
+            def mavenDeployDir = System.env.DEPLOY_DIR ?: "${rootProject.buildDir}/repo"
+            maven {
+                url mavenDeployDir
+            }
+        }
+    }
+}
