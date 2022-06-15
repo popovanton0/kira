@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     //KiraScreen(KiraRegistry.kiraProviders.filterKeys { it.contains("asd") }.values.first())
                     //KiraScreen(`Kira_AsdQ😃∂`())
                     //KiraBuilderApiExample()
-                    if (false)KiraScreen(Kira_WholeNumbersInDataClass().kira.modify {
+                    if (false) KiraScreen(Kira_WholeNumbersInDataClass().kira.modify {
                         generated {
                             wholeNumbers.defaultValue = WholeNumbers()
                         }

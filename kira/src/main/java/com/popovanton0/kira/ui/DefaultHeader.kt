@@ -26,7 +26,7 @@ public fun DefaultHeader(function: @Composable () -> Unit) {
                 shape = borderShape
             )
             .background(MaterialTheme.colors.background, borderShape)
-            .padding(40.dp),
+            .padding(24.dp),
         contentAlignment = Alignment.Center,
     ) {
         function()

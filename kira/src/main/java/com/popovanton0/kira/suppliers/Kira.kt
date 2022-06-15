@@ -2,17 +2,21 @@ package com.popovanton0.kira.suppliers
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.base.Ui
@@ -78,14 +82,27 @@ private class RootCompoundSupplierImpl(
         if (isNotLandscape) LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item { injector() }
+            item {
+                Box(
+                    modifier = Modifier
+                        // so that it is possible to place scrollable UI in the injector
+                        .heightIn(max = MAX_NON_SCROLLABLE_INJECTOR_HEIGHT)
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(max = MAX_NON_SCROLLABLE_INJECTOR_HEIGHT)
+                ) {
+                    injector()
+                }
+            }
             customParams?.let { it() }
             items(suppliers) { it.Ui(); Divider() }
         }
         else Row {
-            Box(
+            Column(
                 modifier = Modifier
                     .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    // so that it is possible to place scrollable UI in the injector
+                    .heightIn(max = MAX_NON_SCROLLABLE_INJECTOR_HEIGHT)
                     .align(Alignment.CenterVertically),
             ) {
                 injector()
@@ -101,3 +118,9 @@ private class RootCompoundSupplierImpl(
         }
     }
 }
+
+/**
+ * If the injector's height is larger that this value, it will be placed in the scrollable container
+ * with the height of this value
+ */
+private val MAX_NON_SCROLLABLE_INJECTOR_HEIGHT = 1200.dp
