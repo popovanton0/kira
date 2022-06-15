@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.reflect.jvm.internal.impl.types.checker.TypeRefinementSupport
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -17,13 +18,14 @@ internal fun Checkbox(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false) {
-            androidx.compose.material.Checkbox(checked, onCheckedChange)
+            androidx.compose.material.Checkbox(checked, onCheckedChange, enabled = enabled)
         }
         Text(text = label, fontSize = 12.sp)
     }

@@ -1,5 +1,6 @@
 package com.popovanton0.kira.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,17 +14,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-public fun DefaultHeader(function: @Composable () -> Unit): Unit = Box(
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-        .border(
-            width = 2.dp,
-            color = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled),
-            shape = RoundedCornerShape(12.dp)
-        )
-        .padding(40.dp),
-    contentAlignment = Alignment.Center,
-) {
-    function()
+public fun DefaultHeader(function: @Composable () -> Unit) {
+    val borderShape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(
+                width = 2.dp,
+                color = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled),
+                shape = borderShape
+            )
+            .background(MaterialTheme.colors.background, borderShape)
+            .padding(40.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        function()
+    }
 }

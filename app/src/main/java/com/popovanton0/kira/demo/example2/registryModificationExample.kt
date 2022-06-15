@@ -20,5 +20,5 @@ fun KiraRegistryModificationExample() {
 
     // in the browser UI logic, in other file
     val kiraProvider = kiraProviders["com.popovanton0.kira.demo.example2.TextCard"]!!
-    KiraScreen(kiraProvider)
+    KiraScreen(kiraProvider.kira)
 }

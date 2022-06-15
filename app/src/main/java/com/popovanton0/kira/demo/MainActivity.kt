@@ -17,8 +17,10 @@ import com.popovanton0.exampleui.Food
 import com.popovanton0.exampleui.Rock
 import com.popovanton0.kira.KiraScreen
 import com.popovanton0.kira.annotations.Kira
+import com.popovanton0.kira.demo.example1.WholeNumbers
 import com.popovanton0.kira.demo.ui.theme.KiraTheme
 import com.popovanton0.kira.generated.androidx.compose.material.Kira_Checkbox
+import com.popovanton0.kira.generated.com.popovanton0.kira.demo.example1.Kira_WholeNumbersInDataClass
 import com.popovanton0.kira.suppliers.value
 
 class MainActivity : ComponentActivity() {
@@ -31,11 +33,11 @@ class MainActivity : ComponentActivity() {
                     //KiraScreen(KiraRegistry.kiraProviders.filterKeys { it.contains("asd") }.values.first())
                     //KiraScreen(`Kira_AsdQ😃∂`())
                     //KiraBuilderApiExample()
-                    //KiraScreen(Kira_WholeNumbersInDataClass().kira.modify {
-                    //    generated {
-                    //        wholeNumbers.defaultValue = WholeNumbers()
-                    //    }
-                    //})
+                    if (false)KiraScreen(Kira_WholeNumbersInDataClass().kira.modify {
+                        generated {
+                            wholeNumbers.defaultValue = WholeNumbers()
+                        }
+                    })
                     /*KiraScreen(kira {
                         val supp = byte("dsf")//nullableDataClass("my car", Car::class, Car(cookerQuality = Food.EXCELLENT))
                         injector {

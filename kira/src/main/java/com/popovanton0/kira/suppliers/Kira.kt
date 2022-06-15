@@ -1,19 +1,24 @@
 package com.popovanton0.kira.suppliers
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import com.popovanton0.kira.suppliers.base.Supplier
 import com.popovanton0.kira.suppliers.base.SupplierBuilder
 import com.popovanton0.kira.suppliers.base.Ui
 import com.popovanton0.kira.suppliers.compound.Injector
 import com.popovanton0.kira.suppliers.compound.KiraScope
+import com.popovanton0.kira.ui.VerticalDivider
 
 public interface KiraMisses
 
@@ -71,18 +76,23 @@ private class RootCompoundSupplierImpl(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item { injector() }
+            customParams?.let { it() }
             items(suppliers) { it.Ui(); Divider() }
         }
         else Row {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .align(Alignment.CenterVertically)
-            ) { injector() }
+                    .align(Alignment.CenterVertically),
+            ) {
+                injector()
+            }
+            VerticalDivider()
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                customParams?.let { it() }
                 items(suppliers) { it.Ui(); Divider() }
             }
         }

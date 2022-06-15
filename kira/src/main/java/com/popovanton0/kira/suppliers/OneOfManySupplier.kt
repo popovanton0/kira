@@ -36,7 +36,7 @@ public inline fun <reified T : Any> KiraScope.nullableOneOfMany(
     paramName, values, T::class.toClassType(nullable = true), defaultOptionIndex,
 )
 
-public fun <T : Any> KiraScope.oneOfMany(
+public fun <T> KiraScope.oneOfMany(
     paramName: String,
     values: Collection<NamedValue<T>>,
     type: Type,

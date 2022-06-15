@@ -11,13 +11,13 @@ import com.popovanton0.kira.registry.KiraRegistry
 
 @Preview(showBackground = true)
 @Composable
-fun KiraProviderExample() = KiraScreen(Kira_SimpleTextCard())
+fun KiraProviderExample() = KiraScreen(Kira_SimpleTextCard().kira)
 
 @Preview
 @Composable
 fun KiraRegistryExample() {
     val (funName, kiraProvider) = KiraRegistry.kiraProviders.entries.first()
-    KiraScreen(kiraProvider)
+    KiraScreen(kiraProvider.kira)
 }
 
 @Kira
@@ -77,7 +77,7 @@ fun WholeNumbersInDataClass(wholeNumbers: WholeNumbers) = with(wholeNumbers) {
         nullableInt = $nullableInt
         nullableLong = $nullableLong
     """.trimIndent(),
-        fontSize = 10.sp
+        fontSize = 40.sp
     )
 }
 
