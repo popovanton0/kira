@@ -71,8 +71,11 @@ private class RootCompoundSupplierImpl(
     override fun currentValue() = Unit
 
     @Composable
-    override fun Ui(params: Any?) = BoxWithConstraints {
-        if (maxWidth / maxHeight < 1) LazyColumn(
+    override fun Ui(params: Any?) = Box {
+        val customParams = remember { params as? LazyListScope.() -> Unit }
+        val isNotLandscape =
+            LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE
+        if (isNotLandscape) LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item { injector() }
