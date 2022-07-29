@@ -44,7 +44,7 @@ public inline fun <reified T : Enum<T>> KiraScope.nullableEnum(
 ): OneOfManySupplierBuilder<T?> = nullableEnum(paramName, qualifiedName, enumValues(), defaultValue)
 
 @PublishedApi
-internal fun <T : Enum<T>> KiraScope.enum(
+internal fun <T : Enum<*>> KiraScope.enum(
     paramName: String,
     qualifiedName: String,
     values: Array<out T>,
@@ -57,7 +57,7 @@ internal fun <T : Enum<T>> KiraScope.enum(
 )
 
 @PublishedApi
-internal fun <T : Enum<T>> KiraScope.nullableEnum(
+internal fun <T : Enum<*>> KiraScope.nullableEnum(
     paramName: String,
     qualifiedName: String,
     values: Array<out T>,

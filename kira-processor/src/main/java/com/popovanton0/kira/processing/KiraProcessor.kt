@@ -1,5 +1,3 @@
-@file:OptIn(KotlinPoetKspPreview::class)
-
 package com.popovanton0.kira.processing
 
 import com.google.devtools.ksp.KspExperimental
@@ -37,7 +35,6 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.UNIT
 import com.squareup.kotlinpoet.buildCodeBlock
-import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
 import com.squareup.kotlinpoet.ksp.toAnnotationSpec
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo

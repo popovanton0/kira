@@ -16,8 +16,7 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = '11'
         freeCompilerArgs += [
-                '-opt-in=kotlin.RequiresOptIn,com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview,' +
-                        'com.popovanton0.kira.annotations.ExperimentalKiraApi'
+                '-opt-in=kotlin.RequiresOptIn,com.popovanton0.kira.annotations.ExperimentalKiraApi'
         ]
     }
 }
