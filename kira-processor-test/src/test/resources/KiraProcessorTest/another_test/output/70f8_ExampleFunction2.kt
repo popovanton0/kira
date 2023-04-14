@@ -13,6 +13,7 @@ import com.popovanton0.kira.suppliers.compound.injector
 import com.popovanton0.kira.suppliers.kira
 import kotlin.Any
 import kotlin.Char
+import kotlin.ExtensionFunctionType
 import kotlin.Float
 import kotlin.Function0
 import kotlin.Function1
@@ -49,7 +50,8 @@ public class Kira_ExampleFunction2(
   public data class Misses(
     public val ds: SupplierBuilder<@Composable Function0<Unit>>,
     public val ds2: SupplierBuilder<SuspendFunction0<Unit>>,
-    public val ds3: SupplierBuilder<@Composable Function2<Function1<Char, Unit>, Int, Unit>>,
+    public val ds3: SupplierBuilder<@Composable @ExtensionFunctionType
+        Function2<Function1<Char, Unit>, Int, Unit>>,
     public val ds4:
         SupplierBuilder<List<MutableList<in Function0<Map<Any?, SuspendFunction0<Float?>?>>>>>,
   ) : KiraMisses
@@ -63,7 +65,8 @@ public class ExampleFunction2Scope :
 
   public lateinit var ds2: SupplierBuilder<SuspendFunction0<Unit>>
 
-  public lateinit var ds3: SupplierBuilder<@Composable Function2<Function1<Char, Unit>, Int, Unit>>
+  public lateinit var ds3: SupplierBuilder<@Composable @ExtensionFunctionType
+      Function2<Function1<Char, Unit>, Int, Unit>>
 
   public lateinit var ds4:
       SupplierBuilder<List<MutableList<in Function0<Map<Any?, SuspendFunction0<Float?>?>>>>>

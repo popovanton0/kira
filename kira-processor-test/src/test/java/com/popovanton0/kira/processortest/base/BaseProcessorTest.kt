@@ -51,7 +51,7 @@ abstract class BaseProcessorTest(
         val compilation = KotlinCompilation().apply {
             this.sources = sources
             symbolProcessorProviders = listOf(KiraProcessorProvider())
-            jvmTarget = JvmTarget.JVM_11.description
+            jvmTarget = JvmTarget.JVM_17.description
             inheritClassPath = true
             messageOutputStream = System.out // see diagnostics in real time
         }
@@ -106,7 +106,7 @@ abstract class BaseProcessorTest(
                 inheritClassPath = true
                 messageOutputStream = System.out // see diagnostics in real time
                 verbose = false
-                jvmTarget = JvmTarget.JVM_11.description
+                jvmTarget = JvmTarget.JVM_17.description
             }.compile()
 
             assertThat(result.exitCode)
